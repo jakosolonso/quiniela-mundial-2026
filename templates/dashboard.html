@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiniela Mundial 2026</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="user-header">
+    <div class="user-info-header">
+        <i class="fas fa-user-circle"></i>
+        <span id="userNameHeader"></span>
+    </div>
+    <button onclick="cerrarSesion()" class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </button>
+</div>
+    <div class="container">
+        <header>
+            <h1>⚽ Quiniela FPK Mundial 2026</h1>
+            <p>Predice los resultados y gana puntos</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Panel de Usuario -->
+            <div class="user-panel">
+                <h2>👤 Registrate</h2>
+                <div class="user-form">
+                    <input type="text" id="userName" placeholder="Nombre" maxlength="100">
+                    <input type="email" id="userEmail" placeholder="Email">
+                    <button onclick="crearUsuario()" class="btn-primary">Registrar / Seleccionar</button>
+                </div>
+                <div id="userInfo" class="user-info" style="display: none;">
+                    <p>Jugando como: <strong id="displayName"></strong></p>
+                    <button onclick="cambiarUsuario()" class="btn-secondary">Cambiar usuario</button>
+                </div>
+            </div>
+
+            <!-- Pestañas -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="cambiarTab('pronosticos')">📝 Mis Pronósticos</button>
+                <button class="tab-btn" onclick="cambiarTab('partidos')">🏆 Partidos</button>
+                <button class="tab-btn" onclick="cambiarTab('tabla')">📊 Tabla de Posiciones</button>
+            </div>
+
+            <!-- Contenido de Pestañas -->
+            <div id="pronosticosTab" class="tab-content active">
+                <h2>Haz tus pronósticos</h2>
+                <div id="partidosList" class="partidos-grid"></div>
+            </div>
+
+            <div id="partidosTab" class="tab-content">
+                <h2>Resultados oficiales</h2>
+                <div id="resultadosList" class="partidos-grid"></div>
+            </div>
+
+            <div id="tablaTab" class="tab-content">
+                <h2>Clasificación</h2>
+                <div id="tablaPosiciones" class="tabla-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
