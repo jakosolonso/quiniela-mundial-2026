@@ -53,12 +53,13 @@
         }
 
         .logo-icon {
-            font-size: 55px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
         }
 
         .register-header h1 {
@@ -206,14 +207,17 @@
             color: white;
         }
 
-        .seleccion-item .bandera {
-            font-size: 32px;
-            margin-bottom: 8px;
+        .seleccion-item .bandera img {
+            width: 32px;
+            height: 24px;
+            border-radius: 4px;
+            object-fit: cover;
         }
 
         .seleccion-item .pais-nombre {
             font-size: 11px;
             font-weight: 500;
+            margin-top: 8px;
         }
 
         .btn-register {
@@ -276,7 +280,7 @@
         <div class="register-card">
             <div class="register-header">
                 <div class="logo-icon">
-                    <i class="fas fa-user-plus"></i>
+                    <img src="/static/images/logo.png" alt="Logo Quiniela">
                 </div>
                 <h1>Crear Cuenta</h1>
                 <p>Regístrate gratis y participa en la quiniela</p>
@@ -326,7 +330,6 @@
                 <div class="form-group">
                     <label><i class="fas fa-flag"></i> Elige a tu selección favorita para ganar el mundial</label>
                     <div class="seleccion-grid" id="seleccionGrid">
-                        <!-- Las selecciones se cargarán aquí -->
                         <div style="text-align:center;grid-column:1/-1;">Cargando selecciones...</div>
                     </div>
                     <input type="hidden" id="seleccionFavorita" name="seleccion_favorita">
@@ -383,37 +386,37 @@
         });
 
         const selecciones = [
-    {codigo: "arg", nombre: "Argentina", bandera: "https://flagcdn.com/ar.svg"},
-    {codigo: "bra", nombre: "Brasil", bandera: "https://flagcdn.com/br.svg"},
-    {codigo: "fra", nombre: "Francia", bandera: "https://flagcdn.com/fr.svg"},
-    {codigo: "esp", nombre: "España", bandera: "https://flagcdn.com/es.svg"},
-    {codigo: "ger", nombre: "Alemania", bandera: "https://flagcdn.com/de.svg"},
-    {codigo: "eng", nombre: "Inglaterra", bandera: "https://flagcdn.com/gb.svg"},
-    {codigo: "ita", nombre: "Italia", bandera: "https://flagcdn.com/it.svg"},
-    {codigo: "ned", nombre: "Países Bajos", bandera: "https://flagcdn.com/nl.svg"},
-    {codigo: "por", nombre: "Portugal", bandera: "https://flagcdn.com/pt.svg"},
-    {codigo: "uru", nombre: "Uruguay", bandera: "https://flagcdn.com/uy.svg"},
-    {codigo: "col", nombre: "Colombia", bandera: "https://flagcdn.com/co.svg"},
-    {codigo: "mex", nombre: "México", bandera: "https://flagcdn.com/mx.svg"},
-    {codigo: "usa", nombre: "Estados Unidos", bandera: "https://flagcdn.com/us.svg"},
-    {codigo: "jpn", nombre: "Japón", bandera: "https://flagcdn.com/jp.svg"},
-    {codigo: "kor", nombre: "Corea del Sur", bandera: "https://flagcdn.com/kr.svg"},
-    {codigo: "mar", nombre: "Marruecos", bandera: "https://flagcdn.com/ma.svg"},
-    {codigo: "sen", nombre: "Senegal", bandera: "https://flagcdn.com/sn.svg"},
-    {codigo: "cro", nombre: "Croacia", bandera: "https://flagcdn.com/hr.svg"},
-    {codigo: "bel", nombre: "Bélgica", bandera: "https://flagcdn.com/be.svg"},
-    {codigo: "sui", nombre: "Suiza", bandera: "https://flagcdn.com/ch.svg"}
-];
+            {codigo: "arg", nombre: "Argentina", bandera: "https://flagcdn.com/ar.svg"},
+            {codigo: "bra", nombre: "Brasil", bandera: "https://flagcdn.com/br.svg"},
+            {codigo: "fra", nombre: "Francia", bandera: "https://flagcdn.com/fr.svg"},
+            {codigo: "esp", nombre: "España", bandera: "https://flagcdn.com/es.svg"},
+            {codigo: "ger", nombre: "Alemania", bandera: "https://flagcdn.com/de.svg"},
+            {codigo: "eng", nombre: "Inglaterra", bandera: "https://flagcdn.com/gb.svg"},
+            {codigo: "ita", nombre: "Italia", bandera: "https://flagcdn.com/it.svg"},
+            {codigo: "ned", nombre: "Países Bajos", bandera: "https://flagcdn.com/nl.svg"},
+            {codigo: "por", nombre: "Portugal", bandera: "https://flagcdn.com/pt.svg"},
+            {codigo: "uru", nombre: "Uruguay", bandera: "https://flagcdn.com/uy.svg"},
+            {codigo: "col", nombre: "Colombia", bandera: "https://flagcdn.com/co.svg"},
+            {codigo: "mex", nombre: "México", bandera: "https://flagcdn.com/mx.svg"},
+            {codigo: "usa", nombre: "Estados Unidos", bandera: "https://flagcdn.com/us.svg"},
+            {codigo: "jpn", nombre: "Japón", bandera: "https://flagcdn.com/jp.svg"},
+            {codigo: "kor", nombre: "Corea del Sur", bandera: "https://flagcdn.com/kr.svg"},
+            {codigo: "mar", nombre: "Marruecos", bandera: "https://flagcdn.com/ma.svg"},
+            {codigo: "sen", nombre: "Senegal", bandera: "https://flagcdn.com/sn.svg"},
+            {codigo: "cro", nombre: "Croacia", bandera: "https://flagcdn.com/hr.svg"},
+            {codigo: "bel", nombre: "Bélgica", bandera: "https://flagcdn.com/be.svg"},
+            {codigo: "sui", nombre: "Suiza", bandera: "https://flagcdn.com/ch.svg"}
+        ];
 
         function cargarSelecciones() {
-    const grid = document.getElementById('seleccionGrid');
-    grid.innerHTML = selecciones.map(sel => `
-        <div class="seleccion-item" data-codigo="${sel.codigo}" onclick="seleccionarPais('${sel.codigo}')">
-            <div class="bandera"><img src="${sel.bandera}" width="32" height="24" style="border-radius:4px; object-fit:cover;"></div>
-            <div class="pais-nombre">${sel.nombre}</div>
-        </div>
-    `).join('');
-}
+            const grid = document.getElementById('seleccionGrid');
+            grid.innerHTML = selecciones.map(sel => `
+                <div class="seleccion-item" data-codigo="${sel.codigo}" onclick="seleccionarPais('${sel.codigo}')">
+                    <div class="bandera"><img src="${sel.bandera}" alt="${sel.nombre}"></div>
+                    <div class="pais-nombre">${sel.nombre}</div>
+                </div>
+            `).join('');
+        }
 
         function seleccionarPais(codigo) {
             document.querySelectorAll('.seleccion-item').forEach(item => {

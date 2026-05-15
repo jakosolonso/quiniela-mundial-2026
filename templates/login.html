@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión - Quiniela FPK Mundial 2026</title>
+    <title>Iniciar Sesión - Quiniela Mundial 2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -25,7 +25,7 @@
         }
 
         body::before {
-            content: "⚽";
+            content: "🏆";
             position: absolute;
             font-size: 300px;
             opacity: 0.05;
@@ -35,7 +35,7 @@
         }
 
         body::after {
-            content: "🏆";
+            content: "⚽";
             position: absolute;
             font-size: 250px;
             opacity: 0.05;
@@ -56,8 +56,6 @@
             border-radius: 30px;
             padding: 45px 35px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transform: translateY(0);
-            transition: transform 0.3s ease;
             animation: slideUp 0.6s ease-out;
         }
 
@@ -78,12 +76,13 @@
         }
 
         .logo-icon {
-            font-size: 60px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
         }
 
         .login-header h1 {
@@ -302,7 +301,7 @@
         <div class="login-card">
             <div class="login-header">
                 <div class="logo-icon">
-                    <img src="/static/images/logo.png" alt="Logo Quiniela" style="width: 70px; height: 70px; object-fit: contain;">
+                    <img src="/static/images/logo.png" alt="Logo Quiniela">
                 </div>
                 <h1>Quiniela Mundial 2026</h1>
                 <p>Inicia sesión para participar</p>

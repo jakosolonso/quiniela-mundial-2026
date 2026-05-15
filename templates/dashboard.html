@@ -25,7 +25,6 @@
             padding: 20px;
         }
 
-        /* Header */
         .dashboard-header {
             background: white;
             border-radius: 20px;
@@ -34,7 +33,20 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo img {
+            height: 50px;
+            object-fit: contain;
         }
 
         .logo h1 {
@@ -49,14 +61,22 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            flex-wrap: wrap;
         }
 
         .user-flag {
-            font-size: 32px;
             background: white;
-            border-radius: 50%;
-            padding: 5px;
+            border-radius: 8px;
+            padding: 3px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            line-height: 0;
+        }
+
+        .user-flag img {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+            object-fit: cover;
         }
 
         .user-name {
@@ -82,7 +102,6 @@
             transform: translateY(-2px);
         }
 
-        /* Tabs */
         .tabs {
             display: flex;
             gap: 10px;
@@ -90,6 +109,7 @@
             background: white;
             border-radius: 15px;
             padding: 10px;
+            flex-wrap: wrap;
         }
 
         .tab-btn {
@@ -110,7 +130,6 @@
             color: white;
         }
 
-        /* Tab content */
         .tab-content {
             display: none;
             background: white;
@@ -133,7 +152,6 @@
             color: #333;
         }
 
-        /* Grid de partidos */
         .partidos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -209,7 +227,6 @@
             background: #059669;
         }
 
-        /* Tabla de posiciones */
         .tabla-posiciones {
             width: 100%;
             border-collapse: collapse;
@@ -227,7 +244,6 @@
             font-weight: 600;
         }
 
-        /* Mensaje de bienvenida */
         .welcome-message {
             text-align: center;
             padding: 50px;
@@ -244,7 +260,6 @@
         @media (max-width: 768px) {
             .dashboard-header {
                 flex-direction: column;
-                gap: 15px;
                 text-align: center;
             }
             
@@ -259,6 +274,10 @@
             .user-info {
                 justify-content: center;
             }
+            
+            .logo {
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -266,8 +285,8 @@
     <div class="dashboard-container">
         <div class="dashboard-header">
             <div class="logo">
-                <img src="/static/images/logo.png" alt="Logo Quiniela" style="height: 50px; object-fit: contain;">
-                <h1 style="margin-left: 15px; display: inline-block;">Quiniela Mundial 2026</h1>
+                <img src="/static/images/logo.png" alt="Logo Quiniela">
+                <h1>Quiniela Mundial 2026</h1>
             </div>
             <div class="user-info">
                 <div class="user-flag" id="userFlag">🏆</div>
@@ -322,7 +341,6 @@
                     usuarioActual = await response.json();
                     document.getElementById('userNameDisplay').textContent = usuarioActual.nombre;
                     
-                    // Mostrar bandera según selección favorita
                     if (usuarioActual.seleccion_favorita) {
                         await mostrarBanderaFavorita(usuarioActual.seleccion_favorita);
                     }
@@ -339,40 +357,25 @@
         }
 
         async function mostrarBanderaFavorita(codigo) {
-    // Mapeo de códigos a URLs de banderas (Flagpedia CDN)
-    const banderasUrl = {
-        'arg': 'https://flagcdn.com/ar.svg',
-        'bra': 'https://flagcdn.com/br.svg',
-        'fra': 'https://flagcdn.com/fr.svg',
-        'esp': 'https://flagcdn.com/es.svg',
-        'ger': 'https://flagcdn.com/de.svg',
-        'eng': 'https://flagcdn.com/gb.svg',
-        'ita': 'https://flagcdn.com/it.svg',
-        'ned': 'https://flagcdn.com/nl.svg',
-        'por': 'https://flagcdn.com/pt.svg',
-        'uru': 'https://flagcdn.com/uy.svg',
-        'col': 'https://flagcdn.com/co.svg',
-        'mex': 'https://flagcdn.com/mx.svg',
-        'usa': 'https://flagcdn.com/us.svg',
-        'jpn': 'https://flagcdn.com/jp.svg',
-        'kor': 'https://flagcdn.com/kr.svg',
-        'mar': 'https://flagcdn.com/ma.svg',
-        'sen': 'https://flagcdn.com/sn.svg',
-        'cro': 'https://flagcdn.com/hr.svg',
-        'bel': 'https://flagcdn.com/be.svg',
-        'sui': 'https://flagcdn.com/ch.svg'
-    };
-    
-    const url = banderasUrl[codigo] || 'https://flagcdn.com/un.svg';
-    document.getElementById('userFlag').innerHTML = `<img src="${url}" width="30" height="20" style="border-radius:4px; object-fit:cover;">`;
-}
+            const banderasUrl = {
+                'arg': 'https://flagcdn.com/ar.svg', 'bra': 'https://flagcdn.com/br.svg',
+                'fra': 'https://flagcdn.com/fr.svg', 'esp': 'https://flagcdn.com/es.svg',
+                'ger': 'https://flagcdn.com/de.svg', 'eng': 'https://flagcdn.com/gb.svg',
+                'ita': 'https://flagcdn.com/it.svg', 'ned': 'https://flagcdn.com/nl.svg',
+                'por': 'https://flagcdn.com/pt.svg', 'uru': 'https://flagcdn.com/uy.svg',
+                'col': 'https://flagcdn.com/co.svg', 'mex': 'https://flagcdn.com/mx.svg',
+                'usa': 'https://flagcdn.com/us.svg', 'jpn': 'https://flagcdn.com/jp.svg',
+                'kor': 'https://flagcdn.com/kr.svg', 'mar': 'https://flagcdn.com/ma.svg',
+                'sen': 'https://flagcdn.com/sn.svg', 'cro': 'https://flagcdn.com/hr.svg',
+                'bel': 'https://flagcdn.com/be.svg', 'sui': 'https://flagcdn.com/ch.svg'
+            };
+            const url = banderasUrl[codigo] || 'https://flagcdn.com/un.svg';
+            document.getElementById('userFlag').innerHTML = `<img src="${url}" alt="Bandera">`;
+        }
 
         async function cerrarSesion() {
             try {
-                const response = await fetch('/api/logout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
+                const response = await fetch('/api/logout', { method: 'POST' });
                 if (response.ok) {
                     window.location.href = '/login';
                 }
