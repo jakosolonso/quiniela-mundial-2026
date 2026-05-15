@@ -25,17 +25,17 @@ def registro():
     if len(data['password']) < 6:
         return jsonify({'error': 'La contraseña debe tener al menos 6 caracteres'}), 400
     
-    # Crear nuevo usuario
+    # Crear nuevo usuario (con selección favorita)
     usuario = Usuario(
         nombre=data['nombre'],
-        email=data['email']
+        email=data['email'],
+        seleccion_favorita=data.get('seleccion_favorita')  # NUEVO
     )
     usuario.set_password(data['password'])
     
     db.session.add(usuario)
     db.session.commit()
     
-    # Iniciar sesión automáticamente
     login_user(usuario)
     
     return jsonify({
@@ -75,7 +75,13 @@ def logout():
 @api_bp.route('/usuario-actual', methods=['GET'])
 @login_required
 def usuario_actual():
-    return jsonify(current_user.to_dict()), 200
+    return jsonify({
+        'id': current_user.id,
+        'nombre': current_user.nombre,
+        'email': current_user.email,
+        'seleccion_favorita': current_user.seleccion_favorita,
+        'es_admin': current_user.es_admin
+    }), 200
 
 # ============ VERIFICAR AUTENTICACIÓN EN ENDPOINTS EXISTENTES ============
 @api_bp.route('/pronosticos', methods=['POST'])
@@ -124,4 +130,30 @@ def obtener_pronosticos_usuario(usuario_id):
     } for p in pronosticos])
 
 # Mantener el resto de funciones existentes...
+@api_bp.route('/selecciones', methods=['GET'])
+def obtener_selecciones():
+    selecciones = [
+        {"codigo": "arg", "nombre": "Argentina", "bandera": "🇦🇷", "emoji": "🇦🇷"},
+        {"codigo": "bra", "nombre": "Brasil", "bandera": "🇧🇷", "emoji": "🇧🇷"},
+        {"codigo": "fra", "nombre": "Francia", "bandera": "🇫🇷", "emoji": "🇫🇷"},
+        {"codigo": "esp", "nombre": "España", "bandera": "🇪🇸", "emoji": "🇪🇸"},
+        {"codigo": "ger", "nombre": "Alemania", "bandera": "🇩🇪", "emoji": "🇩🇪"},
+        {"codigo": "eng", "nombre": "Inglaterra", "bandera": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "emoji": "🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
+        {"codigo": "ita", "nombre": "Italia", "bandera": "🇮🇹", "emoji": "🇮🇹"},
+        {"codigo": "ned", "nombre": "Países Bajos", "bandera": "🇳🇱", "emoji": "🇳🇱"},
+        {"codigo": "por", "nombre": "Portugal", "bandera": "🇵🇹", "emoji": "🇵🇹"},
+        {"codigo": "uru", "nombre": "Uruguay", "bandera": "🇺🇾", "emoji": "🇺🇾"},
+        {"codigo": "col", "nombre": "Colombia", "bandera": "🇨🇴", "emoji": "🇨🇴"},
+        {"codigo": "mex", "nombre": "México", "bandera": "🇲🇽", "emoji": "🇲🇽"},
+        {"codigo": "usa", "nombre": "Estados Unidos", "bandera": "🇺🇸", "emoji": "🇺🇸"},
+        {"codigo": "jpn", "nombre": "Japón", "bandera": "🇯🇵", "emoji": "🇯🇵"},
+        {"codigo": "kor", "nombre": "Corea del Sur", "bandera": "🇰🇷", "emoji": "🇰🇷"},
+        {"codigo": "mar", "nombre": "Marruecos", "bandera": "🇲🇦", "emoji": "🇲🇦"},
+        {"codigo": "sen", "nombre": "Senegal", "bandera": "🇸🇳", "emoji": "🇸🇳"},
+        {"codigo": "cro", "nombre": "Croacia", "bandera": "🇭🇷", "emoji": "🇭🇷"},
+        {"codigo": "bel", "nombre": "Bélgica", "bandera": "🇧🇪", "emoji": "🇧🇪"},
+        {"codigo": "sui", "nombre": "Suiza", "bandera": "🇨🇭", "emoji": "🇨🇭"},
+    ]
+    return jsonify(selecciones)
+
 # (obtener_partidos, tabla_posiciones, cargar_datos_iniciales, etc.)

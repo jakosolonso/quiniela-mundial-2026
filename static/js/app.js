@@ -40,12 +40,20 @@ async function crearUsuario() {
 }
 
 // Cargar usuario actual
-async function cargarUsuarioActual() {
+async function cargarUsuario() {
     try {
         const response = await fetch('/api/usuario-actual');
         if (response.ok) {
-            const usuario = await response.json();
-            document.getElementById('userNameHeader').textContent = usuario.nombre;
+            usuarioActual = await response.json();
+            document.getElementById('userNameDisplay').textContent = usuarioActual.nombre;
+            
+            // Cargar y mostrar la bandera de la selección favorita
+            if (usuarioActual.seleccion_favorita) {
+                await mostrarBanderaFavorita(usuarioActual.seleccion_favorita);
+            }
+            
+            cargarPartidos();
+            cargarTablaPosiciones();
         } else {
             window.location.href = '/login';
         }
@@ -54,23 +62,17 @@ async function cargarUsuarioActual() {
     }
 }
 
-async function cerrarSesion() {
-    await fetch('/api/logout', { method: 'POST' });
-    window.location.href = '/login';
-}
-
-// Llamar al cargar la página
-document.addEventListener('DOMContentLoaded', () => {
-    cargarUsuarioActual();
-    // ... resto de tus funciones
-});
-
-function cambiarUsuario() {
-    usuarioActual = null;
-    document.getElementById('userInfo').style.display = 'none';
-    document.querySelector('.user-form').style.display = 'flex';
-    document.getElementById('userName').value = '';
-    document.getElementById('userEmail').value = '';
+async function mostrarBanderaFavorita(codigo) {
+    try {
+        const response = await fetch('/api/selecciones');
+        const selecciones = await response.json();
+        const seleccion = selecciones.find(s => s.codigo === codigo);
+        if (seleccion) {
+            document.getElementById('userFlag').innerHTML = seleccion.bandera;
+        }
+    } catch (error) {
+        console.error('Error cargando bandera:', error);
+    }
 }
 
 // ============ CARGAR PARTIDOS ============
