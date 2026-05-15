@@ -25,7 +25,7 @@
 
         .register-container {
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
         }
 
         .register-card {
@@ -154,6 +154,68 @@
             color: #6b7280;
         }
 
+        .seleccion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            background: #f9fafb;
+        }
+
+        .seleccion-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .seleccion-grid::-webkit-scrollbar-track {
+            background: #e5e7eb;
+            border-radius: 4px;
+        }
+
+        .seleccion-grid::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .seleccion-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 8px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .seleccion-item:hover {
+            transform: translateY(-3px);
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .seleccion-item.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+        }
+
+        .seleccion-item .bandera {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .seleccion-item .pais-nombre {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
         .btn-register {
             width: 100%;
             padding: 14px;
@@ -260,16 +322,15 @@
                         <i class="fas fa-eye toggle-password" onclick="togglePassword('confirmPassword', this)"></i>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label><i class="fas fa-flag"></i> Elige a tu selección favorita para ganar el mundial</label>
                     <div class="seleccion-grid" id="seleccionGrid">
-        <!-- Las selecciones se cargarán aquí dinámicamente -->
-        </div>
-        <input type="hidden" id="seleccionFavorita" name="seleccion_favorita">
-    </div>
-
-
+                        <!-- Las selecciones se cargarán aquí -->
+                        <div style="text-align:center;grid-column:1/-1;">Cargando selecciones...</div>
+                    </div>
+                    <input type="hidden" id="seleccionFavorita" name="seleccion_favorita">
+                </div>
 
                 <button type="submit" class="btn-register">Registrarse</button>
             </form>
@@ -295,7 +356,6 @@
         }
 
         const passwordInput = document.getElementById('password');
-        const confirmInput = document.getElementById('confirmPassword');
         const strengthBar = document.getElementById('strengthBar');
         const strengthText = document.getElementById('strengthText');
 
@@ -322,6 +382,50 @@
             checkPasswordStrength(e.target.value);
         });
 
+        const selecciones = [
+            {codigo: "arg", nombre: "Argentina", bandera: "🇦🇷"},
+            {codigo: "bra", nombre: "Brasil", bandera: "🇧🇷"},
+            {codigo: "fra", nombre: "Francia", bandera: "🇫🇷"},
+            {codigo: "esp", nombre: "España", bandera: "🇪🇸"},
+            {codigo: "ger", nombre: "Alemania", bandera: "🇩🇪"},
+            {codigo: "eng", nombre: "Inglaterra", bandera: "🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
+            {codigo: "ita", nombre: "Italia", bandera: "🇮🇹"},
+            {codigo: "ned", nombre: "Países Bajos", bandera: "🇳🇱"},
+            {codigo: "por", nombre: "Portugal", bandera: "🇵🇹"},
+            {codigo: "uru", nombre: "Uruguay", bandera: "🇺🇾"},
+            {codigo: "col", nombre: "Colombia", bandera: "🇨🇴"},
+            {codigo: "mex", nombre: "México", bandera: "🇲🇽"},
+            {codigo: "usa", nombre: "Estados Unidos", bandera: "🇺🇸"},
+            {codigo: "jpn", nombre: "Japón", bandera: "🇯🇵"},
+            {codigo: "kor", nombre: "Corea del Sur", bandera: "🇰🇷"},
+            {codigo: "mar", nombre: "Marruecos", bandera: "🇲🇦"},
+            {codigo: "sen", nombre: "Senegal", bandera: "🇸🇳"},
+            {codigo: "cro", nombre: "Croacia", bandera: "🇭🇷"},
+            {codigo: "bel", nombre: "Bélgica", bandera: "🇧🇪"},
+            {codigo: "sui", nombre: "Suiza", bandera: "🇨🇭"}
+        ];
+
+        function cargarSelecciones() {
+            const grid = document.getElementById('seleccionGrid');
+            grid.innerHTML = selecciones.map(sel => `
+                <div class="seleccion-item" data-codigo="${sel.codigo}" onclick="seleccionarPais('${sel.codigo}')">
+                    <div class="bandera">${sel.bandera}</div>
+                    <div class="pais-nombre">${sel.nombre}</div>
+                </div>
+            `).join('');
+        }
+
+        function seleccionarPais(codigo) {
+            document.querySelectorAll('.seleccion-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            const selectedItem = document.querySelector(`.seleccion-item[data-codigo="${codigo}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('selected');
+                document.getElementById('seleccionFavorita').value = codigo;
+            }
+        }
+
         async function showAlert(message, type) {
             const container = document.getElementById('alertContainer');
             container.innerHTML = `
@@ -342,6 +446,7 @@
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            const seleccionFavorita = document.getElementById('seleccionFavorita').value;
             
             if (!nombre || !email || !password) {
                 showAlert('Por favor completa todos los campos', 'error');
@@ -358,6 +463,11 @@
                 return;
             }
             
+            if (!seleccionFavorita) {
+                showAlert('Por favor selecciona tu selección favorita', 'error');
+                return;
+            }
+            
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 showAlert('Ingresa un email válido', 'error');
@@ -368,7 +478,7 @@
                 const response = await fetch('/api/registro', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre, email, password })
+                    body: JSON.stringify({ nombre, email, password, seleccion_favorita: seleccionFavorita })
                 });
                 
                 const data = await response.json();
@@ -385,175 +495,8 @@
                 showAlert('Error de conexión con el servidor', 'error');
             }
         });
+
+        cargarSelecciones();
     </script>
-
-    <style>
-    .seleccion-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 12px;
-        margin-top: 10px;
-        max-height: 250px;
-        overflow-y: auto;
-        padding: 10px;
-        border: 2px solid #e5e7eb;
-        border-radius: 15px;
-        background: #f9fafb;
-    }
-    
-    .seleccion-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 12px 8px;
-        background: white;
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-align: center;
-    }
-    
-    .seleccion-item:hover {
-        transform: translateY(-3px);
-        border-color: #667eea;
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
-    }
-    
-    .seleccion-item.selected {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-color: #667eea;
-        color: white;
-    }
-    
-    .seleccion-item .bandera {
-        font-size: 32px;
-        margin-bottom: 8px;
-    }
-    
-    .seleccion-item .pais-nombre {
-        font-size: 12px;
-        font-weight: 500;
-    }
-    
-    .seleccion-grid::-webkit-scrollbar {
-        width: 8px;
-    }
-    
-    .seleccion-grid::-webkit-scrollbar-track {
-        background: #e5e7eb;
-        border-radius: 4px;
-    }
-    
-    .seleccion-grid::-webkit-scrollbar-thumb {
-        background: #667eea;
-        border-radius: 4px;
-    }
-</style>
-
-<script>
-    let selecciones = [];
-    
-    async function cargarSelecciones() {
-        try {
-            const response = await fetch('/api/selecciones');
-            selecciones = await response.json();
-            
-            const grid = document.getElementById('seleccionGrid');
-            grid.innerHTML = selecciones.map(sel => `
-                <div class="seleccion-item" data-codigo="${sel.codigo}" onclick="seleccionarPais('${sel.codigo}')">
-                    <div class="bandera">${sel.bandera}</div>
-                    <div class="pais-nombre">${sel.nombre}</div>
-                </div>
-            `).join('');
-        } catch (error) {
-            console.error('Error cargando selecciones:', error);
-        }
-    }
-    
-    function seleccionarPais(codigo) {
-        // Remover selección anterior
-        document.querySelectorAll('.seleccion-item').forEach(item => {
-            item.classList.remove('selected');
-        });
-        
-        // Marcar nueva selección
-        const selectedItem = document.querySelector(`.seleccion-item[data-codigo="${codigo}"]`);
-        if (selectedItem) {
-            selectedItem.classList.add('selected');
-            document.getElementById('seleccionFavorita').value = codigo;
-        }
-    }
-    
-    // Modificar el submit del formulario para incluir la selección favorita
-    const formulario = document.getElementById('registerForm');
-    const submitOriginal = formulario.onsubmit;
-    
-    formulario.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const nombre = document.getElementById('nombre').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const seleccionFavorita = document.getElementById('seleccionFavorita').value;
-        
-        if (!nombre || !email || !password) {
-            showAlert('Por favor completa todos los campos', 'error');
-            return;
-        }
-        
-        if (password !== confirmPassword) {
-            showAlert('Las contraseñas no coinciden', 'error');
-            return;
-        }
-        
-        if (password.length < 6) {
-            showAlert('La contraseña debe tener al menos 6 caracteres', 'error');
-            return;
-        }
-        
-        if (!seleccionFavorita) {
-            showAlert('Por favor selecciona tu selección favorita', 'error');
-            return;
-        }
-        
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            showAlert('Ingresa un email válido', 'error');
-            return;
-        }
-        
-        try {
-            const response = await fetch('/api/registro', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    nombre, 
-                    email, 
-                    password, 
-                    seleccion_favorita: seleccionFavorita 
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (response.ok) {
-                showAlert('✅ Registro exitoso. Redirigiendo...', 'success');
-                setTimeout(() => {
-                    window.location.href = '/dashboard';
-                }, 1500);
-            } else {
-                showAlert(data.error || 'Error al registrarse', 'error');
-            }
-        } catch (error) {
-            showAlert('Error de conexión con el servidor', 'error');
-        }
-    });
-    
-    // Cargar selecciones al iniciar
-    cargarSelecciones();
-</script>
-
 </body>
 </html>

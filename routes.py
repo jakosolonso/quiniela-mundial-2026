@@ -7,6 +7,32 @@ import re
 
 api_bp = Blueprint('api', __name__)
 
+@api_bp.route('/selecciones', methods=['GET'])
+def obtener_selecciones():
+    selecciones = [
+        {"codigo": "arg", "nombre": "Argentina", "bandera": "🇦🇷"},
+        {"codigo": "bra", "nombre": "Brasil", "bandera": "🇧🇷"},
+        {"codigo": "fra", "nombre": "Francia", "bandera": "🇫🇷"},
+        {"codigo": "esp", "nombre": "España", "bandera": "🇪🇸"},
+        {"codigo": "ger", "nombre": "Alemania", "bandera": "🇩🇪"},
+        {"codigo": "eng", "nombre": "Inglaterra", "bandera": "🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
+        {"codigo": "ita", "nombre": "Italia", "bandera": "🇮🇹"},
+        {"codigo": "ned", "nombre": "Países Bajos", "bandera": "🇳🇱"},
+        {"codigo": "por", "nombre": "Portugal", "bandera": "🇵🇹"},
+        {"codigo": "uru", "nombre": "Uruguay", "bandera": "🇺🇾"},
+        {"codigo": "col", "nombre": "Colombia", "bandera": "🇨🇴"},
+        {"codigo": "mex", "nombre": "México", "bandera": "🇲🇽"},
+        {"codigo": "usa", "nombre": "Estados Unidos", "bandera": "🇺🇸"},
+        {"codigo": "jpn", "nombre": "Japón", "bandera": "🇯🇵"},
+        {"codigo": "kor", "nombre": "Corea del Sur", "bandera": "🇰🇷"},
+        {"codigo": "mar", "nombre": "Marruecos", "bandera": "🇲🇦"},
+        {"codigo": "sen", "nombre": "Senegal", "bandera": "🇸🇳"},
+        {"codigo": "cro", "nombre": "Croacia", "bandera": "🇭🇷"},
+        {"codigo": "bel", "nombre": "Bélgica", "bandera": "🇧🇪"},
+        {"codigo": "sui", "nombre": "Suiza", "bandera": "🇨🇭"},
+    ]
+    return jsonify(selecciones)
+
 # ============ AUTENTICACIÓN ============
 @api_bp.route('/registro', methods=['POST'])
 def registro():
@@ -130,30 +156,4 @@ def obtener_pronosticos_usuario(usuario_id):
     } for p in pronosticos])
 
 # Mantener el resto de funciones existentes...
-@api_bp.route('/selecciones', methods=['GET'])
-def obtener_selecciones():
-    selecciones = [
-        {"codigo": "arg", "nombre": "Argentina", "bandera": "🇦🇷", "emoji": "🇦🇷"},
-        {"codigo": "bra", "nombre": "Brasil", "bandera": "🇧🇷", "emoji": "🇧🇷"},
-        {"codigo": "fra", "nombre": "Francia", "bandera": "🇫🇷", "emoji": "🇫🇷"},
-        {"codigo": "esp", "nombre": "España", "bandera": "🇪🇸", "emoji": "🇪🇸"},
-        {"codigo": "ger", "nombre": "Alemania", "bandera": "🇩🇪", "emoji": "🇩🇪"},
-        {"codigo": "eng", "nombre": "Inglaterra", "bandera": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "emoji": "🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
-        {"codigo": "ita", "nombre": "Italia", "bandera": "🇮🇹", "emoji": "🇮🇹"},
-        {"codigo": "ned", "nombre": "Países Bajos", "bandera": "🇳🇱", "emoji": "🇳🇱"},
-        {"codigo": "por", "nombre": "Portugal", "bandera": "🇵🇹", "emoji": "🇵🇹"},
-        {"codigo": "uru", "nombre": "Uruguay", "bandera": "🇺🇾", "emoji": "🇺🇾"},
-        {"codigo": "col", "nombre": "Colombia", "bandera": "🇨🇴", "emoji": "🇨🇴"},
-        {"codigo": "mex", "nombre": "México", "bandera": "🇲🇽", "emoji": "🇲🇽"},
-        {"codigo": "usa", "nombre": "Estados Unidos", "bandera": "🇺🇸", "emoji": "🇺🇸"},
-        {"codigo": "jpn", "nombre": "Japón", "bandera": "🇯🇵", "emoji": "🇯🇵"},
-        {"codigo": "kor", "nombre": "Corea del Sur", "bandera": "🇰🇷", "emoji": "🇰🇷"},
-        {"codigo": "mar", "nombre": "Marruecos", "bandera": "🇲🇦", "emoji": "🇲🇦"},
-        {"codigo": "sen", "nombre": "Senegal", "bandera": "🇸🇳", "emoji": "🇸🇳"},
-        {"codigo": "cro", "nombre": "Croacia", "bandera": "🇭🇷", "emoji": "🇭🇷"},
-        {"codigo": "bel", "nombre": "Bélgica", "bandera": "🇧🇪", "emoji": "🇧🇪"},
-        {"codigo": "sui", "nombre": "Suiza", "bandera": "🇨🇭", "emoji": "🇨🇭"},
-    ]
-    return jsonify(selecciones)
-
 # (obtener_partidos, tabla_posiciones, cargar_datos_iniciales, etc.)
