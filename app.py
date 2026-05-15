@@ -9,16 +9,20 @@ import os
 
 app = Flask(__name__)
 
-# Configuración para producción
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, 'instance', 'quiniela.db')
+# ============ CONFIGURACIÓN SUPABASE ============
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if not DATABASE_URL:
+    # ⚠️ REEMPLAZA 'TU_CONTRASEÑA' con tu contraseña real de Supabase
+    DATABASE_URL = "postgresql://postgres.zuvokcpvywofmdnlcojw:F1n9k1l2#64@aws-1-sa-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
 
-# Asegurar que la carpeta instance existe
-os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'tu-clave-secreta-mundial-2026-cambia-esto')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'tu-clave-secreta-cambia-esto')
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_size': 5,
+    'pool_recycle': 3600,
+    'pool_pre_ping': True,
+}
 
 # Inicializar extensiones
 db.init_app(app)
@@ -29,7 +33,6 @@ CORS(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-login_manager.login_message = 'Por favor inicia sesión para acceder a la quiniela'
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -38,7 +41,7 @@ def load_user(user_id):
 # Registrar rutas de API
 app.register_blueprint(api_bp, url_prefix='/api')
 
-# ============ RUTAS DE PÁGINAS ============
+# Rutas de páginas
 @app.route('/')
 def index():
     if current_user.is_authenticated:
@@ -65,9 +68,9 @@ def dashboard():
 # Crear tablas al iniciar
 with app.app_context():
     db.create_all()
-    print("✅ Base de datos creada/verificada")
+    print("✅ Base de datos conectada a Supabase")
     
-    # Crear usuario admin por defecto si no existe
+    # Crear usuario admin si no existe
     admin = Usuario.query.filter_by(email='admin@quiniela.com').first()
     if not admin:
         admin = Usuario(
@@ -78,7 +81,7 @@ with app.app_context():
         admin.set_password('admin123')
         db.session.add(admin)
         db.session.commit()
-        print("✅ Usuario administrador creado (email: admin@quiniela.com, password: admin123)")
+        print("✅ Usuario administrador creado")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
