@@ -383,37 +383,37 @@
         });
 
         const selecciones = [
-            {codigo: "arg", nombre: "Argentina", bandera: "🇦🇷"},
-            {codigo: "bra", nombre: "Brasil", bandera: "🇧🇷"},
-            {codigo: "fra", nombre: "Francia", bandera: "🇫🇷"},
-            {codigo: "esp", nombre: "España", bandera: "🇪🇸"},
-            {codigo: "ger", nombre: "Alemania", bandera: "🇩🇪"},
-            {codigo: "eng", nombre: "Inglaterra", bandera: "🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
-            {codigo: "ita", nombre: "Italia", bandera: "🇮🇹"},
-            {codigo: "ned", nombre: "Países Bajos", bandera: "🇳🇱"},
-            {codigo: "por", nombre: "Portugal", bandera: "🇵🇹"},
-            {codigo: "uru", nombre: "Uruguay", bandera: "🇺🇾"},
-            {codigo: "col", nombre: "Colombia", bandera: "🇨🇴"},
-            {codigo: "mex", nombre: "México", bandera: "🇲🇽"},
-            {codigo: "usa", nombre: "Estados Unidos", bandera: "🇺🇸"},
-            {codigo: "jpn", nombre: "Japón", bandera: "🇯🇵"},
-            {codigo: "kor", nombre: "Corea del Sur", bandera: "🇰🇷"},
-            {codigo: "mar", nombre: "Marruecos", bandera: "🇲🇦"},
-            {codigo: "sen", nombre: "Senegal", bandera: "🇸🇳"},
-            {codigo: "cro", nombre: "Croacia", bandera: "🇭🇷"},
-            {codigo: "bel", nombre: "Bélgica", bandera: "🇧🇪"},
-            {codigo: "sui", nombre: "Suiza", bandera: "🇨🇭"}
-        ];
+    {codigo: "arg", nombre: "Argentina", bandera: "https://flagcdn.com/ar.svg"},
+    {codigo: "bra", nombre: "Brasil", bandera: "https://flagcdn.com/br.svg"},
+    {codigo: "fra", nombre: "Francia", bandera: "https://flagcdn.com/fr.svg"},
+    {codigo: "esp", nombre: "España", bandera: "https://flagcdn.com/es.svg"},
+    {codigo: "ger", nombre: "Alemania", bandera: "https://flagcdn.com/de.svg"},
+    {codigo: "eng", nombre: "Inglaterra", bandera: "https://flagcdn.com/gb.svg"},
+    {codigo: "ita", nombre: "Italia", bandera: "https://flagcdn.com/it.svg"},
+    {codigo: "ned", nombre: "Países Bajos", bandera: "https://flagcdn.com/nl.svg"},
+    {codigo: "por", nombre: "Portugal", bandera: "https://flagcdn.com/pt.svg"},
+    {codigo: "uru", nombre: "Uruguay", bandera: "https://flagcdn.com/uy.svg"},
+    {codigo: "col", nombre: "Colombia", bandera: "https://flagcdn.com/co.svg"},
+    {codigo: "mex", nombre: "México", bandera: "https://flagcdn.com/mx.svg"},
+    {codigo: "usa", nombre: "Estados Unidos", bandera: "https://flagcdn.com/us.svg"},
+    {codigo: "jpn", nombre: "Japón", bandera: "https://flagcdn.com/jp.svg"},
+    {codigo: "kor", nombre: "Corea del Sur", bandera: "https://flagcdn.com/kr.svg"},
+    {codigo: "mar", nombre: "Marruecos", bandera: "https://flagcdn.com/ma.svg"},
+    {codigo: "sen", nombre: "Senegal", bandera: "https://flagcdn.com/sn.svg"},
+    {codigo: "cro", nombre: "Croacia", bandera: "https://flagcdn.com/hr.svg"},
+    {codigo: "bel", nombre: "Bélgica", bandera: "https://flagcdn.com/be.svg"},
+    {codigo: "sui", nombre: "Suiza", bandera: "https://flagcdn.com/ch.svg"}
+];
 
         function cargarSelecciones() {
-            const grid = document.getElementById('seleccionGrid');
-            grid.innerHTML = selecciones.map(sel => `
-                <div class="seleccion-item" data-codigo="${sel.codigo}" onclick="seleccionarPais('${sel.codigo}')">
-                    <div class="bandera">${sel.bandera}</div>
-                    <div class="pais-nombre">${sel.nombre}</div>
-                </div>
-            `).join('');
-        }
+    const grid = document.getElementById('seleccionGrid');
+    grid.innerHTML = selecciones.map(sel => `
+        <div class="seleccion-item" data-codigo="${sel.codigo}" onclick="seleccionarPais('${sel.codigo}')">
+            <div class="bandera"><img src="${sel.bandera}" width="32" height="24" style="border-radius:4px; object-fit:cover;"></div>
+            <div class="pais-nombre">${sel.nombre}</div>
+        </div>
+    `).join('');
+}
 
         function seleccionarPais(codigo) {
             document.querySelectorAll('.seleccion-item').forEach(item => {

@@ -286,11 +286,11 @@ header h1 {
 }
 
 .user-flag {
-    font-size: 28px;
     background: white;
-    border-radius: 50%;
-    padding: 5px;
+    border-radius: 8px;
+    padding: 3px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    line-height: 0;
 }
 
 .user-name {

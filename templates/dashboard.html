@@ -338,16 +338,33 @@
         }
 
         async function mostrarBanderaFavorita(codigo) {
-            const banderas = {
-                'arg': '🇦🇷', 'bra': '🇧🇷', 'fra': '🇫🇷', 'esp': '🇪🇸',
-                'ger': '🇩🇪', 'eng': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'ita': '🇮🇹', 'ned': '🇳🇱',
-                'por': '🇵🇹', 'uru': '🇺🇾', 'col': '🇨🇴', 'mex': '🇲🇽',
-                'usa': '🇺🇸', 'jpn': '🇯🇵', 'kor': '🇰🇷', 'mar': '🇲🇦',
-                'sen': '🇸🇳', 'cro': '🇭🇷', 'bel': '🇧🇪', 'sui': '🇨🇭'
-            };
-            const bandera = banderas[codigo] || '🏆';
-            document.getElementById('userFlag').innerHTML = bandera;
-        }
+    // Mapeo de códigos a URLs de banderas (Flagpedia CDN)
+    const banderasUrl = {
+        'arg': 'https://flagcdn.com/ar.svg',
+        'bra': 'https://flagcdn.com/br.svg',
+        'fra': 'https://flagcdn.com/fr.svg',
+        'esp': 'https://flagcdn.com/es.svg',
+        'ger': 'https://flagcdn.com/de.svg',
+        'eng': 'https://flagcdn.com/gb.svg',
+        'ita': 'https://flagcdn.com/it.svg',
+        'ned': 'https://flagcdn.com/nl.svg',
+        'por': 'https://flagcdn.com/pt.svg',
+        'uru': 'https://flagcdn.com/uy.svg',
+        'col': 'https://flagcdn.com/co.svg',
+        'mex': 'https://flagcdn.com/mx.svg',
+        'usa': 'https://flagcdn.com/us.svg',
+        'jpn': 'https://flagcdn.com/jp.svg',
+        'kor': 'https://flagcdn.com/kr.svg',
+        'mar': 'https://flagcdn.com/ma.svg',
+        'sen': 'https://flagcdn.com/sn.svg',
+        'cro': 'https://flagcdn.com/hr.svg',
+        'bel': 'https://flagcdn.com/be.svg',
+        'sui': 'https://flagcdn.com/ch.svg'
+    };
+    
+    const url = banderasUrl[codigo] || 'https://flagcdn.com/un.svg';
+    document.getElementById('userFlag').innerHTML = `<img src="${url}" width="30" height="20" style="border-radius:4px; object-fit:cover;">`;
+}
 
         async function cerrarSesion() {
             try {
