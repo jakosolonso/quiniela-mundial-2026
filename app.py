@@ -13,7 +13,7 @@ app = Flask(__name__)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if not DATABASE_URL:
     # ⚠️ REEMPLAZA 'TU_CONTRASEÑA' con tu contraseña real de Supabase
-    DATABASE_URL = "postgresql://postgres.zuvokcpvywofmdnlcojw:F1n9k1l2#64@aws-1-sa-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+    DATABASE_URL = "postgresql://postgres.zuvokcpvywofmdnlcojw:F1n9k1l2%2364@aws-1-sa-east-1.pooler.supabase.com:5432/postgres"
 
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'tu-clave-secreta-cambia-esto')
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
