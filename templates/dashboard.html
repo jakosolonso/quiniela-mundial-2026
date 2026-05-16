@@ -280,6 +280,53 @@
                 justify-content: center;
             }
         }
+
+        .tabla-posiciones {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.tabla-posiciones th,
+.tabla-posiciones td {
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tabla-posiciones th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+.tabla-posiciones tr:hover {
+    background: #f3f4f6;
+}
+
+.tabla-posiciones td:first-child,
+.tabla-posiciones th:first-child {
+    border-radius: 10px 0 0 10px;
+}
+
+.tabla-posiciones td:last-child,
+.tabla-posiciones th:last-child {
+    border-radius: 0 10px 10px 0;
+}
+
+/* Responsive para tabla */
+@media (max-width: 768px) {
+    .tabla-posiciones {
+        font-size: 11px;
+    }
+    
+    .tabla-posiciones th,
+    .tabla-posiciones td {
+        padding: 8px 5px;
+    }
+}
     </style>
 </head>
 <body>
@@ -503,36 +550,56 @@
         }
 
         async function cargarTablaPosiciones() {
-            try {
-                const response = await fetch('/api/tabla-posiciones');
-                const tabla = await response.json();
-                
-                if (tabla.length === 0) {
-                    document.getElementById('tablaPosiciones').innerHTML = '<div class="welcome-message"><h3>Sin participantes aún</h3></div>';
-                    return;
-                }
-                
-                const html = `
-                    <table class="tabla-posiciones">
-                        <thead>
-                            <tr><th>#</th><th>Jugador</th><th>Puntos</th></tr>
-                        </thead>
-                        <tbody>
-                            ${tabla.map((item, i) => `
-                                <tr>
-                                    <td>${i + 1}</td>
-                                    <td>${item.nombre}${item.bandera ? ' ' + item.bandera : ''}</td>
-                                    <td><strong>${item.puntos}</strong></td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
-                document.getElementById('tablaPosiciones').innerHTML = html;
-            } catch (error) {
-                console.error('Error:', error);
-            }
+    try {
+        const response = await fetch('/api/tabla-posiciones-avanzada');
+        const tabla = await response.json();
+        
+        if (tabla.length === 0) {
+            document.getElementById('tablaPosiciones').innerHTML = '<div class="welcome-message"><h3>Sin participantes aún</h3></div>';
+            return;
         }
+        
+        // Mapeo de banderas
+        const banderasUrl = {
+            'arg': '🇦🇷', 'bra': '🇧🇷', 'fra': '🇫🇷', 'esp': '🇪🇸',
+            'ger': '🇩🇪', 'eng': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'ita': '🇮🇹', 'ned': '🇳🇱',
+            'por': '🇵🇹', 'uru': '🇺🇾', 'col': '🇨🇴', 'mex': '🇲🇽',
+            'usa': '🇺🇸', 'jpn': '🇯🇵', 'kor': '🇰🇷', 'mar': '🇲🇦',
+            'sen': '🇸🇳', 'cro': '🇭🇷', 'bel': '🇧🇪', 'sui': '🇨🇭'
+        };
+        
+        const html = `
+            <table class="tabla-posiciones">
+                <thead>
+                    <tr>
+                        <th>Posición</th>
+                        <th>Participante</th>
+                        <th>Puntos</th>
+                        <th>Aciertos Exactos</th>
+                        <th>Partidos Acertados</th>
+                        <th>Diferencia de Goles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tabla.map(item => `
+                        <tr>
+                            <td><strong>${item.posicion}</strong> ${item.posicion === 1 ? '🏆' : item.posicion === 2 ? '🥈' : item.posicion === 3 ? '🥉' : ''}</td>
+                            <td>${item.nombre} ${banderasUrl[item.seleccion_favorita] ? ' ' + banderasUrl[item.seleccion_favorita] : ''}</td>
+                            <td><strong style="font-size:18px;color:#667eea;">${item.puntos}</strong></td>
+                            <td>${item.aciertos_exactos}</td>
+                            <td>${item.partidos_acertados}</td>
+                            <td>${item.diferencia_goles > 0 ? '+' : ''}${item.diferencia_goles}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        
+        document.getElementById('tablaPosiciones').innerHTML = html;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
 
         function cambiarTab(tab) {
             document.querySelectorAll('.tab-content').forEach(content => {
