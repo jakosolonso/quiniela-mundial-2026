@@ -24,29 +24,9 @@
             overflow-x: hidden;
         }
 
-        body::before {
-            content: "🏆";
-            position: absolute;
-            font-size: 300px;
-            opacity: 0.05;
-            bottom: -50px;
-            right: -50px;
-            pointer-events: none;
-        }
-
-        body::after {
-            content: "⚽";
-            position: absolute;
-            font-size: 250px;
-            opacity: 0.05;
-            top: -50px;
-            left: -50px;
-            pointer-events: none;
-        }
-
         .login-container {
             width: 100%;
-            max-width: 450px;
+            max-width: 480px;
             padding: 20px;
             z-index: 1;
         }
@@ -70,32 +50,42 @@
             }
         }
 
+        /* Header con logo a la izquierda y título a la derecha */
         .login-header {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 35px;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
         .logo-icon {
-            margin-bottom: 20px;
+            flex-shrink: 0;
         }
 
         .logo-icon img {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             object-fit: contain;
         }
 
-        .login-header h1 {
-            font-size: 28px;
+        .header-text {
+            text-align: right;
+            flex: 1;
+        }
+
+        .header-text h1 {
+            font-size: 24px;
             font-weight: 800;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
         }
 
-        .login-header p {
+        .header-text p {
             color: #6b7280;
             font-size: 14px;
         }
@@ -214,10 +204,6 @@
             box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
         }
 
-        .btn-login:active {
-            transform: translateY(0);
-        }
-
         .register-link {
             text-align: center;
             padding-top: 20px;
@@ -290,8 +276,17 @@
                 padding: 35px 25px;
             }
             
-            .login-header h1 {
-                font-size: 24px;
+            .login-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header-text {
+                text-align: center;
+            }
+            
+            .header-text h1 {
+                font-size: 20px;
             }
         }
     </style>
@@ -301,10 +296,12 @@
         <div class="login-card">
             <div class="login-header">
                 <div class="logo-icon">
-                    <img src="https://raw.githubusercontent.com/jakosolonso/quiniela-mundial-2026/main/static/images/logo.PNG" alt="Logo Quiniela" style="width: 200px; height: 250px; object-fit: contain;">
+                    <img src="https://raw.githubusercontent.com/jakosolonso/quiniela-mundial-2026/main/static/images/logo.PNG" alt="Logo Quiniela">
                 </div>
-                <h1>Quiniela FPK Mundial 2026</h1>
-                <p>Inicia sesión para participar</p>
+                <div class="header-text">
+                    <h1>Quiniela FPK Mundial 2026</h1>
+                    <p>Inicia sesión para participar</p>
+                </div>
             </div>
 
             <div id="alertContainer"></div>
