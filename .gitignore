@@ -7,4 +7,3 @@ instance/
 .DS_Store
 *.sqlite
 *.sqlite3
-.vscode/

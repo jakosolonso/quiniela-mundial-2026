@@ -6,11 +6,13 @@ from routes import api_bp
 from models import Usuario, bcrypt
 from datetime import datetime
 import os
+import os
 
-app = Flask(__name__)
-
+# Asegurar que Flask sirva archivos estáticos
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 # ============ CONFIGURACIÓN SUPABASE ============
 DATABASE_URL = os.environ.get('DATABASE_URL')
+
 if not DATABASE_URL:
     # ⚠️ REEMPLAZA 'TU_CONTRASEÑA' con tu contraseña real de Supabase
     DATABASE_URL = "postgresql://postgres.zuvokcpvywofmdnlcojw:F1n9k1l2%2364@aws-1-sa-east-1.pooler.supabase.com:5432/postgres"
