@@ -9,30 +9,23 @@ api_bp = Blueprint('api', __name__)
 
 # ============ FUNCIÓN DE PUNTUACIÓN AVANZADA ============
 def calcular_puntos(goles_local_p, goles_visitante_p, goles_local_r, goles_visitante_r, fase):
-    """
-    Calcula puntos según:
-    - Resultado exacto: 5 pts
-    - Ganador/empate acertado: 3 pts
-    - Diferencia de goles exacta: +1 pt extra
-    - Semifinal y Final: puntos x2
-    """
     puntos = 0
     
-    # Verificar si acertó el resultado exacto
+    # Resultado exacto: 5 pts
     if goles_local_p == goles_local_r and goles_visitante_p == goles_visitante_r:
         puntos = 5
-    # Verificar si acertó ganador o empate
+    # Ganador o empate acertado: 3 pts
     elif (goles_local_p - goles_visitante_p) == (goles_local_r - goles_visitante_r):
         puntos = 3
     
-    # Bonus por diferencia de goles exacta (solo si no es resultado exacto)
+    # Bonus diferencia de goles exacta: +1 pt
     if puntos != 5:
         diferencia_p = goles_local_p - goles_visitante_p
         diferencia_r = goles_local_r - goles_visitante_r
         if diferencia_p == diferencia_r:
             puntos += 1
     
-    # Bonus para Semifinales y Final (x2)
+    # Semifinal y Final: puntos x2
     if fase in ['semis', 'final']:
         puntos = puntos * 2
     
@@ -44,20 +37,16 @@ def calcular_puntos(goles_local_p, goles_visitante_p, goles_local_r, goles_visit
 def registro():
     data = request.json
     
-    # Validar email
     if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', data['email']):
         return jsonify({'error': 'Email inválido'}), 400
     
-    # Verificar si el usuario existe
     existe = Usuario.query.filter_by(email=data['email']).first()
     if existe:
         return jsonify({'error': 'El email ya está registrado'}), 400
     
-    # Validar contraseña
     if len(data['password']) < 6:
         return jsonify({'error': 'La contraseña debe tener al menos 6 caracteres'}), 400
     
-    # Crear nuevo usuario
     usuario = Usuario(
         nombre=data['nombre'],
         email=data['email'],
@@ -67,7 +56,6 @@ def registro():
     
     db.session.add(usuario)
     db.session.commit()
-    
     login_user(usuario)
     
     return jsonify({
@@ -87,11 +75,8 @@ def login():
     if not usuario.es_activo:
         return jsonify({'error': 'Cuenta desactivada'}), 401
     
-    # Actualizar último acceso
     usuario.ultimo_acceso = datetime.utcnow()
     db.session.commit()
-    
-    # Iniciar sesión
     login_user(usuario, remember=data.get('remember', False))
     
     return jsonify({
@@ -136,13 +121,38 @@ def obtener_selecciones():
         {"codigo": "col", "nombre": "Colombia", "bandera": "https://flagcdn.com/co.svg"},
         {"codigo": "mex", "nombre": "México", "bandera": "https://flagcdn.com/mx.svg"},
         {"codigo": "usa", "nombre": "Estados Unidos", "bandera": "https://flagcdn.com/us.svg"},
+        {"codigo": "can", "nombre": "Canadá", "bandera": "https://flagcdn.com/ca.svg"},
         {"codigo": "jpn", "nombre": "Japón", "bandera": "https://flagcdn.com/jp.svg"},
         {"codigo": "kor", "nombre": "Corea del Sur", "bandera": "https://flagcdn.com/kr.svg"},
         {"codigo": "mar", "nombre": "Marruecos", "bandera": "https://flagcdn.com/ma.svg"},
         {"codigo": "sen", "nombre": "Senegal", "bandera": "https://flagcdn.com/sn.svg"},
         {"codigo": "cro", "nombre": "Croacia", "bandera": "https://flagcdn.com/hr.svg"},
         {"codigo": "bel", "nombre": "Bélgica", "bandera": "https://flagcdn.com/be.svg"},
-        {"codigo": "sui", "nombre": "Suiza", "bandera": "https://flagcdn.com/ch.svg"}
+        {"codigo": "sui", "nombre": "Suiza", "bandera": "https://flagcdn.com/ch.svg"},
+        {"codigo": "ecu", "nombre": "Ecuador", "bandera": "https://flagcdn.com/ec.svg"},
+        {"codigo": "par", "nombre": "Paraguay", "bandera": "https://flagcdn.com/py.svg"},
+        {"codigo": "qat", "nombre": "Qatar", "bandera": "https://flagcdn.com/qa.svg"},
+        {"codigo": "egy", "nombre": "Egipto", "bandera": "https://flagcdn.com/eg.svg"},
+        {"codigo": "aus", "nombre": "Australia", "bandera": "https://flagcdn.com/au.svg"},
+        {"codigo": "swe", "nombre": "Suecia", "bandera": "https://flagcdn.com/se.svg"},
+        {"codigo": "tun", "nombre": "Túnez", "bandera": "https://flagcdn.com/tn.svg"},
+        {"codigo": "nor", "nombre": "Noruega", "bandera": "https://flagcdn.com/no.svg"},
+        {"codigo": "sco", "nombre": "Escocia", "bandera": "https://flagcdn.com/gb-sct.svg"},
+        {"codigo": "gha", "nombre": "Ghana", "bandera": "https://flagcdn.com/gh.svg"},
+        {"codigo": "pan", "nombre": "Panamá", "bandera": "https://flagcdn.com/pa.svg"},
+        {"codigo": "alg", "nombre": "Argelia", "bandera": "https://flagcdn.com/dz.svg"},
+        {"codigo": "aut", "nombre": "Austria", "bandera": "https://flagcdn.com/at.svg"},
+        {"codigo": "jor", "nombre": "Jordania", "bandera": "https://flagcdn.com/jo.svg"},
+        {"codigo": "irak", "nombre": "Irak", "bandera": "https://flagcdn.com/iq.svg"},
+        {"codigo": "nzl", "nombre": "Nueva Zelanda", "bandera": "https://flagcdn.com/nz.svg"},
+        {"codigo": "civ", "nombre": "Costa de Marfil", "bandera": "https://flagcdn.com/ci.svg"},
+        {"codigo": "cam", "nombre": "Camerún", "bandera": "https://flagcdn.com/cm.svg"},
+        {"codigo": "rsa", "nombre": "Sudáfrica", "bandera": "https://flagcdn.com/za.svg"},
+        {"codigo": "uzb", "nombre": "Uzbekistán", "bandera": "https://flagcdn.com/uz.svg"},
+        {"codigo": "cod", "nombre": "RD Congo", "bandera": "https://flagcdn.com/cd.svg"},
+        {"codigo": "bih", "nombre": "Bosnia", "bandera": "https://flagcdn.com/ba.svg"},
+        {"codigo": "tur", "nombre": "Turquía", "bandera": "https://flagcdn.com/tr.svg"},
+        {"codigo": "cze", "nombre": "República Checa", "bandera": "https://flagcdn.com/cz.svg"},
     ]
     return jsonify(selecciones)
 
@@ -176,7 +186,6 @@ def actualizar_resultado(partido_id):
     partido.resultado_visitante = data['goles_visitante']
     partido.jugado = True
     
-    # Calcular puntos para todos los pronósticos de este partido
     pronosticos = Pronostico.query.filter_by(partido_id=partido_id).all()
     for pronostico in pronosticos:
         pronostico.puntos = calcular_puntos(
@@ -195,7 +204,6 @@ def actualizar_resultado(partido_id):
 def obtener_usuarios():
     if not current_user.es_admin:
         return jsonify({'error': 'No autorizado'}), 403
-    
     usuarios = Usuario.query.all()
     return jsonify([u.to_dict() for u in usuarios])
 
@@ -264,15 +272,12 @@ def tabla_posiciones_avanzada():
             if partido and partido.jugado:
                 total_puntos += p.puntos
                 
-                # Contar aciertos exactos (5 puntos o más con bonus)
                 if p.puntos >= 5:
                     aciertos_exactos += 1
                 
-                # Contar partidos acertados (ganador o empate)
                 if (p.goles_local - p.goles_visitante) == (partido.resultado_local - partido.resultado_visitante):
                     partidos_acertados += 1
                 
-                # Diferencia de goles
                 diff_usuario = abs(p.goles_local - p.goles_visitante)
                 diff_real = abs(partido.resultado_local - partido.resultado_visitante)
                 diferencia_goles_total -= abs(diff_usuario - diff_real)
@@ -287,7 +292,6 @@ def tabla_posiciones_avanzada():
             'diferencia_goles': diferencia_goles_total
         })
     
-    # Ordenar por puntos (mayor a menor)
     tabla.sort(key=lambda x: x['puntos'], reverse=True)
     
     for i, item in enumerate(tabla):
@@ -296,7 +300,6 @@ def tabla_posiciones_avanzada():
     return jsonify(tabla)
 
 
-# ============ TABLA DE POSICIONES SIMPLE ============
 @api_bp.route('/tabla-posiciones', methods=['GET'])
 def tabla_posiciones():
     usuarios = Usuario.query.all()
@@ -314,30 +317,113 @@ def tabla_posiciones():
     return jsonify(tabla)
 
 
-# ============ CARGAR DATOS INICIALES ============
+# ============ CARGAR TODOS LOS PARTIDOS DEL MUNDIAL 2026 ============
 @api_bp.route('/cargar-datos-iniciales', methods=['POST'])
 def cargar_datos_iniciales():
     if Partido.query.first():
         return jsonify({'mensaje': 'Los datos ya existen'})
     
-    partidos_ejemplo = [
-        # Grupo A
-        {'local': 'México', 'visitante': 'Canadá', 'fecha': datetime(2026, 6, 12, 15, 0), 'grupo': 'A', 'fase': 'grupos'},
-        {'local': 'Argentina', 'visitante': 'Chile', 'fecha': datetime(2026, 6, 13, 18, 0), 'grupo': 'A', 'fase': 'grupos'},
-        {'local': 'México', 'visitante': 'Argentina', 'fecha': datetime(2026, 6, 18, 21, 0), 'grupo': 'A', 'fase': 'grupos'},
-        {'local': 'Canadá', 'visitante': 'Chile', 'fecha': datetime(2026, 6, 19, 15, 0), 'grupo': 'A', 'fase': 'grupos'},
-        {'local': 'Argentina', 'visitante': 'Canadá', 'fecha': datetime(2026, 6, 24, 15, 0), 'grupo': 'A', 'fase': 'grupos'},
-        {'local': 'Chile', 'visitante': 'México', 'fecha': datetime(2026, 6, 24, 15, 0), 'grupo': 'A', 'fase': 'grupos'},
-        # Grupo B
-        {'local': 'España', 'visitante': 'Brasil', 'fecha': datetime(2026, 6, 12, 21, 0), 'grupo': 'B', 'fase': 'grupos'},
-        {'local': 'Alemania', 'visitante': 'Japón', 'fecha': datetime(2026, 6, 13, 12, 0), 'grupo': 'B', 'fase': 'grupos'},
-        {'local': 'Brasil', 'visitante': 'Alemania', 'fecha': datetime(2026, 6, 17, 18, 0), 'grupo': 'B', 'fase': 'grupos'},
-        {'local': 'Japón', 'visitante': 'España', 'fecha': datetime(2026, 6, 18, 12, 0), 'grupo': 'B', 'fase': 'grupos'},
-        {'local': 'España', 'visitante': 'Alemania', 'fecha': datetime(2026, 6, 23, 21, 0), 'grupo': 'B', 'fase': 'grupos'},
-        {'local': 'Brasil', 'visitante': 'Japón', 'fecha': datetime(2026, 6, 23, 21, 0), 'grupo': 'B', 'fase': 'grupos'},
+    # Lista completa de partidos del Mundial 2026 - Fase de Grupos
+    # Basado en el calendario oficial de la FIFA [citation:1][citation:2]
+    partidos = [
+        # === GRUPO A ===
+        {'local': 'México', 'visitante': 'Sudáfrica', 'fecha': datetime(2026, 6, 11, 15, 0), 'grupo': 'A', 'fase': 'grupos'},
+        {'local': 'Corea del Sur', 'visitante': 'República Checa', 'fecha': datetime(2026, 6, 11, 22, 0), 'grupo': 'A', 'fase': 'grupos'},
+        {'local': 'República Checa', 'visitante': 'Sudáfrica', 'fecha': datetime(2026, 6, 18, 12, 0), 'grupo': 'A', 'fase': 'grupos'},
+        {'local': 'México', 'visitante': 'Corea del Sur', 'fecha': datetime(2026, 6, 18, 21, 0), 'grupo': 'A', 'fase': 'grupos'},
+        {'local': 'México', 'visitante': 'República Checa', 'fecha': datetime(2026, 6, 24, 21, 0), 'grupo': 'A', 'fase': 'grupos'},
+        {'local': 'Sudáfrica', 'visitante': 'Corea del Sur', 'fecha': datetime(2026, 6, 24, 21, 0), 'grupo': 'A', 'fase': 'grupos'},
+        
+        # === GRUPO B ===
+        {'local': 'Canadá', 'visitante': 'Bosnia y Herzegovina', 'fecha': datetime(2026, 6, 12, 15, 0), 'grupo': 'B', 'fase': 'grupos'},
+        {'local': 'Qatar', 'visitante': 'Suiza', 'fecha': datetime(2026, 6, 13, 14, 0), 'grupo': 'B', 'fase': 'grupos'},
+        {'local': 'Suiza', 'visitante': 'Bosnia y Herzegovina', 'fecha': datetime(2026, 6, 18, 14, 0), 'grupo': 'B', 'fase': 'grupos'},
+        {'local': 'Canadá', 'visitante': 'Qatar', 'fecha': datetime(2026, 6, 18, 17, 0), 'grupo': 'B', 'fase': 'grupos'},
+        {'local': 'Canadá', 'visitante': 'Suiza', 'fecha': datetime(2026, 6, 24, 14, 0), 'grupo': 'B', 'fase': 'grupos'},
+        {'local': 'Bosnia y Herzegovina', 'visitante': 'Qatar', 'fecha': datetime(2026, 6, 24, 14, 0), 'grupo': 'B', 'fase': 'grupos'},
+        
+        # === GRUPO C ===
+        {'local': 'Brasil', 'visitante': 'Marruecos', 'fecha': datetime(2026, 6, 13, 17, 0), 'grupo': 'C', 'fase': 'grupos'},
+        {'local': 'Haití', 'visitante': 'Escocia', 'fecha': datetime(2026, 6, 13, 20, 0), 'grupo': 'C', 'fase': 'grupos'},
+        {'local': 'Escocia', 'visitante': 'Marruecos', 'fecha': datetime(2026, 6, 19, 17, 0), 'grupo': 'C', 'fase': 'grupos'},
+        {'local': 'Brasil', 'visitante': 'Haití', 'fecha': datetime(2026, 6, 19, 20, 0), 'grupo': 'C', 'fase': 'grupos'},
+        {'local': 'Escocia', 'visitante': 'Brasil', 'fecha': datetime(2026, 6, 24, 17, 0), 'grupo': 'C', 'fase': 'grupos'},
+        {'local': 'Marruecos', 'visitante': 'Haití', 'fecha': datetime(2026, 6, 24, 17, 0), 'grupo': 'C', 'fase': 'grupos'},
+        
+        # === GRUPO D ===
+        {'local': 'Estados Unidos', 'visitante': 'Paraguay', 'fecha': datetime(2026, 6, 12, 20, 0), 'grupo': 'D', 'fase': 'grupos'},
+        {'local': 'Australia', 'visitante': 'Turquía', 'fecha': datetime(2026, 6, 13, 23, 0), 'grupo': 'D', 'fase': 'grupos'},
+        {'local': 'Turquía', 'visitante': 'Paraguay', 'fecha': datetime(2026, 6, 19, 23, 0), 'grupo': 'D', 'fase': 'grupos'},
+        {'local': 'Estados Unidos', 'visitante': 'Australia', 'fecha': datetime(2026, 6, 19, 14, 0), 'grupo': 'D', 'fase': 'grupos'},
+        {'local': 'Estados Unidos', 'visitante': 'Turquía', 'fecha': datetime(2026, 6, 25, 21, 0), 'grupo': 'D', 'fase': 'grupos'},
+        {'local': 'Paraguay', 'visitante': 'Australia', 'fecha': datetime(2026, 6, 25, 21, 0), 'grupo': 'D', 'fase': 'grupos'},
+        
+        # === GRUPO E ===
+        {'local': 'Alemania', 'visitante': 'Curazao', 'fecha': datetime(2026, 6, 14, 12, 0), 'grupo': 'E', 'fase': 'grupos'},
+        {'local': 'Costa de Marfil', 'visitante': 'Ecuador', 'fecha': datetime(2026, 6, 14, 18, 0), 'grupo': 'E', 'fase': 'grupos'},
+        {'local': 'Alemania', 'visitante': 'Costa de Marfil', 'fecha': datetime(2026, 6, 20, 15, 0), 'grupo': 'E', 'fase': 'grupos'},
+        {'local': 'Ecuador', 'visitante': 'Curazao', 'fecha': datetime(2026, 6, 20, 19, 0), 'grupo': 'E', 'fase': 'grupos'},
+        {'local': 'Ecuador', 'visitante': 'Alemania', 'fecha': datetime(2026, 6, 25, 15, 0), 'grupo': 'E', 'fase': 'grupos'},
+        {'local': 'Curazao', 'visitante': 'Costa de Marfil', 'fecha': datetime(2026, 6, 25, 15, 0), 'grupo': 'E', 'fase': 'grupos'},
+        
+        # === GRUPO F ===
+        {'local': 'Países Bajos', 'visitante': 'Japón', 'fecha': datetime(2026, 6, 14, 15, 0), 'grupo': 'F', 'fase': 'grupos'},
+        {'local': 'Suecia', 'visitante': 'Túnez', 'fecha': datetime(2026, 6, 14, 21, 0), 'grupo': 'F', 'fase': 'grupos'},
+        {'local': 'Países Bajos', 'visitante': 'Suecia', 'fecha': datetime(2026, 6, 20, 12, 0), 'grupo': 'F', 'fase': 'grupos'},
+        {'local': 'Túnez', 'visitante': 'Japón', 'fecha': datetime(2026, 6, 20, 23, 0), 'grupo': 'F', 'fase': 'grupos'},
+        {'local': 'Japón', 'visitante': 'Suecia', 'fecha': datetime(2026, 6, 25, 18, 0), 'grupo': 'F', 'fase': 'grupos'},
+        {'local': 'Túnez', 'visitante': 'Países Bajos', 'fecha': datetime(2026, 6, 25, 18, 0), 'grupo': 'F', 'fase': 'grupos'},
+        
+        # === GRUPO G ===
+        {'local': 'Bélgica', 'visitante': 'Egipto', 'fecha': datetime(2026, 6, 15, 14, 0), 'grupo': 'G', 'fase': 'grupos'},
+        {'local': 'Irán', 'visitante': 'Nueva Zelanda', 'fecha': datetime(2026, 6, 15, 20, 0), 'grupo': 'G', 'fase': 'grupos'},
+        {'local': 'Bélgica', 'visitante': 'Irán', 'fecha': datetime(2026, 6, 21, 14, 0), 'grupo': 'G', 'fase': 'grupos'},
+        {'local': 'Nueva Zelanda', 'visitante': 'Egipto', 'fecha': datetime(2026, 6, 21, 20, 0), 'grupo': 'G', 'fase': 'grupos'},
+        {'local': 'Egipto', 'visitante': 'Irán', 'fecha': datetime(2026, 6, 26, 22, 0), 'grupo': 'G', 'fase': 'grupos'},
+        {'local': 'Nueva Zelanda', 'visitante': 'Bélgica', 'fecha': datetime(2026, 6, 26, 22, 0), 'grupo': 'G', 'fase': 'grupos'},
+        
+        # === GRUPO H ===
+        {'local': 'España', 'visitante': 'Cabo Verde', 'fecha': datetime(2026, 6, 15, 11, 0), 'grupo': 'H', 'fase': 'grupos'},
+        {'local': 'Arabia Saudita', 'visitante': 'Uruguay', 'fecha': datetime(2026, 6, 15, 17, 0), 'grupo': 'H', 'fase': 'grupos'},
+        {'local': 'España', 'visitante': 'Arabia Saudita', 'fecha': datetime(2026, 6, 21, 11, 0), 'grupo': 'H', 'fase': 'grupos'},
+        {'local': 'Uruguay', 'visitante': 'Cabo Verde', 'fecha': datetime(2026, 6, 21, 17, 0), 'grupo': 'H', 'fase': 'grupos'},
+        {'local': 'Cabo Verde', 'visitante': 'Arabia Saudita', 'fecha': datetime(2026, 6, 26, 19, 0), 'grupo': 'H', 'fase': 'grupos'},
+        {'local': 'Uruguay', 'visitante': 'España', 'fecha': datetime(2026, 6, 26, 19, 0), 'grupo': 'H', 'fase': 'grupos'},
+        
+        # === GRUPO I ===
+        {'local': 'Francia', 'visitante': 'Senegal', 'fecha': datetime(2026, 6, 16, 14, 0), 'grupo': 'I', 'fase': 'grupos'},
+        {'local': 'Irak', 'visitante': 'Noruega', 'fecha': datetime(2026, 6, 16, 17, 0), 'grupo': 'I', 'fase': 'grupos'},
+        {'local': 'Francia', 'visitante': 'Irak', 'fecha': datetime(2026, 6, 22, 17, 0), 'grupo': 'I', 'fase': 'grupos'},
+        {'local': 'Noruega', 'visitante': 'Senegal', 'fecha': datetime(2026, 6, 22, 19, 0), 'grupo': 'I', 'fase': 'grupos'},
+        {'local': 'Noruega', 'visitante': 'Francia', 'fecha': datetime(2026, 6, 26, 14, 0), 'grupo': 'I', 'fase': 'grupos'},
+        {'local': 'Senegal', 'visitante': 'Irak', 'fecha': datetime(2026, 6, 26, 14, 0), 'grupo': 'I', 'fase': 'grupos'},
+        
+        # === GRUPO J ===
+        {'local': 'Argentina', 'visitante': 'Argelia', 'fecha': datetime(2026, 6, 16, 20, 0), 'grupo': 'J', 'fase': 'grupos'},
+        {'local': 'Austria', 'visitante': 'Jordania', 'fecha': datetime(2026, 6, 16, 23, 0), 'grupo': 'J', 'fase': 'grupos'},
+        {'local': 'Argentina', 'visitante': 'Austria', 'fecha': datetime(2026, 6, 22, 12, 0), 'grupo': 'J', 'fase': 'grupos'},
+        {'local': 'Jordania', 'visitante': 'Argelia', 'fecha': datetime(2026, 6, 22, 22, 0), 'grupo': 'J', 'fase': 'grupos'},
+        {'local': 'Argelia', 'visitante': 'Austria', 'fecha': datetime(2026, 6, 27, 21, 0), 'grupo': 'J', 'fase': 'grupos'},
+        {'local': 'Jordania', 'visitante': 'Argentina', 'fecha': datetime(2026, 6, 27, 21, 0), 'grupo': 'J', 'fase': 'grupos'},
+        
+        # === GRUPO K ===
+        {'local': 'Portugal', 'visitante': 'RD Congo', 'fecha': datetime(2026, 6, 17, 12, 0), 'grupo': 'K', 'fase': 'grupos'},
+        {'local': 'Uzbekistán', 'visitante': 'Colombia', 'fecha': datetime(2026, 6, 17, 21, 0), 'grupo': 'K', 'fase': 'grupos'},
+        {'local': 'Portugal', 'visitante': 'Uzbekistán', 'fecha': datetime(2026, 6, 23, 12, 0), 'grupo': 'K', 'fase': 'grupos'},
+        {'local': 'Colombia', 'visitante': 'RD Congo', 'fecha': datetime(2026, 6, 23, 21, 0), 'grupo': 'K', 'fase': 'grupos'},
+        {'local': 'Colombia', 'visitante': 'Portugal', 'fecha': datetime(2026, 6, 27, 18, 30), 'grupo': 'K', 'fase': 'grupos'},
+        {'local': 'RD Congo', 'visitante': 'Uzbekistán', 'fecha': datetime(2026, 6, 27, 18, 30), 'grupo': 'K', 'fase': 'grupos'},
+        
+        # === GRUPO L ===
+        {'local': 'Inglaterra', 'visitante': 'Croacia', 'fecha': datetime(2026, 6, 17, 15, 0), 'grupo': 'L', 'fase': 'grupos'},
+        {'local': 'Ghana', 'visitante': 'Panamá', 'fecha': datetime(2026, 6, 17, 18, 0), 'grupo': 'L', 'fase': 'grupos'},
+        {'local': 'Inglaterra', 'visitante': 'Ghana', 'fecha': datetime(2026, 6, 23, 16, 0), 'grupo': 'L', 'fase': 'grupos'},
+        {'local': 'Panamá', 'visitante': 'Croacia', 'fecha': datetime(2026, 6, 23, 18, 0), 'grupo': 'L', 'fase': 'grupos'},
+        {'local': 'Panamá', 'visitante': 'Inglaterra', 'fecha': datetime(2026, 6, 27, 16, 0), 'grupo': 'L', 'fase': 'grupos'},
+        {'local': 'Croacia', 'visitante': 'Ghana', 'fecha': datetime(2026, 6, 27, 16, 0), 'grupo': 'L', 'fase': 'grupos'},
     ]
     
-    for p in partidos_ejemplo:
+    for p in partidos:
         partido = Partido(
             equipo_local=p['local'],
             equipo_visitante=p['visitante'],
@@ -347,14 +433,5 @@ def cargar_datos_iniciales():
         )
         db.session.add(partido)
     
-    # Agregar un usuario de ejemplo
-    usuario = Usuario(
-        nombre="Jugador Ejemplo",
-        email="ejemplo@quiniela.com",
-        seleccion_favorita="esp"
-    )
-    usuario.set_password('ejemplo123')
-    db.session.add(usuario)
-    
     db.session.commit()
-    return jsonify({'mensaje': f'Cargados {len(partidos_ejemplo)} partidos'})
+    return jsonify({'mensaje': f'Cargados {len(partidos)} partidos del Mundial 2026'})
