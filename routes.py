@@ -113,7 +113,7 @@ def obtener_selecciones():
         {"codigo": "fra", "nombre": "Francia", "bandera": "https://flagcdn.com/fr.svg"},
         {"codigo": "esp", "nombre": "España", "bandera": "https://flagcdn.com/es.svg"},
         {"codigo": "ger", "nombre": "Alemania", "bandera": "https://flagcdn.com/de.svg"},
-        {"codigo": "eng", "nombre": "Inglaterra", "bandera": "https://flagcdn.com/gb.svg"},
+        {"codigo": "eng", "nombre": "Inglaterra", "bandera": "https://flagcdn.com/gb-eng.svg"},
         {"codigo": "ita", "nombre": "Italia", "bandera": "https://flagcdn.com/it.svg"},
         {"codigo": "ned", "nombre": "Países Bajos", "bandera": "https://flagcdn.com/nl.svg"},
         {"codigo": "por", "nombre": "Portugal", "bandera": "https://flagcdn.com/pt.svg"},
