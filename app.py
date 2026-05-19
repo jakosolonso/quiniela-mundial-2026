@@ -6,7 +6,28 @@ from routes import api_bp
 from models import Usuario, bcrypt
 from datetime import datetime
 import os
-import os
+from apscheduler.schedulers.background import BackgroundScheduler
+from resultados_service import actualizar_resultados_en_db
+import atexit
+
+# ============ TAREAS PROGRAMADAS ============
+scheduler = BackgroundScheduler()
+
+# Programar la tarea (cada 10 minutos para evitar límites de API)
+scheduler.add_job(
+    func=actualizar_resultados_en_db,
+    trigger="interval",
+    minutes=10,  # Cada 10 minutos
+    id="actualizar_resultados",
+    replace_existing=True
+)
+
+# Iniciar el scheduler
+scheduler.start()
+print("🔄 Scheduler iniciado - Resultados se actualizarán cada 10 minutos")
+
+# Detener scheduler al cerrar
+atexit.register(lambda: scheduler.shutdown())
 
 # Asegurar que Flask sirva archivos estáticos
 app = Flask(__name__, static_folder='static', static_url_path='/static')
