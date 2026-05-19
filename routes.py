@@ -435,3 +435,32 @@ def cargar_datos_iniciales():
     
     db.session.commit()
     return jsonify({'mensaje': f'Cargados {len(partidos)} partidos del Mundial 2026'})
+
+@api_bp.route('/admin/estado', methods=['GET'])
+@login_required
+def estado_sistema():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    from apscheduler.schedulers.background import BackgroundScheduler
+    import sys
+    
+    scheduler_info = None
+    for module in sys.modules.values():
+        if hasattr(module, 'scheduler'):
+            scheduler_info = module.scheduler
+            break
+    
+    jobs = []
+    if scheduler_info:
+        for job in scheduler_info.get_jobs():
+            jobs.append({
+                'id': job.id,
+                'next_run': str(job.next_run_time) if job.next_run_time else None
+            })
+    
+    return jsonify({
+        'status': 'activo',
+        'tareas_programadas': jobs,
+        'intervalo': '10 minutos'
+    })
