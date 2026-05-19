@@ -8,6 +8,21 @@ import re
 # SportScore API (gratis, sin API key)
 SPORTSCORE_API = "https://api.sportscore.io/v1"
 
+def actualizar_resultados_en_db():
+    """Actualiza los resultados en la base de datos"""
+    ahora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"[{ahora}] 🔄 EJECUTANDO SCHEDULER - Actualizando resultados...")
+    
+    resultados = obtener_resultados_de_api()
+    
+    if not resultados:
+        print(f"[{ahora}] ⚠️ No se obtuvieron resultados de la API")
+        return
+    
+    print(f"[{ahora}] 📊 Se obtuvieron {len(resultados)} partidos")
+    
+    # Resto del código...
+
 def normalizar_nombre_equipo(nombre):
     """Normaliza nombres de equipos para comparar"""
     nombres_map = {
