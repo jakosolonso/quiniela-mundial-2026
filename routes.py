@@ -4,6 +4,7 @@ from database import db
 from models import Partido, Usuario, Pronostico
 from datetime import datetime
 import re
+from models import Partido, Usuario, Pronostico, ConfiguracionTiempo
 
 api_bp = Blueprint('api', __name__)
 
