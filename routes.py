@@ -9,25 +9,38 @@ api_bp = Blueprint('api', __name__)
 
 # ============ FUNCIÓN DE PUNTUACIÓN AVANZADA ============
 def calcular_puntos(goles_local_p, goles_visitante_p, goles_local_r, goles_visitante_r, fase):
+    """
+    Calcula puntos según:
+    - Resultado exacto: 5 pts
+    - Ganador/empate acertado: 3 pts
+    - Diferencia de goles exacta: +1 pt extra
+    - Semifinal y Final: puntos x2
+    """
     puntos = 0
     
-    # Resultado exacto: 5 pts
+    print(f"   Calculando: Pronóstico {goles_local_p}-{goles_visitante_p} vs Real {goles_local_r}-{goles_visitante_r}")
+    
+    # Verificar resultado exacto
     if goles_local_p == goles_local_r and goles_visitante_p == goles_visitante_r:
         puntos = 5
-    # Ganador o empate acertado: 3 pts
+        print(f"      ✅ Resultado exacto: 5 puntos")
+    # Verificar ganador o empate
     elif (goles_local_p - goles_visitante_p) == (goles_local_r - goles_visitante_r):
         puntos = 3
+        print(f"      ✅ Ganador/empate acertado: 3 puntos")
     
-    # Bonus diferencia de goles exacta: +1 pt
+    # Bonus por diferencia de goles exacta
     if puntos != 5:
         diferencia_p = goles_local_p - goles_visitante_p
         diferencia_r = goles_local_r - goles_visitante_r
         if diferencia_p == diferencia_r:
             puntos += 1
+            print(f"      ✅ Diferencia de goles exacta: +1 punto (total {puntos})")
     
-    # Semifinal y Final: puntos x2
+    # Bonus para Semifinales y Final (x2)
     if fase in ['semis', 'final']:
         puntos = puntos * 2
+        print(f"      ✅ Fase {fase}: puntos x2 = {puntos}")
     
     return puntos
 
@@ -186,27 +199,23 @@ def actualizar_resultado(partido_id):
     partido.resultado_visitante = data['goles_visitante']
     partido.jugado = True
     
+    # === CALCULAR PUNTOS PARA TODOS LOS PRONÓSTICOS ===
     pronosticos = Pronostico.query.filter_by(partido_id=partido_id).all()
+    print(f"📊 Calculando puntos para {len(pronosticos)} pronósticos del partido {partido.equipo_local} vs {partido.equipo_visitante}")
+    
     for pronostico in pronosticos:
-        pronostico.puntos = calcular_puntos(
-            pronostico.goles_local, pronostico.goles_visitante,
-            partido.resultado_local, partido.resultado_visitante,
+        puntos = calcular_puntos(
+            pronostico.goles_local, 
+            pronostico.goles_visitante,
+            partido.resultado_local, 
+            partido.resultado_visitante,
             partido.fase
         )
+        pronostico.puntos = puntos
+        print(f"   Usuario {pronostico.usuario_id}: Pronóstico {pronostico.goles_local}-{pronostico.goles_visitante} vs Real {partido.resultado_local}-{partido.resultado_visitante} = {puntos} puntos")
     
     db.session.commit()
     return jsonify({'mensaje': 'Resultado actualizado y puntos calculados'})
-
-
-# ============ USUARIOS ============
-@api_bp.route('/usuarios', methods=['GET'])
-@login_required
-def obtener_usuarios():
-    if not current_user.es_admin:
-        return jsonify({'error': 'No autorizado'}), 403
-    usuarios = Usuario.query.all()
-    return jsonify([u.to_dict() for u in usuarios])
-
 
 # ============ PRONÓSTICOS ============
 @api_bp.route('/pronosticos', methods=['POST'])
@@ -621,3 +630,27 @@ def verificar_scheduler():
         info['mensaje'] = 'No se encontró el scheduler activo'
     
     return jsonify(info)
+
+@api_bp.route('/admin/recalcular-puntos', methods=['POST'])
+@login_required
+def admin_recalcular_puntos():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    partidos = Partido.query.filter_by(jugado=True).all()
+    total_actualizados = 0
+    
+    for partido in partidos:
+        pronosticos = Pronostico.query.filter_by(partido_id=partido.id).all()
+        for pronostico in pronosticos:
+            puntos = calcular_puntos(
+                pronostico.goles_local, pronostico.goles_visitante,
+                partido.resultado_local, partido.resultado_visitante,
+                partido.fase
+            )
+            if pronostico.puntos != puntos:
+                pronostico.puntos = puntos
+                total_actualizados += 1
+    
+    db.session.commit()
+    return jsonify({'mensaje': f'Se recalcularon {total_actualizados} pronósticos.'})
