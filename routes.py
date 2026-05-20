@@ -500,3 +500,160 @@ def verificar_scheduler():
         info['mensaje'] = 'No se encontró el scheduler activo'
     
     return jsonify(info)
+
+# ============ PANEL DE ADMINISTRACIÓN ============
+
+@api_bp.route('/admin/stats', methods=['GET'])
+@login_required
+def admin_stats():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    total_usuarios = Usuario.query.count()
+    total_partidos = Partido.query.count()
+    partidos_jugados = Partido.query.filter_by(jugado=True).count()
+    partidos_pendientes = total_partidos - partidos_jugados
+    
+    return jsonify({
+        'total_usuarios': total_usuarios,
+        'total_partidos': total_partidos,
+        'partidos_jugados': partidos_jugados,
+        'partidos_pendientes': partidos_pendientes
+    })
+
+
+@api_bp.route('/admin/partidos', methods=['GET'])
+@login_required
+def admin_partidos():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    partidos = Partido.query.order_by(Partido.fecha).all()
+    return jsonify([{
+        'id': p.id,
+        'equipo_local': p.equipo_local,
+        'equipo_visitante': p.equipo_visitante,
+        'fecha': p.fecha.isoformat(),
+        'grupo': p.grupo,
+        'resultado_local': p.resultado_local,
+        'resultado_visitante': p.resultado_visitante,
+        'jugado': p.jugado
+    } for p in partidos])
+
+
+@api_bp.route('/admin/usuarios', methods=['GET'])
+@login_required
+def admin_usuarios():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    usuarios = Usuario.query.all()
+    return jsonify([{
+        'id': u.id,
+        'nombre': u.nombre,
+        'email': u.email,
+        'seleccion_favorita': u.seleccion_favorita,
+        'fecha_registro': u.fecha_registro.isoformat(),
+        'es_admin': u.es_admin
+    } for u in usuarios])
+
+
+@api_bp.route('/admin/ejecutar-ahora', methods=['POST'])
+@login_required
+def admin_ejecutar_ahora():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    from resultados_service import actualizar_resultados_en_db
+    import threading
+    
+    thread = threading.Thread(target=actualizar_resultados_en_db)
+    thread.start()
+    
+    return jsonify({'mensaje': 'Actualización iniciada. Revisa los logs.'})
+
+
+@api_bp.route('/admin/simular-resultados', methods=['POST'])
+@login_required
+def admin_simular_resultados():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    import random
+    
+    partidos = Partido.query.filter_by(jugado=False).all()
+    actualizados = 0
+    
+    for partido in partidos:
+        goles_local = random.randint(0, 4)
+        goles_visitante = random.randint(0, 4)
+        
+        partido.resultado_local = goles_local
+        partido.resultado_visitante = goles_visitante
+        partido.jugado = True
+        actualizados += 1
+        
+        pronosticos = Pronostico.query.filter_by(partido_id=partido.id).all()
+        for pronostico in pronosticos:
+            pronostico.puntos = calcular_puntos(
+                pronostico.goles_local, pronostico.goles_visitante,
+                goles_local, goles_visitante,
+                partido.fase
+            )
+    
+    db.session.commit()
+    return jsonify({'mensaje': f'Se simularon {actualizados} resultados.'})
+
+
+@api_bp.route('/admin/reiniciar-partidos', methods=['POST'])
+@login_required
+def admin_reiniciar_partidos():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    Pronostico.query.delete()
+    
+    partidos = Partido.query.all()
+    for partido in partidos:
+        partido.resultado_local = None
+        partido.resultado_visitante = None
+        partido.jugado = False
+    
+    db.session.commit()
+    return jsonify({'mensaje': 'Todos los partidos y pronósticos han sido reiniciados.'})
+
+
+@api_bp.route('/admin/verificar-scheduler', methods=['GET'])
+@login_required
+def verificar_scheduler():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    import sys
+    import inspect
+    
+    info = {
+        'scheduler_activo': False,
+        'jobs': [],
+        'mensaje': ''
+    }
+    
+    for module_name, module in sys.modules.items():
+        if 'app' in module_name or 'scheduler' in module_name:
+            for name, obj in inspect.getmembers(module):
+                if 'scheduler' in name.lower() and hasattr(obj, 'get_jobs'):
+                    info['scheduler_activo'] = True
+                    try:
+                        for job in obj.get_jobs():
+                            info['jobs'].append({
+                                'id': job.id,
+                                'next_run': str(job.next_run_time) if job.next_run_time else 'No programado'
+                            })
+                        info['mensaje'] = f"Scheduler encontrado en {module_name}"
+                    except Exception as e:
+                        info['mensaje'] = f"Error al obtener jobs: {str(e)}"
+    
+    if not info['scheduler_activo']:
+        info['mensaje'] = 'No se encontró el scheduler activo'
+    
+    return jsonify(info)
