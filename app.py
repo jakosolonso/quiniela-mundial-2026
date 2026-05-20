@@ -116,3 +116,10 @@ def admin_panel():
     if not current_user.es_admin:
         return redirect(url_for('dashboard'))
     return render_template('admin_panel.html')
+
+@app.route('/admin/tiempo')
+@login_required
+def admin_tiempo():
+    if not current_user.es_admin:
+        return redirect(url_for('dashboard'))
+    return render_template('admin_tiempo.html')

@@ -65,3 +65,16 @@ class Pronostico(db.Model):
     fecha_pronostico = db.Column(db.DateTime, default=datetime.utcnow)
     
     __table_args__ = (db.UniqueConstraint('usuario_id', 'partido_id', name='unique_pronostico'),)
+
+class ConfiguracionTiempo(db.Model):
+    __tablename__ = 'configuracion_tiempo'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    fase = db.Column(db.String(20), nullable=False, unique=True)  # grupos, octavos, cuartos, semis, final
+    fecha_limite = db.Column(db.DateTime, nullable=False)
+    
+    def to_dict(self):
+        return {
+            'fase': self.fase,
+            'fecha_limite': self.fecha_limite.isoformat()
+        }

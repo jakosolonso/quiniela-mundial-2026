@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Tiempo - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        h2 {
+            margin-bottom: 15px;
+            color: #555;
+            font-size: 18px;
+        }
+        
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .config-item label {
+            font-weight: 600;
+            color: #333;
+            min-width: 120px;
+        }
+        
+        .config-item input {
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .estado {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .estado-abierto {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .estado-cerrado {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .btn-guardar {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .btn-guardar:hover {
+            background: #059669;
+        }
+        
+        .btn-volver {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .info {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .info i {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>⏰ Configuración de Fechas Límite</h1>
+            <div class="info">
+                <i>📌 Las fechas límite son para CADA FASE. Después de la fecha, los usuarios NO podrán hacer nuevos pronósticos ni modificar los existentes para esa fase.</i>
+            </div>
+            
+            <div id="configuraciones">
+                <!-- Se cargarán dinámicamente -->
+            </div>
+            
+            <button onclick="volver()" class="btn-volver">← Volver al Panel Admin</button>
+        </div>
+    </div>
+    
+    <script>
+        const fases = ['grupos', 'octavos', 'cuartos', 'semis', 'final'];
+        
+        async function cargarConfiguraciones() {
+            try {
+                const response = await fetch('/api/admin/configurar-tiempo');
+                const configs = await response.json();
+                
+                const container = document.getElementById('configuraciones');
+                container.innerHTML = '';
+                
+                for (const fase of fases) {
+                    const config = configs.find(c => c.fase === fase) || { fecha_limite: null };
+                    const fechaActual = config.fecha_limite ? new Date(config.fecha_limite) : new Date();
+                    
+                    const fechaStr = config.fecha_limite ? 
+                        fechaActual.toISOString().slice(0, 16) : '';
+                    
+                    const puedePronosticar = await verificarEstado(fase);
+                    
+                    container.innerHTML += `
+                        <div class="config-item">
+                            <label>${fase.toUpperCase()}</label>
+                            <input type="datetime-local" id="fecha_${fase}" value="${fechaStr}">
+                            <span class="estado ${puedePronosticar ? 'estado-abierto' : 'estado-cerrado'}">
+                                ${puedePronosticar ? '🔓 Abierto' : '🔒 Cerrado'}
+                            </span>
+                            <button onclick="guardarConfig('${fase}')" class="btn-guardar">Guardar</button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        async function verificarEstado(fase) {
+            try {
+                const response = await fetch(`/api/admin/verificar-tiempo?fase=${fase}`);
+                const data = await response.json();
+                return data.puede_pronosticar;
+            } catch (error) {
+                return true;
+            }
+        }
+        
+        async function guardarConfig(fase) {
+            const fechaInput = document.getElementById(`fecha_${fase}`).value;
+            if (!fechaInput) {
+                alert('Selecciona una fecha y hora');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/configurar-tiempo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fase: fase,
+                        fecha_limite: new Date(fechaInput).toISOString()
+                    })
+                });
+                
+                if (response.ok) {
+                    alert(`✅ Configuración guardada para ${fase}`);
+                    cargarConfiguraciones();
+                } else {
+                    alert('Error al guardar');
+                }
+            } catch (error) {
+                alert('Error de conexión');
+            }
+        }
+        
+        function volver() {
+            window.location.href = '/admin';
+        }
+        
+        cargarConfiguraciones();
+    </script>
+</body>
+</html>

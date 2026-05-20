@@ -9,38 +9,25 @@ api_bp = Blueprint('api', __name__)
 
 # ============ FUNCIÓN DE PUNTUACIÓN AVANZADA ============
 def calcular_puntos(goles_local_p, goles_visitante_p, goles_local_r, goles_visitante_r, fase):
-    """
-    Calcula puntos según:
-    - Resultado exacto: 5 pts
-    - Ganador/empate acertado: 3 pts
-    - Diferencia de goles exacta: +1 pt extra
-    - Semifinal y Final: puntos x2
-    """
     puntos = 0
     
-    print(f"   Calculando: Pronóstico {goles_local_p}-{goles_visitante_p} vs Real {goles_local_r}-{goles_visitante_r}")
-    
-    # Verificar resultado exacto
+    # Resultado exacto: 5 pts
     if goles_local_p == goles_local_r and goles_visitante_p == goles_visitante_r:
         puntos = 5
-        print(f"      ✅ Resultado exacto: 5 puntos")
-    # Verificar ganador o empate
+    # Ganador o empate acertado: 3 pts
     elif (goles_local_p - goles_visitante_p) == (goles_local_r - goles_visitante_r):
         puntos = 3
-        print(f"      ✅ Ganador/empate acertado: 3 puntos")
     
-    # Bonus por diferencia de goles exacta
+    # Bonus diferencia de goles exacta: +1 pt
     if puntos != 5:
         diferencia_p = goles_local_p - goles_visitante_p
         diferencia_r = goles_local_r - goles_visitante_r
         if diferencia_p == diferencia_r:
             puntos += 1
-            print(f"      ✅ Diferencia de goles exacta: +1 punto (total {puntos})")
     
-    # Bonus para Semifinales y Final (x2)
+    # Semifinal y Final: puntos x2
     if fase in ['semis', 'final']:
         puntos = puntos * 2
-        print(f"      ✅ Fase {fase}: puntos x2 = {puntos}")
     
     return puntos
 
@@ -199,29 +186,50 @@ def actualizar_resultado(partido_id):
     partido.resultado_visitante = data['goles_visitante']
     partido.jugado = True
     
-    # === CALCULAR PUNTOS PARA TODOS LOS PRONÓSTICOS ===
     pronosticos = Pronostico.query.filter_by(partido_id=partido_id).all()
-    print(f"📊 Calculando puntos para {len(pronosticos)} pronósticos del partido {partido.equipo_local} vs {partido.equipo_visitante}")
-    
     for pronostico in pronosticos:
-        puntos = calcular_puntos(
-            pronostico.goles_local, 
-            pronostico.goles_visitante,
-            partido.resultado_local, 
-            partido.resultado_visitante,
+        pronostico.puntos = calcular_puntos(
+            pronostico.goles_local, pronostico.goles_visitante,
+            partido.resultado_local, partido.resultado_visitante,
             partido.fase
         )
-        pronostico.puntos = puntos
-        print(f"   Usuario {pronostico.usuario_id}: Pronóstico {pronostico.goles_local}-{pronostico.goles_visitante} vs Real {partido.resultado_local}-{partido.resultado_visitante} = {puntos} puntos")
     
     db.session.commit()
     return jsonify({'mensaje': 'Resultado actualizado y puntos calculados'})
+
+
+# ============ USUARIOS ============
+@api_bp.route('/usuarios', methods=['GET'])
+@login_required
+def obtener_usuarios():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    usuarios = Usuario.query.all()
+    return jsonify([u.to_dict() for u in usuarios])
+
 
 # ============ PRONÓSTICOS ============
 @api_bp.route('/pronosticos', methods=['POST'])
 @login_required
 def crear_pronostico():
     data = request.json
+    
+    # Obtener el partido para saber su fase
+    partido = Partido.query.get(data['partido_id'])
+    if not partido:
+        return jsonify({'error': 'Partido no encontrado'}), 404
+    
+    # Verificar si se puede pronosticar esta fase
+    if not puede_pronosticar(partido.fase):
+        config = ConfiguracionTiempo.query.filter_by(fase=partido.fase).first()
+        fecha_str = config.fecha_limite.strftime('%d/%m/%Y %H:%M')
+        return jsonify({
+            'error': f'El plazo para pronósticos de {partido.fase} cerró el {fecha_str}'
+        }), 403
+    
+    # Verificar si el partido ya comenzó/jugó
+    if partido.jugado:
+        return jsonify({'error': 'El partido ya finalizó'}), 403
     
     if data['usuario_id'] != current_user.id and not current_user.es_admin:
         return jsonify({'error': 'No autorizado'}), 403
@@ -245,8 +253,8 @@ def crear_pronostico():
     )
     db.session.add(pronostico)
     db.session.commit()
-    return jsonify({'mensaje': 'Pronóstico guardado'}), 201
 
+    return jsonify({'mensaje': 'Pronóstico guardado'}), 201
 
 @api_bp.route('/pronosticos/usuario/<int:usuario_id>', methods=['GET'])
 @login_required
@@ -474,128 +482,6 @@ def estado_sistema():
         'intervalo': '10 minutos'
     })
 
-# ============ PANEL DE ADMINISTRACIÓN ============
-
-@api_bp.route('/admin/stats', methods=['GET'])
-@login_required
-def admin_stats():
-    if not current_user.es_admin:
-        return jsonify({'error': 'No autorizado'}), 403
-    
-    total_usuarios = Usuario.query.count()
-    total_partidos = Partido.query.count()
-    partidos_jugados = Partido.query.filter_by(jugado=True).count()
-    partidos_pendientes = total_partidos - partidos_jugados
-    
-    return jsonify({
-        'total_usuarios': total_usuarios,
-        'total_partidos': total_partidos,
-        'partidos_jugados': partidos_jugados,
-        'partidos_pendientes': partidos_pendientes
-    })
-
-
-@api_bp.route('/admin/partidos', methods=['GET'])
-@login_required
-def admin_partidos():
-    if not current_user.es_admin:
-        return jsonify({'error': 'No autorizado'}), 403
-    
-    partidos = Partido.query.order_by(Partido.fecha).all()
-    return jsonify([{
-        'id': p.id,
-        'equipo_local': p.equipo_local,
-        'equipo_visitante': p.equipo_visitante,
-        'fecha': p.fecha.isoformat(),
-        'grupo': p.grupo,
-        'resultado_local': p.resultado_local,
-        'resultado_visitante': p.resultado_visitante,
-        'jugado': p.jugado
-    } for p in partidos])
-
-
-@api_bp.route('/admin/usuarios', methods=['GET'])
-@login_required
-def admin_usuarios():
-    if not current_user.es_admin:
-        return jsonify({'error': 'No autorizado'}), 403
-    
-    usuarios = Usuario.query.all()
-    return jsonify([{
-        'id': u.id,
-        'nombre': u.nombre,
-        'email': u.email,
-        'seleccion_favorita': u.seleccion_favorita,
-        'fecha_registro': u.fecha_registro.isoformat(),
-        'es_admin': u.es_admin
-    } for u in usuarios])
-
-
-@api_bp.route('/admin/ejecutar-ahora', methods=['POST'])
-@login_required
-def admin_ejecutar_ahora():
-    if not current_user.es_admin:
-        return jsonify({'error': 'No autorizado'}), 403
-    
-    from resultados_service import actualizar_resultados_en_db
-    import threading
-    
-    thread = threading.Thread(target=actualizar_resultados_en_db)
-    thread.start()
-    
-    return jsonify({'mensaje': 'Actualización iniciada. Revisa los logs.'})
-
-
-@api_bp.route('/admin/simular-resultados', methods=['POST'])
-@login_required
-def admin_simular_resultados():
-    if not current_user.es_admin:
-        return jsonify({'error': 'No autorizado'}), 403
-    
-    import random
-    
-    partidos = Partido.query.filter_by(jugado=False).all()
-    actualizados = 0
-    
-    for partido in partidos:
-        goles_local = random.randint(0, 4)
-        goles_visitante = random.randint(0, 4)
-        
-        partido.resultado_local = goles_local
-        partido.resultado_visitante = goles_visitante
-        partido.jugado = True
-        actualizados += 1
-        
-        pronosticos = Pronostico.query.filter_by(partido_id=partido.id).all()
-        for pronostico in pronosticos:
-            pronostico.puntos = calcular_puntos(
-                pronostico.goles_local, pronostico.goles_visitante,
-                goles_local, goles_visitante,
-                partido.fase
-            )
-    
-    db.session.commit()
-    return jsonify({'mensaje': f'Se simularon {actualizados} resultados.'})
-
-
-@api_bp.route('/admin/reiniciar-partidos', methods=['POST'])
-@login_required
-def admin_reiniciar_partidos():
-    if not current_user.es_admin:
-        return jsonify({'error': 'No autorizado'}), 403
-    
-    Pronostico.query.delete()
-    
-    partidos = Partido.query.all()
-    for partido in partidos:
-        partido.resultado_local = None
-        partido.resultado_visitante = None
-        partido.jugado = False
-    
-    db.session.commit()
-    return jsonify({'mensaje': 'Todos los partidos y pronósticos han sido reiniciados.'})
-
-
 @api_bp.route('/admin/verificar-scheduler', methods=['GET'])
 @login_required
 def verificar_scheduler():
@@ -611,6 +497,7 @@ def verificar_scheduler():
         'mensaje': ''
     }
     
+    # Buscar el scheduler en los módulos cargados
     for module_name, module in sys.modules.items():
         if 'app' in module_name or 'scheduler' in module_name:
             for name, obj in inspect.getmembers(module):
@@ -631,26 +518,59 @@ def verificar_scheduler():
     
     return jsonify(info)
 
-@api_bp.route('/admin/recalcular-puntos', methods=['POST'])
+#=========================================================================
+
+def puede_pronosticar(fase):
+    """Verifica si aún se puede hacer pronósticos para una fase"""
+    config = ConfiguracionTiempo.query.filter_by(fase=fase).first()
+    if not config:
+        return True  # Si no hay configuración, permitir
+    
+    ahora = datetime.utcnow()
+    return ahora < config.fecha_limite
+
+#===========================================================================
+
+@api_bp.route('/admin/configurar-tiempo', methods=['GET'])
 @login_required
-def admin_recalcular_puntos():
+def admin_obtener_configuracion():
     if not current_user.es_admin:
         return jsonify({'error': 'No autorizado'}), 403
     
-    partidos = Partido.query.filter_by(jugado=True).all()
-    total_actualizados = 0
+    configs = ConfiguracionTiempo.query.all()
+    return jsonify([c.to_dict() for c in configs])
+
+
+@api_bp.route('/admin/configurar-tiempo', methods=['POST'])
+@login_required
+def admin_guardar_configuracion():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
     
-    for partido in partidos:
-        pronosticos = Pronostico.query.filter_by(partido_id=partido.id).all()
-        for pronostico in pronosticos:
-            puntos = calcular_puntos(
-                pronostico.goles_local, pronostico.goles_visitante,
-                partido.resultado_local, partido.resultado_visitante,
-                partido.fase
-            )
-            if pronostico.puntos != puntos:
-                pronostico.puntos = puntos
-                total_actualizados += 1
+    data = request.json
+    fase = data.get('fase')
+    fecha_limite = datetime.fromisoformat(data.get('fecha_limite'))
+    
+    config = ConfiguracionTiempo.query.filter_by(fase=fase).first()
+    if config:
+        config.fecha_limite = fecha_limite
+    else:
+        config = ConfiguracionTiempo(fase=fase, fecha_limite=fecha_limite)
+        db.session.add(config)
     
     db.session.commit()
-    return jsonify({'mensaje': f'Se recalcularon {total_actualizados} pronósticos.'})
+    return jsonify({'mensaje': f'Configuración guardada para {fase}'})
+
+
+@api_bp.route('/admin/verificar-tiempo', methods=['GET'])
+def verificar_tiempo():
+    """Endpoint público para ver si se puede pronosticar"""
+    fase = request.args.get('fase', 'grupos')
+    puede = puede_pronosticar(fase)
+    
+    config = ConfiguracionTiempo.query.filter_by(fase=fase).first()
+    return jsonify({
+        'fase': fase,
+        'puede_pronosticar': puede,
+        'fecha_limite': config.fecha_limite.isoformat() if config else None
+    })
