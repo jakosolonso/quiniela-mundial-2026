@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Quiniela Mundial 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo img {
+            height: 50px;
+        }
+
+        .btn-logout {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card i {
+            font-size: 40px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 15px;
+            padding: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tabla */
+        .tabla {
+            width: 100%;
+            border-collapse: collapse;
+            overflow-x: auto;
+            display: block;
+        }
+
+        .tabla th,
+        .tabla td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .tabla th {
+            background: #f3f4f6;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        /* Partidos Grid */
+        .partidos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .partido-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .partido-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .partido-card.finalizado {
+            background: #f0fdf4;
+            border-color: #22c55e;
+        }
+
+        .partido-info {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .fecha {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .grupo {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            margin-bottom: 10px;
+        }
+
+        .equipos {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .resultado-form {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .resultado-form input {
+            width: 70px;
+            padding: 10px;
+            text-align: center;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .btn-actualizar {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+        }
+
+        .btn-actualizar:hover {
+            background: #059669;
+        }
+
+        .btn-actualizar:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .resultado-actual {
+            text-align: center;
+            margin-top: 10px;
+            padding: 8px;
+            background: #e5e7eb;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .mensaje {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .mensaje-exito {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .mensaje-error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Botón acción */
+        .btn-accion {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .btn-accion:hover {
+            background: #5a67d8;
+        }
+
+        .btn-peligro {
+            background: #dc2626;
+        }
+
+        .btn-peligro:hover {
+            background: #b91c1c;
+        }
+
+        @media (max-width: 768px) {
+            .partidos-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .tabla {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-logo">
+                <img src="https://raw.githubusercontent.com/jakosolonso/quiniela-mundial-2026/main/static/images/logo.PNG" alt="Logo" style="height: 50px;">
+                <h1>🛠️ Panel de Administración</h1>
+            </div>
+            <button onclick="cerrarSesion()" class="btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="statsContainer">
+            <div class="stat-card">
+                <i class="fas fa-users"></i>
+                <div class="number" id="totalUsuarios">-</div>
+                <div class="label">Usuarios Registrados</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-futbol"></i>
+                <div class="number" id="totalPartidos">-</div>
+                <div class="label">Total Partidos</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle"></i>
+                <div class="number" id="partidosJugados">-</div>
+                <div class="label">Partidos Finalizados</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-hourglass-half"></i>
+                <div class="number" id="partidosPendientes">-</div>
+                <div class="label">Partidos Pendientes</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="cambiarTab('partidos')">
+                <i class="fas fa-trophy"></i> Partidos
+            </button>
+            <button class="tab-btn" onclick="cambiarTab('usuarios')">
+                <i class="fas fa-users"></i> Usuarios
+            </button>
+            <button class="tab-btn" onclick="cambiarTab('scheduler')">
+                <i class="fas fa-clock"></i> Scheduler
+            </button>
+            <button class="tab-btn" onclick="cambiarTab('simulacion')">
+                <i class="fas fa-flask"></i> Simulación
+            </button>
+        </div>
+
+        <!-- Tab Partidos -->
+        <div id="partidosTab" class="tab-content active">
+            <h2>📅 Partidos del Mundial 2026</h2>
+            <div id="partidosList" class="partidos-grid">
+                <div style="text-align:center; padding:40px;">Cargando partidos...</div>
+            </div>
+        </div>
+
+        <!-- Tab Usuarios -->
+        <div id="usuariosTab" class="tab-content">
+            <h2>👥 Usuarios Registrados</h2>
+            <div id="usuariosList">
+                <div style="text-align:center; padding:40px;">Cargando usuarios...</div>
+            </div>
+        </div>
+
+        <!-- Tab Scheduler -->
+        <div id="schedulerTab" class="tab-content">
+            <h2>⏰ Estado del Scheduler</h2>
+            <div id="schedulerInfo"></div>
+            <button onclick="ejecutarAhora()" class="btn-accion">
+                <i class="fas fa-play"></i> Ejecutar Actualización Ahora
+            </button>
+        </div>
+
+        <!-- Tab Simulación -->
+        <div id="simulacionTab" class="tab-content">
+            <h2>🧪 Modo Simulación</h2>
+            <p>Genera resultados aleatorios para probar el sistema de puntuación.</p>
+            <button onclick="simularResultados()" class="btn-accion">
+                <i class="fas fa-random"></i> Simular Resultados Aleatorios
+            </button>
+            <button onclick="reiniciarPartidos()" class="btn-accion btn-peligro">
+                <i class="fas fa-trash"></i> Reiniciar Todos los Partidos
+            </button>
+            <div id="simulacionMensaje" class="mensaje" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        let token = null;
+
+        async function cargarStats() {
+            try {
+                const response = await fetch('/api/admin/stats');
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('totalUsuarios').textContent = stats.total_usuarios;
+                    document.getElementById('totalPartidos').textContent = stats.total_partidos;
+                    document.getElementById('partidosJugados').textContent = stats.partidos_jugados;
+                    document.getElementById('partidosPendientes').textContent = stats.partidos_pendientes;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function cargarPartidos() {
+            try {
+                const response = await fetch('/api/admin/partidos');
+                const partidos = await response.json();
+                
+                const container = document.getElementById('partidosList');
+                container.innerHTML = partidos.map(p => `
+                    <div class="partido-card ${p.jugado ? 'finalizado' : ''}" id="partido-${p.id}">
+                        <div class="partido-info">
+                            <div class="fecha">📅 ${new Date(p.fecha).toLocaleString()}</div>
+                            <div class="grupo">Grupo ${p.grupo}</div>
+                            <div class="equipos">
+                                ${p.equipo_local} vs ${p.equipo_visitante}
+                            </div>
+                        </div>
+                        ${p.jugado ? `
+                            <div class="resultado-actual">
+                                🏆 Resultado: ${p.resultado_local} - ${p.resultado_visitante}
+                            </div>
+                        ` : `
+                            <div class="resultado-form">
+                                <input type="number" id="gol_local_${p.id}" placeholder="Local" min="0">
+                                <span>vs</span>
+                                <input type="number" id="gol_visit_${p.id}" placeholder="Visitante" min="0">
+                            </div>
+                            <button onclick="actualizarResultado(${p.id})" class="btn-actualizar">
+                                📊 Actualizar Resultado
+                            </button>
+                        `}
+                        <div id="mensaje-${p.id}"></div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function actualizarResultado(partidoId) {
+            const golesLocal = parseInt(document.getElementById(`gol_local_${partidoId}`).value);
+            const golesVisitante = parseInt(document.getElementById(`gol_visit_${partidoId}`).value);
+            
+            if (isNaN(golesLocal) || isNaN(golesVisitante)) {
+                mostrarMensaje(partidoId, 'Ingresa ambos resultados', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/partidos/${partidoId}/resultado`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        goles_local: golesLocal,
+                        goles_visitante: golesVisitante
+                    })
+                });
+                
+                if (response.ok) {
+                    mostrarMensaje(partidoId, '✅ Resultado actualizado', 'exito');
+                    setTimeout(() => {
+                        cargarPartidos();
+                        cargarStats();
+                    }, 1000);
+                } else {
+                    mostrarMensaje(partidoId, 'Error al actualizar', 'error');
+                }
+            } catch (error) {
+                mostrarMensaje(partidoId, 'Error de conexión', 'error');
+            }
+        }
+
+        async function cargarUsuarios() {
+            try {
+                const response = await fetch('/api/admin/usuarios');
+                const usuarios = await response.json();
+                
+                const html = `
+                    <table class="tabla">
+                        <thead>
+                            <tr><th>ID</th><th>Nombre</th><th>Email</th><th>Selección</th><th>Registro</th><th>Admin</th></tr>
+                        </thead>
+                        <tbody>
+                            ${usuarios.map(u => `
+                                <tr>
+                                    <td>${u.id}</td>
+                                    <td>${u.nombre}</td>
+                                    <td>${u.email}</td>
+                                    <td>${u.seleccion_favorita || '-'}</td>
+                                    <td>${new Date(u.fecha_registro).toLocaleDateString()}</td>
+                                    <td>${u.es_admin ? '✅' : '❌'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById('usuariosList').innerHTML = html;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function cargarScheduler() {
+            try {
+                const response = await fetch('/api/admin/verificar-scheduler');
+                const data = await response.json();
+                
+                document.getElementById('schedulerInfo').innerHTML = `
+                    <div style="background:#f3f4f6; padding:20px; border-radius:15px;">
+                        <p><strong>Estado:</strong> ${data.scheduler_activo ? '✅ Activo' : '❌ Inactivo'}</p>
+                        <p><strong>Jobs programados:</strong></p>
+                        <ul>
+                            ${data.jobs.map(job => `<li>${job.id} - Próxima ejecución: ${job.next_run || 'No programada'}</li>`).join('')}
+                        </ul>
+                        <p><strong>Mensaje:</strong> ${data.mensaje}</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function ejecutarAhora() {
+            try {
+                const response = await fetch('/api/admin/ejecutar-ahora', { method: 'POST' });
+                const data = await response.json();
+                alert(data.mensaje);
+                cargarScheduler();
+            } catch (error) {
+                alert('Error al ejecutar');
+            }
+        }
+
+        async function simularResultados() {
+            if (confirm('¿Estás seguro? Esto generará resultados aleatorios para partidos pendientes.')) {
+                try {
+                    const response = await fetch('/api/admin/simular-resultados', { method: 'POST' });
+                    const data = await response.json();
+                    document.getElementById('simulacionMensaje').innerHTML = `
+                        <div class="mensaje-exito">✅ ${data.mensaje}</div>
+                    `;
+                    cargarPartidos();
+                    cargarStats();
+                } catch (error) {
+                    document.getElementById('simulacionMensaje').innerHTML = `
+                        <div class="mensaje-error">❌ Error al simular</div>
+                    `;
+                }
+            }
+        }
+
+        async function reiniciarPartidos() {
+            if (confirm('⚠️ ATENCIÓN: Esto borrará TODOS los resultados y pronósticos. ¿Estás completamente seguro?')) {
+                try {
+                    const response = await fetch('/api/admin/reiniciar-partidos', { method: 'POST' });
+                    const data = await response.json();
+                    document.getElementById('simulacionMensaje').innerHTML = `
+                        <div class="mensaje-exito">✅ ${data.mensaje}</div>
+                    `;
+                    cargarPartidos();
+                    cargarStats();
+                } catch (error) {
+                    document.getElementById('simulacionMensaje').innerHTML = `
+                        <div class="mensaje-error">❌ Error al reiniciar</div>
+                    `;
+                }
+            }
+        }
+
+        function mostrarMensaje(partidoId, texto, tipo) {
+            const div = document.getElementById(`mensaje-${partidoId}`);
+            div.innerHTML = `<div class="mensaje mensaje-${tipo === 'exito' ? 'exito' : 'error'}">${texto}</div>`;
+            setTimeout(() => {
+                div.innerHTML = '';
+            }, 3000);
+        }
+
+        function cambiarTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(`${tab}Tab`).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tab === 'usuarios') cargarUsuarios();
+            if (tab === 'scheduler') cargarScheduler();
+            if (tab === 'partidos') cargarPartidos();
+        }
+
+        async function cerrarSesion() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
+        // Inicializar
+        cargarStats();
+        cargarPartidos();
+        cargarUsuarios();
+        cargarScheduler();
+    </script>
+</body>
+</html>

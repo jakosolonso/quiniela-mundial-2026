@@ -109,3 +109,10 @@ with app.app_context():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)
+
+@app.route('/admin')
+@login_required
+def admin_panel():
+    if not current_user.es_admin:
+        return redirect(url_for('dashboard'))
+    return render_template('admin_panel.html')
