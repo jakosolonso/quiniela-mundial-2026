@@ -465,42 +465,6 @@ def estado_sistema():
         'intervalo': '10 minutos'
     })
 
-@api_bp.route('/admin/verificar-scheduler', methods=['GET'])
-@login_required
-def verificar_scheduler():
-    if not current_user.es_admin:
-        return jsonify({'error': 'No autorizado'}), 403
-    
-    import sys
-    import inspect
-    
-    info = {
-        'scheduler_activo': False,
-        'jobs': [],
-        'mensaje': ''
-    }
-    
-    # Buscar el scheduler en los módulos cargados
-    for module_name, module in sys.modules.items():
-        if 'app' in module_name or 'scheduler' in module_name:
-            for name, obj in inspect.getmembers(module):
-                if 'scheduler' in name.lower() and hasattr(obj, 'get_jobs'):
-                    info['scheduler_activo'] = True
-                    try:
-                        for job in obj.get_jobs():
-                            info['jobs'].append({
-                                'id': job.id,
-                                'next_run': str(job.next_run_time) if job.next_run_time else 'No programado'
-                            })
-                        info['mensaje'] = f"Scheduler encontrado en {module_name}"
-                    except Exception as e:
-                        info['mensaje'] = f"Error al obtener jobs: {str(e)}"
-    
-    if not info['scheduler_activo']:
-        info['mensaje'] = 'No se encontró el scheduler activo'
-    
-    return jsonify(info)
-
 # ============ PANEL DE ADMINISTRACIÓN ============
 
 @api_bp.route('/admin/stats', methods=['GET'])
