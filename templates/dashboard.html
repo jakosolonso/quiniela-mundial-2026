@@ -327,6 +327,80 @@
         padding: 8px 5px;
     }
 }
+
+/* Notificación de fecha límite */
+.notificacion-limite {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-left: 5px solid #f59e0b;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.9; transform: scale(1.01); }
+    100% { opacity: 1; }
+}
+
+.notificacion-contenido {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.notificacion-contenido i {
+    font-size: 28px;
+    color: #d97706;
+}
+
+.notificacion-texto {
+    flex: 1;
+}
+
+.notificacion-texto strong {
+    display: block;
+    font-size: 14px;
+    color: #92400e;
+    margin-bottom: 5px;
+}
+
+.notificacion-texto span {
+    font-size: 13px;
+    color: #78350f;
+}
+
+/* Notificación cerrada */
+.notificacion-limite.cerrado {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border-left-color: #dc2626;
+}
+
+.notificacion-limite.cerrado i {
+    color: #dc2626;
+}
+
+.notificacion-limite.cerrado .notificacion-texto strong {
+    color: #991b1b;
+}
+
+.notificacion-limite.cerrado .notificacion-texto span {
+    color: #7f1d1d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .notificacion-contenido {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .notificacion-contenido i {
+        font-size: 32px;
+    }
+}
     </style>
 </head>
 <body>
@@ -358,15 +432,19 @@
         </div>
 
         <div id="pronosticosTab" class="tab-content active">
-            <h2>📝 Haz tus pronósticos</h2>
-            <div id="pronosticosList" class="partidos-grid">
-                <div class="welcome-message">
-                    <i class="fas fa-futbol"></i>
-                    <h3>¡Bienvenido a la Quiniela FPK 2026!</h3>
-                    <p>Los partidos se cargarán automáticamente</p>
-                </div>
+    <!-- NOTIFICACIÓN DE FECHA LÍMITE -->
+    <div id="notificacionLimite" class="notificacion-limite" style="display: none;">
+        <div class="notificacion-contenido">
+            <i class="fas fa-clock"></i>
+            <div class="notificacion-texto">
+                <strong>⏰ Plazo de pronósticos</strong>
+                <span id="notificacionMensaje"></span>
             </div>
         </div>
+    </div>
+    <h2>📝 Haz tus pronósticos</h2>
+    <div id="pronosticosList" class="partidos-grid">...</div>
+</div>
 
         <div id="partidosTab" class="tab-content">
             <h2>🏆 Resultados oficiales</h2>
@@ -614,7 +692,12 @@
             
             if (tab === 'tabla') cargarTablaPosiciones();
             if (tab === 'pronosticos' && usuarioActual) cargarMisPronosticos();
-        }
+
+            if (tab === 'pronosticos') {
+        cargarNotificacionLimite();  // ← AGREGAR ESTA LÍNEA
+        if (usuarioActual) cargarMisPronosticos();
+    }
+}
 
         async function cargarDatosIniciales() {
             try {
@@ -625,9 +708,52 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            cargarUsuario();
-            cargarDatosIniciales();
-        });
+    cargarUsuario();
+    cargarDatosIniciales();
+    cargarNotificacionLimite();  // ← AGREGAR ESTA LÍNEA
+});
+
+async function cargarNotificacionLimite() {
+    try {
+        const response = await fetch('/api/fecha-limite-activa');
+        const data = await response.json();
+        
+        const notificacionDiv = document.getElementById('notificacionLimite');
+        const mensajeSpan = document.getElementById('notificacionMensaje');
+        
+        if (data.activo) {
+            // Formatear la fecha
+            const fechaLimite = new Date(data.fecha_limite);
+            const opciones = { 
+                day: 'numeric', 
+                month: 'long', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            };
+            const fechaFormateada = fechaLimite.toLocaleDateString('es-ES', opciones);
+            
+            let mensaje = '';
+            if (data.dias_restantes === 0) {
+                mensaje = `⚠️ ¡ÚLTIMO DÍA! El plazo para pronósticos de ${data.nombre_fase} cierra HOY a las ${fechaLimite.getHours()}:${String(fechaLimite.getMinutes()).padStart(2,'0')} hrs.`;
+            } else if (data.dias_restantes === 1) {
+                mensaje = `⏰ El plazo para pronósticos de ${data.nombre_fase} cierra MAÑANA a las ${fechaLimite.getHours()}:${String(fechaLimite.getMinutes()).padStart(2,'0')} hrs.`;
+            } else {
+                mensaje = `📅 Ingreso de pronósticos para ${data.nombre_fase} disponible hasta el ${fechaFormateada}.`;
+            }
+            
+            mensajeSpan.textContent = mensaje;
+            notificacionDiv.style.display = 'block';
+            notificacionDiv.classList.remove('cerrado');
+        } else {
+            // Todas las fases cerraron
+            mensajeSpan.textContent = data.mensaje || '⚠️ Los plazos de pronósticos han cerrado. ¡Gracias por participar!';
+            notificacionDiv.style.display = 'block';
+            notificacionDiv.classList.add('cerrado');
+        }
+    } catch (error) {
+        console.error('Error cargando notificación:', error);
+    }
+}        
     </script>
 </body>
 </html>

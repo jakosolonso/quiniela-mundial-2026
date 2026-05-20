@@ -575,3 +575,45 @@ def verificar_tiempo():
         'puede_pronosticar': puede,
         'fecha_limite': config.fecha_limite.isoformat() if config else None
     })
+
+@api_bp.route('/fecha-limite-activa', methods=['GET'])
+def fecha_limite_activa():
+    """Obtiene la fecha límite más próxima para mostrar notificación"""
+    from datetime import datetime
+    
+    fases_orden = ['grupos', 'octavos', 'cuartos', 'semis', 'final']
+    fases_nombres = {
+        'grupos': 'Fase de Grupos',
+        'octavos': 'Octavos de Final',
+        'cuartos': 'Cuartos de Final',
+        'semis': 'Semifinales',
+        'final': 'Final'
+    }
+    
+    configs = ConfiguracionTiempo.query.all()
+    config_dict = {c.fase: c.fecha_limite for c in configs}
+    
+    ahora = datetime.utcnow()
+    
+    # Buscar la primera fase que aún no ha cerrado
+    for fase in fases_orden:
+        if fase in config_dict:
+            fecha_limite = config_dict[fase]
+            if ahora < fecha_limite:
+                # Esta fase aún está abierta
+                from datetime import timedelta
+                dias_restantes = (fecha_limite - ahora).days
+                
+                return jsonify({
+                    'fase': fase,
+                    'nombre_fase': fases_nombres[fase],
+                    'fecha_limite': fecha_limite.isoformat(),
+                    'dias_restantes': dias_restantes,
+                    'activo': True
+                })
+    
+    # Si todas las fases ya cerraron
+    return jsonify({
+        'activo': False,
+        'mensaje': 'Todos los plazos de pronósticos han cerrado'
+    })
