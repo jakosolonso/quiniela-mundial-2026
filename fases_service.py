@@ -138,7 +138,7 @@ def resolver_tercero(expresion, mejores_terceros):
 
 
 def generar_dieciseisavos():
-    """Genera los 16 partidos de dieciseisavos - Versión simplificada"""
+    """Genera los 16 partidos de dieciseisavos - Versión corregida"""
     
     # Verificar si ya existen
     if Partido.query.filter_by(fase='dieciseisavos').first():
@@ -150,81 +150,97 @@ def generar_dieciseisavos():
         return {'success': False, 'message': 'No hay resultados de grupos disponibles'}
     
     # Crear lista de todos los equipos clasificados
-    todos_los_clasificados = []
+    lista_equipos = []
     
-    # Agregar primeros y segundos
+    # Agregar primeros (12 equipos)
     for grupo in GRUPOS:
         if grupo in clasificados['primeros']:
-            todos_los_clasificados.append({
+            lista_equipos.append({
                 'equipo': clasificados['primeros'][grupo],
                 'posicion': 1,
                 'grupo': grupo
             })
+    
+    # Agregar segundos (12 equipos)
+    for grupo in GRUPOS:
         if grupo in clasificados['segundos']:
-            todos_los_clasificados.append({
+            lista_equipos.append({
                 'equipo': clasificados['segundos'][grupo],
                 'posicion': 2,
                 'grupo': grupo
             })
     
-    # Agregar mejores terceros
+    # Agregar mejores terceros (8 equipos)
     for tercero in clasificados['mejores_terceros']:
-        todos_los_clasificados.append({
+        lista_equipos.append({
             'equipo': tercero['equipo'],
             'posicion': 3,
             'grupo': tercero['grupo']
         })
     
-    if len(todos_los_clasificados) != 32:
-        return {'success': False, 'message': f'Se necesitan 32 equipos, solo hay {len(todos_los_clasificados)}'}
+    if len(lista_equipos) != 32:
+        return {'success': False, 'message': f'Se necesitan 32 equipos, solo hay {len(lista_equipos)}'}
     
-    # Ordenar para crear cruces equitativos
-    # Agrupar por posición para mezclar
-    primeros = [c for c in todos_los_clasificados if c['posicion'] == 1]
-    segundos = [c for c in todos_los_clasificados if c['posicion'] == 2]
-    terceros = [c for c in todos_los_clasificados if c['posicion'] == 3]
+    # Separar por posición
+    primeros = [e for e in lista_equipos if e['posicion'] == 1]
+    segundos = [e for e in lista_equipos if e['posicion'] == 2]
+    terceros = [e for e in lista_equipos if e['posicion'] == 3]
     
-    # Mezclar para evitar duplicados
+    # Mezclar para variar
     import random
-    random.seed(42)  # Semilla fija para resultados consistentes
-    
+    random.seed(42)
     random.shuffle(primeros)
     random.shuffle(segundos)
     random.shuffle(terceros)
     
-    # Crear cruces: 1° vs (2° o 3°)
+    # Crear 16 cruces
     cruces = []
-    
-    # Los 8 primeros enfrentan a segundos o terceros
-    for i in range(8):
-        if i < len(primeros) and i < len(segundos):
-            cruces.append((primeros[i]['equipo'], segundos[i]['equipo']))
-    
-    # Los siguientes 8 primeros enfrentan a los mejores terceros
-    for i in range(8, 16):
-        if i < len(primeros) and (i - 8) < len(terceros):
-            cruces.append((primeros[i]['equipo'], terceros[i - 8]['equipo']))
-    
-    # Si faltan cruces, completar con los que tenemos
-    while len(cruces) < 16 and len(terceros) > 0:
-        cruces.append((primeros[len(cruces) % len(primeros)]['equipo'], 
-                       terceros[len(cruces) % len(terceros)]['equipo']))
-    
-    # Limitar a 16 cruces
-    cruces = cruces[:16]
-    
-    # Verificar que no haya equipos repetidos en los cruces
     equipos_usados = set()
-    cruces_limpios = []
+    
+    # Regla: 1° vs (2° o 3°)
+    # Aseguramos que ningún equipo se repita
+    
+    # Primera mitad: 1° vs 2° (8 partidos)
+    for i in range(min(8, len(primeros), len(segundos))):
+        if primeros[i]['equipo'] not in equipos_usados and segundos[i]['equipo'] not in equipos_usados:
+            cruces.append((primeros[i]['equipo'], segundos[i]['equipo']))
+            equipos_usados.add(primeros[i]['equipo'])
+            equipos_usados.add(segundos[i]['equipo'])
+    
+    # Segunda mitad: 1° vs 3° (8 partidos)
+    # Usar los siguientes primeros y los terceros
+    for i in range(min(8, len(primeros) - 8, len(terceros))):
+        idx_primeros = 8 + i
+        if idx_primeros < len(primeros) and i < len(terceros):
+            if primeros[idx_primeros]['equipo'] not in equipos_usados and terceros[i]['equipo'] not in equipos_usados:
+                cruces.append((primeros[idx_primeros]['equipo'], terceros[i]['equipo']))
+                equipos_usados.add(primeros[idx_primeros]['equipo'])
+                equipos_usados.add(terceros[i]['equipo'])
+    
+    # Si aún faltan cruces, usar equipos restantes
+    equipos_restantes = [e for e in lista_equipos if e['equipo'] not in equipos_usados]
+    
+    while len(cruces) < 16 and len(equipos_restantes) >= 2:
+        local = equipos_restantes.pop(0)
+        visitante = equipos_restantes.pop(0)
+        cruces.append((local['equipo'], visitante['equipo']))
+    
+    # Verificar que tenemos exactamente 16 cruces
+    if len(cruces) != 16:
+        return {'success': False, 'message': f'Solo se pudieron generar {len(cruces)} cruces de 16'}
+    
+    # Verificar que no haya equipos duplicados
+    equipos_en_cruces = set()
     for local, visitante in cruces:
-        if local not in equipos_usados and visitante not in equipos_usados and local != visitante:
-            equipos_usados.add(local)
-            equipos_usados.add(visitante)
-            cruces_limpios.append((local, visitante))
+        equipos_en_cruces.add(local)
+        equipos_en_cruces.add(visitante)
+    
+    if len(equipos_en_cruces) != 32:
+        return {'success': False, 'message': f'Hay {len(equipos_en_cruces)} equipos únicos, deberían ser 32'}
     
     # Crear los partidos
     partidos_generados = 0
-    for local, visitante in cruces_limpios:
+    for local, visitante in cruces:
         partido = Partido(
             equipo_local=local,
             equipo_visitante=visitante,
