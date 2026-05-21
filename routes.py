@@ -703,6 +703,7 @@ def admin_simular_resultados():
     
     import random
     
+    # Simular partidos PENDIENTES (no jugados) de CUALQUIER fase
     partidos = Partido.query.filter_by(jugado=False).all()
     actualizados = 0
     
@@ -715,6 +716,7 @@ def admin_simular_resultados():
         partido.jugado = True
         actualizados += 1
         
+        # Calcular puntos para los pronósticos
         pronosticos = Pronostico.query.filter_by(partido_id=partido.id).all()
         for pronostico in pronosticos:
             pronostico.puntos = calcular_puntos(
