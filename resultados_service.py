@@ -161,6 +161,29 @@ def actualizar_resultados_en_db():
     db.session.commit()
     print(f"📊 Resultados: {partidos_actualizados} partidos actualizados, {partidos_verificados} verificados")
 
+# ============ GENERAR SIGUIENTE FASE AUTOMÁTICAMENTE ============
+from routes import generar_siguiente_fase
+
+fases_orden = ['grupos', 'dieciseisavos', 'octavos', 'cuartos', 'semis', 'final']
+
+for i in range(len(fases_orden) - 1):
+    fase_actual = fases_orden[i]
+    fase_siguiente = fases_orden[i + 1]
+    
+    # Verificar si ya existe la siguiente fase
+    ya_existe = Partido.query.filter_by(fase=fase_siguiente).first()
+    
+    if not ya_existe:
+        # Contar partidos pendientes de la fase actual
+        partidos_pendientes = Partido.query.filter_by(fase=fase_actual, jugado=False).count()
+        
+        if partidos_pendientes == 0:
+            # Contar partidos totales de la fase actual
+            partidos_totales = Partido.query.filter_by(fase=fase_actual).count()
+            if partidos_totales > 0:
+                print(f"🏆 {fase_actual.upper()} finalizada. Generando {fase_siguiente.upper()}...")
+                generar_siguiente_fase(fase_actual, fase_siguiente)
+
 def calcular_puntos_para_partido(partido):
     """
     Calcula los puntos para todos los pronósticos de este partido

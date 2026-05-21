@@ -8,6 +8,241 @@ from models import Partido, Usuario, Pronostico, ConfiguracionTiempo
 
 api_bp = Blueprint('api', __name__)
 
+# ============ CONFIGURACIÓN DE FASES ELIMINATORIAS ============
+
+GRUPOS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+
+# Mapeo de grupos por fase (para los cruces de dieciseisavos según fixture FIFA)
+DIEcISEISAVOS_CRUCES = [
+    # (Partido, Local vs Visitante según fixture)
+    (73, ('2° Grupo A', '2° Grupo B')),  # Partido 73
+    (74, ('1° Grupo E', '3° Grupo A/B/C/D/F')),
+    (75, ('1° Grupo F', '2° Grupo C')),
+    (76, ('1° Grupo C', '2° Grupo F')),
+    (77, ('1° Grupo I', '3° Grupo C/D/F/G/H')),
+    (78, ('2° Grupo E', '2° Grupo I')),
+    (79, ('1° Grupo A', '3° Grupo C/E/F/H/I')),
+    (80, ('1° Grupo L', '3° Grupo E/H/I/J/K')),
+    (81, ('1° Grupo D', '3° Grupo B/E/F/I/J')),
+    (82, ('1° Grupo G', '3° Grupo A/E/H/I/J')),
+    (83, ('2° Grupo K', '2° Grupo L')),
+    (84, ('1° Grupo H', '2° Grupo J')),
+    (85, ('1° Grupo B', '3° Grupo E/F/G/I/J')),
+    (86, ('1° Grupo J', '2° Grupo H')),
+    (87, ('1° Grupo K', '3° Grupo D/E/I/J/L')),
+    (88, ('2° Grupo D', '2° Grupo G')),
+]
+
+# Mapeo de partidos de octavos (basado en ganadores de dieciseisavos)
+OCTAVOS_CRUCES = [
+    (89, (74, 77)),  # Ganador 74 vs Ganador 77
+    (90, (73, 75)),  # Ganador 73 vs Ganador 75
+    (91, (76, 78)),  # Ganador 76 vs Ganador 78
+    (92, (79, 80)),  # Ganador 79 vs Ganador 80
+    (93, (83, 84)),  # Ganador 83 vs Ganador 84
+    (94, (81, 82)),  # Ganador 81 vs Ganador 82
+    (95, (86, 88)),  # Ganador 86 vs Ganador 88
+    (96, (85, 87)),  # Ganador 85 vs Ganador 87
+]
+
+# Mapeo de cuartos de final
+CUARTOS_CRUCES = [
+    (97, (89, 90)),  # Ganador 89 vs Ganador 90
+    (98, (93, 94)),  # Ganador 93 vs Ganador 94
+    (99, (91, 92)),  # Ganador 91 vs Ganador 92
+    (100, (95, 96)),  # Ganador 95 vs Ganador 96
+]
+
+# Semifinales
+SEMIS_CRUCES = [
+    (101, (97, 98)),  # Ganador 97 vs Ganador 98
+    (102, (99, 100)),  # Ganador 99 vs Ganador 100
+]
+
+# Final
+FINAL_CRUCE = (104, (101, 102))  # Ganador 101 vs Ganador 102
+
+def obtener_clasificados_grupos_reales():
+    """Obtiene los equipos clasificados según resultados reales"""
+    from models import Partido
+    
+    clasificados = {
+        'primeros': {},
+        'segundos': {},
+        'terceros': {}
+    }
+    
+    for grupo in GRUPOS:
+        partidos = Partido.query.filter_by(grupo=grupo, fase='grupos', jugado=True).all()
+        if not partidos:
+            return None
+        
+        tabla = calcular_tabla_grupo(partidos)
+        
+        if len(tabla) >= 1:
+            clasificados['primeros'][grupo] = tabla[0]['equipo']
+        if len(tabla) >= 2:
+            clasificados['segundos'][grupo] = tabla[1]['equipo']
+        if len(tabla) >= 3:
+            tercero = tabla[2]
+            clasificados['terceros'][grupo] = {
+                'equipo': tercero['equipo'],
+                'puntos': tercero['puntos'],
+                'dg': tercero['dg']
+            }
+    
+    return clasificados
+
+def obtener_mejores_terceros(clasificados):
+    """Obtiene los 8 mejores terceros lugares"""
+    terceros = [{'equipo': v['equipo'], 'puntos': v['puntos'], 'dg': v['dg'], 'grupo': k} 
+                for k, v in clasificados['terceros'].items()]
+    
+    # Ordenar por puntos, luego diferencia de goles, luego goles a favor
+    terceros.sort(key=lambda x: (x['puntos'], x['dg'], x.get('gf', 0)), reverse=True)
+    
+    return terceros[:8]
+
+def resolver_tercero(expresion, terceros_clasificados):
+    """Resuelve qué equipo ocupa el 3° lugar de un grupo específico"""
+    import re
+    
+    # Expresiones como "3° Grupo C/D/F/G/H"
+    if '/' in expresion:
+        # Buscar el mejor tercero entre los grupos listados
+        grupos_mencionados = re.findall(r'[A-L]', expresion)
+        mejores = sorted([t for t in terceros_clasificados if t['grupo'] in grupos_mencionados], 
+                        key=lambda x: (x['puntos'], x['dg']), reverse=True)
+        if mejores:
+            return mejores[0]['equipo']
+    
+    # Expresión específica como "3° Grupo A"
+    match = re.search(r'3° Grupo ([A-L])', expresion)
+    if match:
+        grupo = match.group(1)
+        for t in terceros_clasificados:
+            if t['grupo'] == grupo:
+                return t['equipo']
+    
+    return None
+
+def generar_dieciseisavos(clasificados):
+    """Genera los 16 partidos de dieciseisavos según fixture FIFA"""
+    from models import Partido
+    from datetime import datetime
+    
+    # Obtener mejores terceros
+    mejores_terceros = obtener_mejores_terceros(clasificados)
+    
+    partidos_generados = []
+    
+    for partido_id, (local_exp, visitante_exp) in DIEcISEISAVOS_CRUCES:
+        # Determinar equipo local
+        if '1°' in local_exp:
+            grupo = local_exp.split(' ')[-1]
+            local = clasificados['primeros'].get(grupo)
+        elif '2°' in local_exp:
+            grupo = local_exp.split(' ')[-1]
+            local = clasificados['segundos'].get(grupo)
+        else:
+            local = resolver_tercero(local_exp, mejores_terceros)
+        
+        # Determinar equipo visitante
+        if '1°' in visitante_exp:
+            grupo = visitante_exp.split(' ')[-1]
+            visitante = clasificados['primeros'].get(grupo)
+        elif '2°' in visitante_exp:
+            grupo = visitante_exp.split(' ')[-1]
+            visitante = clasificados['segundos'].get(grupo)
+        else:
+            visitante = resolver_tercero(visitante_exp, mejores_terceros)
+        
+        if local and visitante:
+            partido = Partido(
+                equipo_local=local,
+                equipo_visitante=visitante,
+                fecha=datetime(2026, 6, 28 + (partido_id - 73) // 2, 15, 0),
+                grupo='ELIM',
+                fase='dieciseisavos',
+                jugado=False
+            )
+            db.session.add(partido)
+            partidos_generados.append({
+                'id': partido_id,
+                'local': local,
+                'visitante': visitante
+            })
+    
+    db.session.commit()
+    return partidos_generados
+
+def generar_fase_eliminatoria(fase_anterior, fase_actual, cruces_config):
+    """Genera partidos de octavos, cuartos, semis o final"""
+    from models import Partido
+    from datetime import datetime
+    
+    # Obtener ganadores de la fase anterior
+    ganadores = {}
+    partidos_anteriores = Partido.query.filter_by(fase=fase_anterior, jugado=True).all()
+    
+    for p in partidos_anteriores:
+        if p.resultado_local > p.resultado_visitante:
+            ganadores[p.id] = p.equipo_local
+        else:
+            ganadores[p.id] = p.equipo_visitante
+    
+    fechas = {
+        'octavos': datetime(2026, 7, 4, 15, 0),
+        'cuartos': datetime(2026, 7, 9, 15, 0),
+        'semis': datetime(2026, 7, 14, 15, 0),
+        'final': datetime(2026, 7, 19, 15, 0)
+    }
+    
+    partidos_generados = []
+    
+    for partido_id, (origen1, origen2) in cruces_config:
+        local = ganadores.get(origen1)
+        visitante = ganadores.get(origen2)
+        
+        if local and visitante:
+            partido = Partido(
+                equipo_local=local,
+                equipo_visitante=visitante,
+                fecha=fechas[fase_actual],
+                grupo='ELIM',
+                fase=fase_actual,
+                jugado=False
+            )
+            db.session.add(partido)
+            partidos_generados.append({'id': partido_id, 'local': local, 'visitante': visitante})
+    
+    db.session.commit()
+    return partidos_generados
+
+def generar_siguiente_fase(fase_actual, fase_siguiente):
+    """Genera la siguiente fase según el fixture real"""
+    
+    if fase_actual == 'grupos' and fase_siguiente == 'dieciseisavos':
+        clasificados = obtener_clasificados_grupos_reales()
+        if not clasificados:
+            print("❌ No hay resultados de grupos disponibles")
+            return False
+        return generar_dieciseisavos(clasificados)
+    
+    elif fase_actual == 'dieciseisavos' and fase_siguiente == 'octavos':
+        return generar_fase_eliminatoria('dieciseisavos', 'octavos', OCTAVOS_CRUCES)
+    
+    elif fase_actual == 'octavos' and fase_siguiente == 'cuartos':
+        return generar_fase_eliminatoria('octavos', 'cuartos', CUARTOS_CRUCES)
+    
+    elif fase_actual == 'cuartos' and fase_siguiente == 'semis':
+        return generar_fase_eliminatoria('cuartos', 'semis', SEMIS_CRUCES)
+    
+    elif fase_actual == 'semis' and fase_siguiente == 'final':
+        return generar_fase_eliminatoria('semis', 'final', [FINAL_CRUCE])
+    
+    return False
+
 # ============ FUNCIÓN DE PUNTUACIÓN AVANZADA ============
 def calcular_puntos(goles_local_p, goles_visitante_p, goles_local_r, goles_visitante_r, fase):
     puntos = 0
@@ -31,6 +266,195 @@ def calcular_puntos(goles_local_p, goles_visitante_p, goles_local_r, goles_visit
         puntos = puntos * 2
     
     return puntos
+
+# ============ FUNCIONES AUXILIARES PARA ELIMINATORIAS ============
+
+def obtener_clasificados_grupos():
+    """Obtiene los 32 equipos clasificados (1°, 2° y mejores terceros)"""
+    grupos = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+    
+    primeros = []
+    segundos = []
+    terceros = []
+    
+    for grupo in grupos:
+        # Obtener partidos del grupo
+        partidos_grupo = Partido.query.filter_by(grupo=grupo, fase='grupos', jugado=True).all()
+        
+        if len(partidos_grupo) == 0:
+            continue
+            
+        # Calcular tabla de posiciones del grupo
+        tabla_grupo = {}
+        for partido in partidos_grupo:
+            for equipo in [partido.equipo_local, partido.equipo_visitante]:
+                if equipo not in tabla_grupo:
+                    tabla_grupo[equipo] = {'puntos': 0, 'dg': 0, 'gf': 0}
+            
+            # Actualizar estadísticas
+            local = partido.equipo_local
+            visitante = partido.equipo_visitante
+            gl = partido.resultado_local
+            gv = partido.resultado_visitante
+            
+            tabla_grupo[local]['gf'] += gl
+            tabla_grupo[visitante]['gf'] += gv
+            tabla_grupo[local]['dg'] += (gl - gv)
+            tabla_grupo[visitante]['dg'] += (gv - gl)
+            
+            if gl > gv:
+                tabla_grupo[local]['puntos'] += 3
+            elif gv > gl:
+                tabla_grupo[visitante]['puntos'] += 3
+            else:
+                tabla_grupo[local]['puntos'] += 1
+                tabla_grupo[visitante]['puntos'] += 1
+        
+        # Ordenar tabla
+        clasificados = sorted(tabla_grupo.items(), key=lambda x: (x[1]['puntos'], x[1]['dg'], x[1]['gf']), reverse=True)
+        
+        if len(clasificados) >= 1:
+            primeros.append(clasificados[0][0])
+        if len(clasificados) >= 2:
+            segundos.append(clasificados[1][0])
+        if len(clasificados) >= 3:
+            terceros.append({'equipo': clasificados[2][0], 'puntos': clasificados[2][1]['puntos'], 'dg': clasificados[2][1]['dg']})
+    
+    # Ordenar terceros y tomar los mejores 8
+    terceros.sort(key=lambda x: (x['puntos'], x['dg']), reverse=True)
+    mejores_terceros = [t['equipo'] for t in terceros[:8]]
+    
+    return {
+        'primeros': primeros,
+        'segundos': segundos,
+        'mejores_terceros': mejores_terceros
+    }
+
+
+def calcular_tabla_grupo(partidos):
+    """Calcula la tabla de posiciones de un grupo"""
+    tabla = {}
+    for partido in partidos:
+        for equipo in [partido.equipo_local, partido.equipo_visitante]:
+            if equipo not in tabla:
+                tabla[equipo] = {'puntos': 0, 'dg': 0, 'gf': 0, 'gc': 0}
+        
+        local = partido.equipo_local
+        visitante = partido.equipo_visitante
+        gl = partido.resultado_local
+        gv = partido.resultado_visitante
+        
+        tabla[local]['gf'] += gl
+        tabla[local]['gc'] += gv
+        tabla[visitante]['gf'] += gv
+        tabla[visitante]['gc'] += gl
+        tabla[local]['dg'] += (gl - gv)
+        tabla[visitante]['dg'] += (gv - gl)
+        
+        if gl > gv:
+            tabla[local]['puntos'] += 3
+        elif gv > gl:
+            tabla[visitante]['puntos'] += 3
+        else:
+            tabla[local]['puntos'] += 1
+            tabla[visitante]['puntos'] += 1
+    
+    resultado = sorted(tabla.items(), key=lambda x: (x[1]['puntos'], x[1]['dg'], x[1]['gf']), reverse=True)
+    return [{'equipo': r[0], 'puntos': r[1]['puntos'], 'dg': r[1]['dg'], 'gf': r[1]['gf']} for r in resultado]
+
+def generar_siguiente_fase(fase_actual, fase_siguiente):
+    """
+    Genera automáticamente los partidos de la siguiente fase
+    fase_actual: 'grupos', 'dieciseisavos', 'octavos', 'cuartos', 'semis'
+    fase_siguiente: 'dieciseisavos', 'octavos', 'cuartos', 'semis', 'final'
+    """
+    from datetime import datetime
+    
+    # Verificar si ya existen partidos de la siguiente fase
+    ya_existen = Partido.query.filter_by(fase=fase_siguiente).first()
+    if ya_existen:
+        print(f"⚠️ La fase {fase_siguiente} ya existe")
+        return False
+    
+    # Obtener clasificados según la fase actual
+    if fase_actual == 'grupos':
+        clasificados = obtener_clasificados_grupos()
+        # Generar cruces según fixture FIFA
+        cruces = generar_cruces_dieciseisavos(clasificados)
+    else:
+        # Para fases eliminatorias, tomar los ganadores
+        cruces = generar_cruces_eliminatorias(fase_actual)
+    
+    if not cruces:
+        print(f"❌ No se pudieron generar los cruces para {fase_siguiente}")
+        return False
+    
+    # Fechas estimadas para cada fase
+    fechas = {
+        'dieciseisavos': datetime(2026, 6, 28, 12, 0),
+        'octavos': datetime(2026, 7, 3, 12, 0),
+        'cuartos': datetime(2026, 7, 8, 12, 0),
+        'semis': datetime(2026, 7, 13, 12, 0),
+        'final': datetime(2026, 7, 18, 15, 0)
+    }
+    
+    # Crear los partidos
+    for local, visitante in cruces:
+        partido = Partido(
+            equipo_local=local,
+            equipo_visitante=visitante,
+            fecha=fechas[fase_siguiente],
+            grupo='ELIM',
+            fase=fase_siguiente,
+            jugado=False
+        )
+        db.session.add(partido)
+    
+    db.session.commit()
+    print(f"✅ Generados {len(cruces)} partidos para {fase_siguiente}")
+    return True
+
+
+def generar_cruces_dieciseisavos(clasificados):
+    """Genera los 16 cruces de dieciseisavos según formato FIFA 2026"""
+    # Esta función debe implementarse según el fixture oficial
+    # Por ahora, es un ejemplo simplificado
+    cruces = []
+    
+    primeros = clasificados['primeros']
+    segundos = clasificados['segundos']
+    terceros = clasificados['mejores_terceros']
+    
+    # Ejemplo de cruce (esto debe ajustarse al fixture real)
+    for i in range(8):
+        if i < len(primeros) and i < len(terceros):
+            cruces.append((primeros[i], terceros[i]))
+    
+    for i in range(8):
+        if i + 8 < len(segundos) and i + 8 < len(segundos):
+            cruces.append((segundos[i + 8], segundos[i]))
+    
+    return cruces
+
+
+def generar_cruces_eliminatorias(fase_actual):
+    """Genera cruces para fases eliminatorias basado en ganadores"""
+    partidos_actual = Partido.query.filter_by(fase=fase_actual, jugado=True).all()
+    
+    ganadores = []
+    for partido in partidos_actual:
+        if partido.resultado_local > partido.resultado_visitante:
+            ganadores.append(partido.equipo_local)
+        else:
+            ganadores.append(partido.equipo_visitante)
+    
+    # Crear cruces (1° vs 2°, 3° vs 4°, etc.)
+    cruces = []
+    for i in range(0, len(ganadores), 2):
+        if i + 1 < len(ganadores):
+            cruces.append((ganadores[i], ganadores[i + 1]))
+    
+    return cruces
 
 
 # ============ AUTENTICACIÓN ============
