@@ -743,3 +743,64 @@ def admin_reiniciar_partidos():
     
     db.session.commit()
     return jsonify({'mensaje': 'Todos los partidos y pronósticos han sido reiniciados.'})
+
+# ============ GENERACIÓN MANUAL DE FASES ELIMINATORIAS ============
+
+@api_bp.route('/admin/generar-dieciseisavos', methods=['POST'])
+@login_required
+def admin_generar_dieciseisavos():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    from fases_service import generar_dieciseisavos
+    resultado = generar_dieciseisavos()
+    
+    return jsonify(resultado)
+
+
+@api_bp.route('/admin/generar-octavos', methods=['POST'])
+@login_required
+def admin_generar_octavos():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    from fases_service import generar_octavos
+    resultado = generar_octavos()
+    
+    return jsonify(resultado)
+
+
+@api_bp.route('/admin/generar-cuartos', methods=['POST'])
+@login_required
+def admin_generar_cuartos():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    from fases_service import generar_cuartos
+    resultado = generar_cuartos()
+    
+    return jsonify(resultado)
+
+
+@api_bp.route('/admin/generar-semis', methods=['POST'])
+@login_required
+def admin_generar_semis():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    from fases_service import generar_semis
+    resultado = generar_semis()
+    
+    return jsonify(resultado)
+
+
+@api_bp.route('/admin/generar-final', methods=['POST'])
+@login_required
+def admin_generar_final():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    from fases_service import generar_final
+    resultado = generar_final()
+    
+    return jsonify(resultado)

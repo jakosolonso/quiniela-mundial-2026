@@ -405,6 +405,29 @@
             </button>
             <div id="simulacionMensaje" class="mensaje" style="margin-top:20px;"></div>
         </div>
+
+        <!-- Botones para generar fases eliminatorias -->
+<div class="card" style="margin-top: 20px;">
+    <h3>🏆 Generar Fases Eliminatorias</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
+        <button onclick="generarFase('dieciseisavos')" class="btn-accion">
+            🏹 Generar Dieciseisavos
+        </button>
+        <button onclick="generarFase('octavos')" class="btn-accion">
+            🏆 Generar Octavos
+        </button>
+        <button onclick="generarFase('cuartos')" class="btn-accion">
+            🥇 Generar Cuartos
+        </button>
+        <button onclick="generarFase('semis')" class="btn-accion">
+            ⭐ Generar Semifinales
+        </button>
+        <button onclick="generarFase('final')" class="btn-accion">
+            🏆 Generar Final
+        </button>
+    </div>
+    <div id="mensajeFase" style="margin-top: 15px;"></div>
+</div>
     </div>
 
     <script>
@@ -626,6 +649,49 @@
         cargarPartidos();
         cargarUsuarios();
         cargarScheduler();
+        
+        async function generarFase(fase) {
+    const botones = {
+        'dieciseisavos': '/api/admin/generar-dieciseisavos',
+        'octavos': '/api/admin/generar-octavos',
+        'cuartos': '/api/admin/generar-cuartos',
+        'semis': '/api/admin/generar-semis',
+        'final': '/api/admin/generar-final'
+    };
+    
+    const nombres = {
+        'dieciseisavos': 'Dieciseisavos',
+        'octavos': 'Octavos',
+        'cuartos': 'Cuartos',
+        'semis': 'Semifinales',
+        'final': 'Final'
+    };
+    
+    if (!confirm(`⚠️ ¿Estás seguro de generar ${nombres[fase]}? Esta acción no se puede deshacer.`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(botones[fase], { method: 'POST' });
+        const data = await response.json();
+        
+        const mensajeDiv = document.getElementById('mensajeFase');
+        if (data.success) {
+            mensajeDiv.innerHTML = `<div class="mensaje-exito">✅ ${data.message}</div>`;
+            setTimeout(() => {
+                cargarPartidos(); // Recargar lista de partidos
+            }, 2000);
+        } else {
+            mensajeDiv.innerHTML = `<div class="mensaje-error">❌ ${data.message}</div>`;
+        }
+        
+        setTimeout(() => {
+            mensajeDiv.innerHTML = '';
+        }, 5000);
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}    
     </script>
 </body>
 </html>
