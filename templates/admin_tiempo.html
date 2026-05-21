@@ -138,7 +138,16 @@
     </div>
     
     <script>
-        const fases = ['grupos', 'octavos', 'cuartos', 'semis', 'final'];
+        const fases = ['grupos', 'dieciseisavos', 'octavos', 'cuartos', 'semis', 'final'];
+
+        const nombresFases = {
+        'grupos': 'Fase de Grupos',
+        'dieciseisavos': 'Dieciseisavos de Final',
+        'octavos': 'Octavos de Final',
+        'cuartos': 'Cuartos de Final',
+        'semis': 'Semifinales',
+        'final': 'Final'
+        };
         
         async function cargarConfiguraciones() {
             try {
@@ -159,7 +168,7 @@
                     
                     container.innerHTML += `
                         <div class="config-item">
-                            <label>${fase.toUpperCase()}</label>
+                            <label>${nombresFases[fase].toUpperCase()}</label>
                             <input type="datetime-local" id="fecha_${fase}" value="${fechaStr}">
                             <span class="estado ${puedePronosticar ? 'estado-abierto' : 'estado-cerrado'}">
                                 ${puedePronosticar ? '🔓 Abierto' : '🔒 Cerrado'}

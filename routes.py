@@ -581,14 +581,15 @@ def fecha_limite_activa():
     """Obtiene la fecha límite más próxima para mostrar notificación"""
     from datetime import datetime
     
-    fases_orden = ['grupos', 'octavos', 'cuartos', 'semis', 'final']
+    fases_orden = ['grupos', 'dieciseisavos', 'octavos', 'cuartos', 'semis', 'final']
     fases_nombres = {
-        'grupos': 'Fase de Grupos',
-        'octavos': 'Octavos de Final',
-        'cuartos': 'Cuartos de Final',
-        'semis': 'Semifinales',
-        'final': 'Final'
-    }
+    'grupos': 'Fase de Grupos',
+    'dieciseisavos': 'Dieciseisavos de Final',
+    'octavos': 'Octavos de Final',
+    'cuartos': 'Cuartos de Final',
+    'semis': 'Semifinales',
+    'final': 'Final'
+}
     
     configs = ConfiguracionTiempo.query.all()
     config_dict = {c.fase: c.fecha_limite for c in configs}

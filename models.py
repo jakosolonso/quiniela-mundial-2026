@@ -45,7 +45,7 @@ class Partido(db.Model):
     equipo_visitante = db.Column(db.String(50), nullable=False)
     fecha = db.Column(db.DateTime, nullable=False)
     grupo = db.Column(db.String(1), nullable=False)
-    fase = db.Column(db.String(20), default='grupos')  # grupos, octavos, cuartos, semis, final
+    fase = db.Column(db.String(20), default='grupos')  # grupos, dieciseisavos, octavos, cuartos, semis, final
     resultado_local = db.Column(db.Integer, nullable=True)
     resultado_visitante = db.Column(db.Integer, nullable=True)
     jugado = db.Column(db.Boolean, default=False)
