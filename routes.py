@@ -816,3 +816,35 @@ def admin_generar_final():
         return jsonify(resultado)
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+    
+@api_bp.route('/admin/borrar-fase/<fase>', methods=['POST'])
+@login_required
+def admin_borrar_fase(fase):
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    from fases_service import borrar_fase
+    resultado = borrar_fase(fase)
+    return jsonify(resultado)
+
+
+@api_bp.route('/admin/reiniciar-eliminatorias', methods=['POST'])
+@login_required
+def admin_reiniciar_eliminatorias():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    from fases_service import reiniciar_eliminatorias
+    resultado = reiniciar_eliminatorias()
+    return jsonify(resultado)
+
+
+@api_bp.route('/admin/estado-fases', methods=['GET'])
+@login_required
+def admin_estado_fases():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    from fases_service import verificar_estado_fases
+    estado = verificar_estado_fases()
+    return jsonify(estado)    

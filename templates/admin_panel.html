@@ -470,6 +470,18 @@
     </div>
     <div id="mensajeFase" style="margin-top: 15px;"></div>
 </div>
+
+<!-- Botón para reiniciar eliminatorias -->
+<div style="margin-top: 15px; margin-bottom: 15px;">
+    <button onclick="reiniciarEliminatorias()" class="btn-accion" style="background: #dc2626;">
+        🗑️ Reiniciar Eliminatorias
+    </button>
+    <button onclick="verificarEstado()" class="btn-accion" style="background: #3b82f6;">
+        📊 Verificar Estado de Fases
+    </button>
+</div>
+<div id="mensajeReinicio" style="margin-top: 10px;"></div>
+<div id="estadoFases" style="margin-top: 10px; font-size: 12px;"></div>
     </div>
 
     <script>
@@ -782,6 +794,50 @@ async function generarFase(fase) {
         mensajeDiv.innerHTML = '<div class="mensaje-error">❌ Error de conexión con el servidor</div>';
     }
 }
+
+async function reiniciarEliminatorias() {
+    if (!confirm('⚠️ ATENCIÓN: Esto borrará TODOS los partidos de dieciseisavos, octavos, cuartos, semis y final.\n\n¿Estás completamente seguro?')) {
+        return;
+    }
+    
+    const mensajeDiv = document.getElementById('mensajeReinicio');
+    mensajeDiv.innerHTML = '<div class="mensaje-info">⏳ Borrando fases eliminatorias...</div>';
+    
+    try {
+        const response = await fetch('/api/admin/reiniciar-eliminatorias', { method: 'POST' });
+        const data = await response.json();
+        mensajeDiv.innerHTML = `<div class="mensaje-exito">✅ ${data.message}</div>`;
+        setTimeout(() => {
+            cargarPartidos();
+            verificarEstado();
+        }, 2000);
+    } catch (error) {
+        mensajeDiv.innerHTML = '<div class="mensaje-error">❌ Error al reiniciar</div>';
+    }
+    
+    setTimeout(() => {
+        mensajeDiv.innerHTML = '';
+    }, 5000);
+}
+
+async function verificarEstado() {
+    try {
+        const response = await fetch('/api/admin/estado-fases');
+        const data = await response.json();
+        
+        let html = '<div style="background:#f3f4f6; padding:10px; border-radius:10px; margin-top:10px;">';
+        html += '<strong>📋 Estado de Fases:</strong><br>';
+        for (const [fase, estado] of Object.entries(data)) {
+            html += `${fase}: ${estado.total} partidos, ${estado.jugados} jugados, ${estado.pendientes} pendientes<br>`;
+        }
+        html += '</div>';
+        
+        document.getElementById('estadoFases').innerHTML = html;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
     </script>
 </body>
 </html>

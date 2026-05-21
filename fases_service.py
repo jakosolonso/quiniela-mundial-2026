@@ -1,6 +1,6 @@
 from datetime import datetime
 from database import db
-from models import Partido
+from models import Partido, Pronostico
 import re
 
 # ============ CONFIGURACIÓN ============
@@ -8,31 +8,33 @@ import re
 GRUPOS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 
 DIECISEISAVOS_CRUCES = [
-    (73, ('2° Grupo A', '2° Grupo B')),
-    (74, ('1° Grupo E', '3° Grupo A/B/C/D/F')),
-    (75, ('1° Grupo F', '2° Grupo C')),
-    (76, ('1° Grupo C', '2° Grupo F')),
-    (77, ('1° Grupo I', '3° Grupo C/D/F/G/H')),
-    (78, ('2° Grupo E', '2° Grupo I')),
-    (79, ('1° Grupo A', '3° Grupo C/E/F/H/I')),
-    (80, ('1° Grupo L', '3° Grupo E/H/I/J/K')),
-    (81, ('1° Grupo D', '3° Grupo B/E/F/I/J')),
-    (82, ('1° Grupo G', '3° Grupo A/E/H/I/J')),
-    (83, ('2° Grupo K', '2° Grupo L')),
-    (84, ('1° Grupo H', '2° Grupo J')),
-    (85, ('1° Grupo B', '3° Grupo E/F/G/I/J')),
-    (86, ('1° Grupo J', '2° Grupo H')),
-    (87, ('1° Grupo K', '3° Grupo D/E/I/J/L')),
-    (88, ('2° Grupo D', '2° Grupo G')),
+    # Primera mitad del cuadro
+    (73, ('1° Grupo A', '3° Grupo B/C/D/E/F')),
+    (74, ('2° Grupo B', '2° Grupo C')),
+    (75, ('1° Grupo D', '3° Grupo E/F/G/H/I')),
+    (76, ('1° Grupo E', '2° Grupo F')),
+    (77, ('1° Grupo G', '3° Grupo H/I/J/K/L')),
+    (78, ('2° Grupo H', '2° Grupo I')),
+    (79, ('1° Grupo J', '3° Grupo K/L')),
+    (80, ('2° Grupo K', '2° Grupo L')),
+    # Segunda mitad del cuadro
+    (81, ('1° Grupo B', '3° Grupo A/C/D/E/F')),
+    (82, ('2° Grupo A', '2° Grupo D')),
+    (83, ('1° Grupo C', '3° Grupo D/E/F/G/H')),
+    (84, ('1° Grupo F', '2° Grupo E')),
+    (85, ('1° Grupo H', '3° Grupo I/J/K/L')),
+    (86, ('2° Grupo G', '2° Grupo J')),
+    (87, ('1° Grupo I', '3° Grupo J/K/L')),
+    (88, ('2° Grupo L', '2° Grupo K')),
 ]
 
 OCTAVOS_CRUCES = [
-    (89, (74, 77)), (90, (73, 75)), (91, (76, 78)), (92, (79, 80)),
-    (93, (83, 84)), (94, (81, 82)), (95, (86, 88)), (96, (85, 87)),
+    (89, (73, 77)), (90, (74, 75)), (91, (76, 78)), (92, (79, 80)),
+    (93, (81, 85)), (94, (82, 83)), (95, (84, 86)), (96, (87, 88)),
 ]
 
 CUARTOS_CRUCES = [
-    (97, (89, 90)), (98, (93, 94)), (99, (91, 92)), (100, (95, 96)),
+    (97, (89, 90)), (98, (91, 92)), (99, (93, 94)), (100, (95, 96)),
 ]
 
 SEMIS_CRUCES = [
@@ -49,6 +51,8 @@ FECHAS_FASES = {
     'final': datetime(2026, 7, 19, 15, 0)
 }
 
+
+# ============ FUNCIONES AUXILIARES ============
 
 def calcular_tabla_grupo(partidos):
     """Calcula la tabla de posiciones de un grupo"""
@@ -146,6 +150,7 @@ def generar_dieciseisavos():
     partidos_generados = 0
     
     for partido_id, (local_exp, visitante_exp) in DIECISEISAVOS_CRUCES:
+        # Determinar local
         if '1°' in local_exp:
             grupo = local_exp.split(' ')[-1]
             local = clasificados['primeros'].get(grupo)
@@ -155,6 +160,7 @@ def generar_dieciseisavos():
         else:
             local = resolver_tercero(local_exp, mejores_terceros)
         
+        # Determinar visitante
         if '1°' in visitante_exp:
             grupo = visitante_exp.split(' ')[-1]
             visitante = clasificados['primeros'].get(grupo)
@@ -233,3 +239,38 @@ def generar_semis():
 
 def generar_final():
     return generar_fase_eliminatoria('semis', 'final', [FINAL_CRUCE])
+
+
+def borrar_fase(fase):
+    """Borra todos los partidos de una fase específica"""
+    partidos = Partido.query.filter_by(fase=fase).all()
+    if partidos:
+        # Primero borrar pronósticos relacionados
+        for partido in partidos:
+            Pronostico.query.filter_by(partido_id=partido.id).delete()
+        # Luego borrar partidos
+        Partido.query.filter_by(fase=fase).delete()
+        db.session.commit()
+        return {'success': True, 'message': f'Se borraron {len(partidos)} partidos de {fase}'}
+    return {'success': False, 'message': f'No hay partidos en {fase}'}
+
+
+def reiniciar_eliminatorias():
+    """Borra todas las fases eliminatorias (desde dieciseisavos hasta final)"""
+    fases = ['dieciseisavos', 'octavos', 'cuartos', 'semis', 'final']
+    resultados = []
+    for fase in fases:
+        resultado = borrar_fase(fase)
+        resultados.append(resultado['message'])
+    return {'success': True, 'message': ' | '.join(resultados)}
+
+
+def verificar_estado_fases():
+    """Verifica cuántos partidos hay por fase"""
+    fases = ['grupos', 'dieciseisavos', 'octavos', 'cuartos', 'semis', 'final']
+    estado = {}
+    for fase in fases:
+        total = Partido.query.filter_by(fase=fase).count()
+        jugados = Partido.query.filter_by(fase=fase, jugado=True).count()
+        estado[fase] = {'total': total, 'jugados': jugados, 'pendientes': total - jugados}
+    return estado
