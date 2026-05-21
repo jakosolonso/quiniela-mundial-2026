@@ -746,16 +746,20 @@ def admin_reiniciar_partidos():
 
 # ============ GENERACIÓN MANUAL DE FASES ELIMINATORIAS ============
 
+# ============ GENERACIÓN MANUAL DE FASES ELIMINATORIAS ============
+
 @api_bp.route('/admin/generar-dieciseisavos', methods=['POST'])
 @login_required
 def admin_generar_dieciseisavos():
     if not current_user.es_admin:
         return jsonify({'error': 'No autorizado'}), 403
     
-    from fases_service import generar_dieciseisavos
-    resultado = generar_dieciseisavos()
-    
-    return jsonify(resultado)
+    try:
+        from fases_service import generar_dieciseisavos
+        resultado = generar_dieciseisavos()
+        return jsonify(resultado)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 @api_bp.route('/admin/generar-octavos', methods=['POST'])
@@ -764,10 +768,12 @@ def admin_generar_octavos():
     if not current_user.es_admin:
         return jsonify({'error': 'No autorizado'}), 403
     
-    from fases_service import generar_octavos
-    resultado = generar_octavos()
-    
-    return jsonify(resultado)
+    try:
+        from fases_service import generar_octavos
+        resultado = generar_octavos()
+        return jsonify(resultado)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 @api_bp.route('/admin/generar-cuartos', methods=['POST'])
@@ -776,10 +782,12 @@ def admin_generar_cuartos():
     if not current_user.es_admin:
         return jsonify({'error': 'No autorizado'}), 403
     
-    from fases_service import generar_cuartos
-    resultado = generar_cuartos()
-    
-    return jsonify(resultado)
+    try:
+        from fases_service import generar_cuartos
+        resultado = generar_cuartos()
+        return jsonify(resultado)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 @api_bp.route('/admin/generar-semis', methods=['POST'])
@@ -788,10 +796,12 @@ def admin_generar_semis():
     if not current_user.es_admin:
         return jsonify({'error': 'No autorizado'}), 403
     
-    from fases_service import generar_semis
-    resultado = generar_semis()
-    
-    return jsonify(resultado)
+    try:
+        from fases_service import generar_semis
+        resultado = generar_semis()
+        return jsonify(resultado)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 @api_bp.route('/admin/generar-final', methods=['POST'])
@@ -800,7 +810,9 @@ def admin_generar_final():
     if not current_user.es_admin:
         return jsonify({'error': 'No autorizado'}), 403
     
-    from fases_service import generar_final
-    resultado = generar_final()
-    
-    return jsonify(resultado)
+    try:
+        from fases_service import generar_final
+        resultado = generar_final()
+        return jsonify(resultado)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500

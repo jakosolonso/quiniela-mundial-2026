@@ -3,7 +3,7 @@ from database import db
 from models import Partido
 import re
 
-# ============ CONFIGURACIÓN DE FASES ELIMINATORIAS ============
+# ============ CONFIGURACIÓN ============
 
 GRUPOS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 
@@ -50,8 +50,6 @@ FECHAS_FASES = {
 }
 
 
-# ============ FUNCIONES AUXILIARES ============
-
 def calcular_tabla_grupo(partidos):
     """Calcula la tabla de posiciones de un grupo"""
     tabla = {}
@@ -60,25 +58,23 @@ def calcular_tabla_grupo(partidos):
             if equipo not in tabla:
                 tabla[equipo] = {'puntos': 0, 'dg': 0, 'gf': 0, 'gc': 0}
         
-        local = partido.equipo_local
-        visitante = partido.equipo_visitante
         gl = partido.resultado_local
         gv = partido.resultado_visitante
         
-        tabla[local]['gf'] += gl
-        tabla[local]['gc'] += gv
-        tabla[visitante]['gf'] += gv
-        tabla[visitante]['gc'] += gl
-        tabla[local]['dg'] += (gl - gv)
-        tabla[visitante]['dg'] += (gv - gl)
+        tabla[partido.equipo_local]['gf'] += gl
+        tabla[partido.equipo_local]['gc'] += gv
+        tabla[partido.equipo_visitante]['gf'] += gv
+        tabla[partido.equipo_visitante]['gc'] += gl
+        tabla[partido.equipo_local]['dg'] += (gl - gv)
+        tabla[partido.equipo_visitante]['dg'] += (gv - gl)
         
         if gl > gv:
-            tabla[local]['puntos'] += 3
+            tabla[partido.equipo_local]['puntos'] += 3
         elif gv > gl:
-            tabla[visitante]['puntos'] += 3
+            tabla[partido.equipo_visitante]['puntos'] += 3
         else:
-            tabla[local]['puntos'] += 1
-            tabla[visitante]['puntos'] += 1
+            tabla[partido.equipo_local]['puntos'] += 1
+            tabla[partido.equipo_visitante]['puntos'] += 1
     
     resultado = sorted(tabla.items(), key=lambda x: (x[1]['puntos'], x[1]['dg'], x[1]['gf']), reverse=True)
     return [{'equipo': r[0], 'puntos': r[1]['puntos'], 'dg': r[1]['dg'], 'gf': r[1]['gf']} for r in resultado]
@@ -109,7 +105,6 @@ def obtener_clasificados_grupos():
                 'grupo': grupo
             })
     
-    # Ordenar terceros y tomar los mejores 8
     terceros_lista.sort(key=lambda x: (x['puntos'], x['dg']), reverse=True)
     mejores_terceros = terceros_lista[:8]
     
@@ -124,8 +119,7 @@ def resolver_tercero(expresion, mejores_terceros):
     """Resuelve qué equipo ocupa el 3° lugar"""
     if '/' in expresion:
         grupos_mencionados = re.findall(r'[A-L]', expresion)
-        mejores = sorted([t for t in mejores_terceros if t['grupo'] in grupos_mencionados], 
-                        key=lambda x: (x['puntos'], x['dg']), reverse=True)
+        mejores = [t for t in mejores_terceros if t['grupo'] in grupos_mencionados]
         if mejores:
             return mejores[0]['equipo']
     
@@ -139,15 +133,12 @@ def resolver_tercero(expresion, mejores_terceros):
     return None
 
 
-# ============ GENERADORES DE FASES ============
-
 def generar_dieciseisavos():
     """Genera los 16 partidos de dieciseisavos"""
     clasificados = obtener_clasificados_grupos()
     if not clasificados:
         return {'success': False, 'message': 'No hay resultados de grupos disponibles'}
     
-    # Verificar si ya existen
     if Partido.query.filter_by(fase='dieciseisavos').first():
         return {'success': False, 'message': 'Los dieciseisavos ya fueron generados'}
     
@@ -155,7 +146,6 @@ def generar_dieciseisavos():
     partidos_generados = 0
     
     for partido_id, (local_exp, visitante_exp) in DIECISEISAVOS_CRUCES:
-        # Determinar local
         if '1°' in local_exp:
             grupo = local_exp.split(' ')[-1]
             local = clasificados['primeros'].get(grupo)
@@ -165,7 +155,6 @@ def generar_dieciseisavos():
         else:
             local = resolver_tercero(local_exp, mejores_terceros)
         
-        # Determinar visitante
         if '1°' in visitante_exp:
             grupo = visitante_exp.split(' ')[-1]
             visitante = clasificados['primeros'].get(grupo)
@@ -193,11 +182,9 @@ def generar_dieciseisavos():
 
 def generar_fase_eliminatoria(fase_anterior, fase_actual, cruces_config):
     """Genera partidos de octavos, cuartos, semis o final"""
-    # Verificar si ya existen
     if Partido.query.filter_by(fase=fase_actual).first():
         return {'success': False, 'message': f'La fase {fase_actual} ya fue generada'}
     
-    # Obtener ganadores de la fase anterior
     ganadores = {}
     partidos_anteriores = Partido.query.filter_by(fase=fase_anterior, jugado=True).all()
     
