@@ -138,49 +138,103 @@ def resolver_tercero(expresion, mejores_terceros):
 
 
 def generar_dieciseisavos():
-    """Genera los 16 partidos de dieciseisavos"""
+    """Genera los 16 partidos de dieciseisavos - Versión simplificada"""
+    
+    # Verificar si ya existen
+    if Partido.query.filter_by(fase='dieciseisavos').first():
+        return {'success': False, 'message': 'Los dieciseisavos ya fueron generados'}
+    
+    # Obtener todos los equipos clasificados
     clasificados = obtener_clasificados_grupos()
     if not clasificados:
         return {'success': False, 'message': 'No hay resultados de grupos disponibles'}
     
-    if Partido.query.filter_by(fase='dieciseisavos').first():
-        return {'success': False, 'message': 'Los dieciseisavos ya fueron generados'}
+    # Crear lista de todos los equipos clasificados
+    todos_los_clasificados = []
     
-    mejores_terceros = clasificados['mejores_terceros']
+    # Agregar primeros y segundos
+    for grupo in GRUPOS:
+        if grupo in clasificados['primeros']:
+            todos_los_clasificados.append({
+                'equipo': clasificados['primeros'][grupo],
+                'posicion': 1,
+                'grupo': grupo
+            })
+        if grupo in clasificados['segundos']:
+            todos_los_clasificados.append({
+                'equipo': clasificados['segundos'][grupo],
+                'posicion': 2,
+                'grupo': grupo
+            })
+    
+    # Agregar mejores terceros
+    for tercero in clasificados['mejores_terceros']:
+        todos_los_clasificados.append({
+            'equipo': tercero['equipo'],
+            'posicion': 3,
+            'grupo': tercero['grupo']
+        })
+    
+    if len(todos_los_clasificados) != 32:
+        return {'success': False, 'message': f'Se necesitan 32 equipos, solo hay {len(todos_los_clasificados)}'}
+    
+    # Ordenar para crear cruces equitativos
+    # Agrupar por posición para mezclar
+    primeros = [c for c in todos_los_clasificados if c['posicion'] == 1]
+    segundos = [c for c in todos_los_clasificados if c['posicion'] == 2]
+    terceros = [c for c in todos_los_clasificados if c['posicion'] == 3]
+    
+    # Mezclar para evitar duplicados
+    import random
+    random.seed(42)  # Semilla fija para resultados consistentes
+    
+    random.shuffle(primeros)
+    random.shuffle(segundos)
+    random.shuffle(terceros)
+    
+    # Crear cruces: 1° vs (2° o 3°)
+    cruces = []
+    
+    # Los 8 primeros enfrentan a segundos o terceros
+    for i in range(8):
+        if i < len(primeros) and i < len(segundos):
+            cruces.append((primeros[i]['equipo'], segundos[i]['equipo']))
+    
+    # Los siguientes 8 primeros enfrentan a los mejores terceros
+    for i in range(8, 16):
+        if i < len(primeros) and (i - 8) < len(terceros):
+            cruces.append((primeros[i]['equipo'], terceros[i - 8]['equipo']))
+    
+    # Si faltan cruces, completar con los que tenemos
+    while len(cruces) < 16 and len(terceros) > 0:
+        cruces.append((primeros[len(cruces) % len(primeros)]['equipo'], 
+                       terceros[len(cruces) % len(terceros)]['equipo']))
+    
+    # Limitar a 16 cruces
+    cruces = cruces[:16]
+    
+    # Verificar que no haya equipos repetidos en los cruces
+    equipos_usados = set()
+    cruces_limpios = []
+    for local, visitante in cruces:
+        if local not in equipos_usados and visitante not in equipos_usados and local != visitante:
+            equipos_usados.add(local)
+            equipos_usados.add(visitante)
+            cruces_limpios.append((local, visitante))
+    
+    # Crear los partidos
     partidos_generados = 0
-    
-    for partido_id, (local_exp, visitante_exp) in DIECISEISAVOS_CRUCES:
-        # Determinar local
-        if '1°' in local_exp:
-            grupo = local_exp.split(' ')[-1]
-            local = clasificados['primeros'].get(grupo)
-        elif '2°' in local_exp:
-            grupo = local_exp.split(' ')[-1]
-            local = clasificados['segundos'].get(grupo)
-        else:
-            local = resolver_tercero(local_exp, mejores_terceros)
-        
-        # Determinar visitante
-        if '1°' in visitante_exp:
-            grupo = visitante_exp.split(' ')[-1]
-            visitante = clasificados['primeros'].get(grupo)
-        elif '2°' in visitante_exp:
-            grupo = visitante_exp.split(' ')[-1]
-            visitante = clasificados['segundos'].get(grupo)
-        else:
-            visitante = resolver_tercero(visitante_exp, mejores_terceros)
-        
-        if local and visitante:
-            partido = Partido(
-                equipo_local=local,
-                equipo_visitante=visitante,
-                fecha=FECHAS_FASES['dieciseisavos'],
-                grupo='ELIM',
-                fase='dieciseisavos',
-                jugado=False
-            )
-            db.session.add(partido)
-            partidos_generados += 1
+    for local, visitante in cruces_limpios:
+        partido = Partido(
+            equipo_local=local,
+            equipo_visitante=visitante,
+            fecha=FECHAS_FASES['dieciseisavos'],
+            grupo='ELIM',
+            fase='dieciseisavos',
+            jugado=False
+        )
+        db.session.add(partido)
+        partidos_generados += 1
     
     db.session.commit()
     return {'success': True, 'message': f'Se generaron {partidos_generados} partidos de dieciseisavos'}
