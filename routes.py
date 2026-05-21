@@ -1,10 +1,9 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from database import db
-from models import Partido, Usuario, Pronostico
+from models import Partido, Usuario, Pronostico, ConfiguracionTiempo
 from datetime import datetime
 import re
-from models import Partido, Usuario, Pronostico, ConfiguracionTiempo
 
 api_bp = Blueprint('api', __name__)
 
@@ -13,9 +12,8 @@ api_bp = Blueprint('api', __name__)
 GRUPOS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 
 # Mapeo de grupos por fase (para los cruces de dieciseisavos según fixture FIFA)
-DIEcISEISAVOS_CRUCES = [
-    # (Partido, Local vs Visitante según fixture)
-    (73, ('2° Grupo A', '2° Grupo B')),  # Partido 73
+DIECISEISAVOS_CRUCES = [
+    (73, ('2° Grupo A', '2° Grupo B')),
     (74, ('1° Grupo E', '3° Grupo A/B/C/D/F')),
     (75, ('1° Grupo F', '2° Grupo C')),
     (76, ('1° Grupo C', '2° Grupo F')),
@@ -33,39 +31,57 @@ DIEcISEISAVOS_CRUCES = [
     (88, ('2° Grupo D', '2° Grupo G')),
 ]
 
-# Mapeo de partidos de octavos (basado en ganadores de dieciseisavos)
 OCTAVOS_CRUCES = [
-    (89, (74, 77)),  # Ganador 74 vs Ganador 77
-    (90, (73, 75)),  # Ganador 73 vs Ganador 75
-    (91, (76, 78)),  # Ganador 76 vs Ganador 78
-    (92, (79, 80)),  # Ganador 79 vs Ganador 80
-    (93, (83, 84)),  # Ganador 83 vs Ganador 84
-    (94, (81, 82)),  # Ganador 81 vs Ganador 82
-    (95, (86, 88)),  # Ganador 86 vs Ganador 88
-    (96, (85, 87)),  # Ganador 85 vs Ganador 87
+    (89, (74, 77)),
+    (90, (73, 75)),
+    (91, (76, 78)),
+    (92, (79, 80)),
+    (93, (83, 84)),
+    (94, (81, 82)),
+    (95, (86, 88)),
+    (96, (85, 87)),
 ]
 
-# Mapeo de cuartos de final
 CUARTOS_CRUCES = [
-    (97, (89, 90)),  # Ganador 89 vs Ganador 90
-    (98, (93, 94)),  # Ganador 93 vs Ganador 94
-    (99, (91, 92)),  # Ganador 91 vs Ganador 92
-    (100, (95, 96)),  # Ganador 95 vs Ganador 96
+    (97, (89, 90)),
+    (98, (93, 94)),
+    (99, (91, 92)),
+    (100, (95, 96)),
 ]
 
-# Semifinales
 SEMIS_CRUCES = [
-    (101, (97, 98)),  # Ganador 97 vs Ganador 98
-    (102, (99, 100)),  # Ganador 99 vs Ganador 100
+    (101, (97, 98)),
+    (102, (99, 100)),
 ]
 
-# Final
-FINAL_CRUCE = (104, (101, 102))  # Ganador 101 vs Ganador 102
+FINAL_CRUCE = (104, (101, 102))
+
+
+# ============ FUNCIÓN DE PUNTUACIÓN AVANZADA ============
+def calcular_puntos(goles_local_p, goles_visitante_p, goles_local_r, goles_visitante_r, fase):
+    puntos = 0
+    
+    if goles_local_p == goles_local_r and goles_visitante_p == goles_visitante_r:
+        puntos = 5
+    elif (goles_local_p - goles_visitante_p) == (goles_local_r - goles_visitante_r):
+        puntos = 3
+    
+    if puntos != 5:
+        diferencia_p = goles_local_p - goles_visitante_p
+        diferencia_r = goles_local_r - goles_visitante_r
+        if diferencia_p == diferencia_r:
+            puntos += 1
+    
+    if fase in ['semis', 'final']:
+        puntos = puntos * 2
+    
+    return puntos
+
+
+# ============ FUNCIONES AUXILIARES PARA ELIMINATORIAS ============
 
 def obtener_clasificados_grupos_reales():
     """Obtiene los equipos clasificados según resultados reales"""
-    from models import Partido
-    
     clasificados = {
         'primeros': {},
         'segundos': {},
@@ -93,30 +109,25 @@ def obtener_clasificados_grupos_reales():
     
     return clasificados
 
+
 def obtener_mejores_terceros(clasificados):
     """Obtiene los 8 mejores terceros lugares"""
     terceros = [{'equipo': v['equipo'], 'puntos': v['puntos'], 'dg': v['dg'], 'grupo': k} 
                 for k, v in clasificados['terceros'].items()]
     
-    # Ordenar por puntos, luego diferencia de goles, luego goles a favor
-    terceros.sort(key=lambda x: (x['puntos'], x['dg'], x.get('gf', 0)), reverse=True)
-    
+    terceros.sort(key=lambda x: (x['puntos'], x['dg']), reverse=True)
     return terceros[:8]
+
 
 def resolver_tercero(expresion, terceros_clasificados):
     """Resuelve qué equipo ocupa el 3° lugar de un grupo específico"""
-    import re
-    
-    # Expresiones como "3° Grupo C/D/F/G/H"
     if '/' in expresion:
-        # Buscar el mejor tercero entre los grupos listados
         grupos_mencionados = re.findall(r'[A-L]', expresion)
         mejores = sorted([t for t in terceros_clasificados if t['grupo'] in grupos_mencionados], 
                         key=lambda x: (x['puntos'], x['dg']), reverse=True)
         if mejores:
             return mejores[0]['equipo']
     
-    # Expresión específica como "3° Grupo A"
     match = re.search(r'3° Grupo ([A-L])', expresion)
     if match:
         grupo = match.group(1)
@@ -126,18 +137,13 @@ def resolver_tercero(expresion, terceros_clasificados):
     
     return None
 
+
 def generar_dieciseisavos(clasificados):
     """Genera los 16 partidos de dieciseisavos según fixture FIFA"""
-    from models import Partido
-    from datetime import datetime
-    
-    # Obtener mejores terceros
     mejores_terceros = obtener_mejores_terceros(clasificados)
-    
     partidos_generados = []
     
-    for partido_id, (local_exp, visitante_exp) in DIEcISEISAVOS_CRUCES:
-        # Determinar equipo local
+    for partido_id, (local_exp, visitante_exp) in DIECISEISAVOS_CRUCES:
         if '1°' in local_exp:
             grupo = local_exp.split(' ')[-1]
             local = clasificados['primeros'].get(grupo)
@@ -147,7 +153,6 @@ def generar_dieciseisavos(clasificados):
         else:
             local = resolver_tercero(local_exp, mejores_terceros)
         
-        # Determinar equipo visitante
         if '1°' in visitante_exp:
             grupo = visitante_exp.split(' ')[-1]
             visitante = clasificados['primeros'].get(grupo)
@@ -167,21 +172,14 @@ def generar_dieciseisavos(clasificados):
                 jugado=False
             )
             db.session.add(partido)
-            partidos_generados.append({
-                'id': partido_id,
-                'local': local,
-                'visitante': visitante
-            })
+            partidos_generados.append({'id': partido_id, 'local': local, 'visitante': visitante})
     
     db.session.commit()
     return partidos_generados
 
+
 def generar_fase_eliminatoria(fase_anterior, fase_actual, cruces_config):
     """Genera partidos de octavos, cuartos, semis o final"""
-    from models import Partido
-    from datetime import datetime
-    
-    # Obtener ganadores de la fase anterior
     ganadores = {}
     partidos_anteriores = Partido.query.filter_by(fase=fase_anterior, jugado=True).all()
     
@@ -219,9 +217,9 @@ def generar_fase_eliminatoria(fase_anterior, fase_actual, cruces_config):
     db.session.commit()
     return partidos_generados
 
+
 def generar_siguiente_fase(fase_actual, fase_siguiente):
     """Genera la siguiente fase según el fixture real"""
-    
     if fase_actual == 'grupos' and fase_siguiente == 'dieciseisavos':
         clasificados = obtener_clasificados_grupos_reales()
         if not clasificados:
@@ -243,31 +241,6 @@ def generar_siguiente_fase(fase_actual, fase_siguiente):
     
     return False
 
-# ============ FUNCIÓN DE PUNTUACIÓN AVANZADA ============
-def calcular_puntos(goles_local_p, goles_visitante_p, goles_local_r, goles_visitante_r, fase):
-    puntos = 0
-    
-    # Resultado exacto: 5 pts
-    if goles_local_p == goles_local_r and goles_visitante_p == goles_visitante_r:
-        puntos = 5
-    # Ganador o empate acertado: 3 pts
-    elif (goles_local_p - goles_visitante_p) == (goles_local_r - goles_visitante_r):
-        puntos = 3
-    
-    # Bonus diferencia de goles exacta: +1 pt
-    if puntos != 5:
-        diferencia_p = goles_local_p - goles_visitante_p
-        diferencia_r = goles_local_r - goles_visitante_r
-        if diferencia_p == diferencia_r:
-            puntos += 1
-    
-    # Semifinal y Final: puntos x2
-    if fase in ['semis', 'final']:
-        puntos = puntos * 2
-    
-    return puntos
-
-# ============ FUNCIONES AUXILIARES PARA ELIMINATORIAS ============
 
 def obtener_clasificados_grupos():
     """Obtiene los 32 equipos clasificados (1°, 2° y mejores terceros)"""
@@ -278,20 +251,17 @@ def obtener_clasificados_grupos():
     terceros = []
     
     for grupo in grupos:
-        # Obtener partidos del grupo
         partidos_grupo = Partido.query.filter_by(grupo=grupo, fase='grupos', jugado=True).all()
         
         if len(partidos_grupo) == 0:
             continue
             
-        # Calcular tabla de posiciones del grupo
         tabla_grupo = {}
         for partido in partidos_grupo:
             for equipo in [partido.equipo_local, partido.equipo_visitante]:
                 if equipo not in tabla_grupo:
                     tabla_grupo[equipo] = {'puntos': 0, 'dg': 0, 'gf': 0}
             
-            # Actualizar estadísticas
             local = partido.equipo_local
             visitante = partido.equipo_visitante
             gl = partido.resultado_local
@@ -310,7 +280,6 @@ def obtener_clasificados_grupos():
                 tabla_grupo[local]['puntos'] += 1
                 tabla_grupo[visitante]['puntos'] += 1
         
-        # Ordenar tabla
         clasificados = sorted(tabla_grupo.items(), key=lambda x: (x[1]['puntos'], x[1]['dg'], x[1]['gf']), reverse=True)
         
         if len(clasificados) >= 1:
@@ -320,7 +289,6 @@ def obtener_clasificados_grupos():
         if len(clasificados) >= 3:
             terceros.append({'equipo': clasificados[2][0], 'puntos': clasificados[2][1]['puntos'], 'dg': clasificados[2][1]['dg']})
     
-    # Ordenar terceros y tomar los mejores 8
     terceros.sort(key=lambda x: (x['puntos'], x['dg']), reverse=True)
     mejores_terceros = [t['equipo'] for t in terceros[:8]]
     
@@ -362,70 +330,14 @@ def calcular_tabla_grupo(partidos):
     resultado = sorted(tabla.items(), key=lambda x: (x[1]['puntos'], x[1]['dg'], x[1]['gf']), reverse=True)
     return [{'equipo': r[0], 'puntos': r[1]['puntos'], 'dg': r[1]['dg'], 'gf': r[1]['gf']} for r in resultado]
 
-def generar_siguiente_fase(fase_actual, fase_siguiente):
-    """
-    Genera automáticamente los partidos de la siguiente fase
-    fase_actual: 'grupos', 'dieciseisavos', 'octavos', 'cuartos', 'semis'
-    fase_siguiente: 'dieciseisavos', 'octavos', 'cuartos', 'semis', 'final'
-    """
-    from datetime import datetime
-    
-    # Verificar si ya existen partidos de la siguiente fase
-    ya_existen = Partido.query.filter_by(fase=fase_siguiente).first()
-    if ya_existen:
-        print(f"⚠️ La fase {fase_siguiente} ya existe")
-        return False
-    
-    # Obtener clasificados según la fase actual
-    if fase_actual == 'grupos':
-        clasificados = obtener_clasificados_grupos()
-        # Generar cruces según fixture FIFA
-        cruces = generar_cruces_dieciseisavos(clasificados)
-    else:
-        # Para fases eliminatorias, tomar los ganadores
-        cruces = generar_cruces_eliminatorias(fase_actual)
-    
-    if not cruces:
-        print(f"❌ No se pudieron generar los cruces para {fase_siguiente}")
-        return False
-    
-    # Fechas estimadas para cada fase
-    fechas = {
-        'dieciseisavos': datetime(2026, 6, 28, 12, 0),
-        'octavos': datetime(2026, 7, 3, 12, 0),
-        'cuartos': datetime(2026, 7, 8, 12, 0),
-        'semis': datetime(2026, 7, 13, 12, 0),
-        'final': datetime(2026, 7, 18, 15, 0)
-    }
-    
-    # Crear los partidos
-    for local, visitante in cruces:
-        partido = Partido(
-            equipo_local=local,
-            equipo_visitante=visitante,
-            fecha=fechas[fase_siguiente],
-            grupo='ELIM',
-            fase=fase_siguiente,
-            jugado=False
-        )
-        db.session.add(partido)
-    
-    db.session.commit()
-    print(f"✅ Generados {len(cruces)} partidos para {fase_siguiente}")
-    return True
-
 
 def generar_cruces_dieciseisavos(clasificados):
     """Genera los 16 cruces de dieciseisavos según formato FIFA 2026"""
-    # Esta función debe implementarse según el fixture oficial
-    # Por ahora, es un ejemplo simplificado
     cruces = []
-    
     primeros = clasificados['primeros']
     segundos = clasificados['segundos']
     terceros = clasificados['mejores_terceros']
     
-    # Ejemplo de cruce (esto debe ajustarse al fixture real)
     for i in range(8):
         if i < len(primeros) and i < len(terceros):
             cruces.append((primeros[i], terceros[i]))
@@ -448,7 +360,6 @@ def generar_cruces_eliminatorias(fase_actual):
         else:
             ganadores.append(partido.equipo_visitante)
     
-    # Crear cruces (1° vs 2°, 3° vs 4°, etc.)
     cruces = []
     for i in range(0, len(ganadores), 2):
         if i + 1 < len(ganadores):
@@ -639,12 +550,10 @@ def obtener_usuarios():
 def crear_pronostico():
     data = request.json
     
-    # Obtener el partido para saber su fase
     partido = Partido.query.get(data['partido_id'])
     if not partido:
         return jsonify({'error': 'Partido no encontrado'}), 404
     
-    # Verificar si se puede pronosticar esta fase
     if not puede_pronosticar(partido.fase):
         config = ConfiguracionTiempo.query.filter_by(fase=partido.fase).first()
         fecha_str = config.fecha_limite.strftime('%d/%m/%Y %H:%M')
@@ -652,7 +561,6 @@ def crear_pronostico():
             'error': f'El plazo para pronósticos de {partido.fase} cerró el {fecha_str}'
         }), 403
     
-    # Verificar si el partido ya comenzó/jugó
     if partido.jugado:
         return jsonify({'error': 'El partido ya finalizó'}), 403
     
@@ -678,8 +586,8 @@ def crear_pronostico():
     )
     db.session.add(pronostico)
     db.session.commit()
-
     return jsonify({'mensaje': 'Pronóstico guardado'}), 201
+
 
 @api_bp.route('/pronosticos/usuario/<int:usuario_id>', methods=['GET'])
 @login_required
@@ -696,7 +604,7 @@ def obtener_pronosticos_usuario(usuario_id):
     } for p in pronosticos])
 
 
-# ============ TABLA DE POSICIONES AVANZADA ============
+# ============ TABLA DE POSICIONES ============
 @api_bp.route('/tabla-posiciones-avanzada', methods=['GET'])
 def tabla_posiciones_avanzada():
     usuarios = Usuario.query.all()
@@ -759,104 +667,79 @@ def tabla_posiciones():
     return jsonify(tabla)
 
 
-# ============ CARGAR TODOS LOS PARTIDOS DEL MUNDIAL 2026 ============
+# ============ CARGAR DATOS INICIALES ============
 @api_bp.route('/cargar-datos-iniciales', methods=['POST'])
 def cargar_datos_iniciales():
     if Partido.query.first():
         return jsonify({'mensaje': 'Los datos ya existen'})
     
-    # Lista completa de partidos del Mundial 2026 - Fase de Grupos
-    # Basado en el calendario oficial de la FIFA [citation:1][citation:2]
     partidos = [
-        # === GRUPO A ===
         {'local': 'México', 'visitante': 'Sudáfrica', 'fecha': datetime(2026, 6, 11, 15, 0), 'grupo': 'A', 'fase': 'grupos'},
         {'local': 'Corea del Sur', 'visitante': 'República Checa', 'fecha': datetime(2026, 6, 11, 22, 0), 'grupo': 'A', 'fase': 'grupos'},
         {'local': 'República Checa', 'visitante': 'Sudáfrica', 'fecha': datetime(2026, 6, 18, 12, 0), 'grupo': 'A', 'fase': 'grupos'},
         {'local': 'México', 'visitante': 'Corea del Sur', 'fecha': datetime(2026, 6, 18, 21, 0), 'grupo': 'A', 'fase': 'grupos'},
         {'local': 'México', 'visitante': 'República Checa', 'fecha': datetime(2026, 6, 24, 21, 0), 'grupo': 'A', 'fase': 'grupos'},
         {'local': 'Sudáfrica', 'visitante': 'Corea del Sur', 'fecha': datetime(2026, 6, 24, 21, 0), 'grupo': 'A', 'fase': 'grupos'},
-        
-        # === GRUPO B ===
         {'local': 'Canadá', 'visitante': 'Bosnia y Herzegovina', 'fecha': datetime(2026, 6, 12, 15, 0), 'grupo': 'B', 'fase': 'grupos'},
         {'local': 'Qatar', 'visitante': 'Suiza', 'fecha': datetime(2026, 6, 13, 14, 0), 'grupo': 'B', 'fase': 'grupos'},
         {'local': 'Suiza', 'visitante': 'Bosnia y Herzegovina', 'fecha': datetime(2026, 6, 18, 14, 0), 'grupo': 'B', 'fase': 'grupos'},
         {'local': 'Canadá', 'visitante': 'Qatar', 'fecha': datetime(2026, 6, 18, 17, 0), 'grupo': 'B', 'fase': 'grupos'},
         {'local': 'Canadá', 'visitante': 'Suiza', 'fecha': datetime(2026, 6, 24, 14, 0), 'grupo': 'B', 'fase': 'grupos'},
         {'local': 'Bosnia y Herzegovina', 'visitante': 'Qatar', 'fecha': datetime(2026, 6, 24, 14, 0), 'grupo': 'B', 'fase': 'grupos'},
-        
-        # === GRUPO C ===
         {'local': 'Brasil', 'visitante': 'Marruecos', 'fecha': datetime(2026, 6, 13, 17, 0), 'grupo': 'C', 'fase': 'grupos'},
         {'local': 'Haití', 'visitante': 'Escocia', 'fecha': datetime(2026, 6, 13, 20, 0), 'grupo': 'C', 'fase': 'grupos'},
         {'local': 'Escocia', 'visitante': 'Marruecos', 'fecha': datetime(2026, 6, 19, 17, 0), 'grupo': 'C', 'fase': 'grupos'},
         {'local': 'Brasil', 'visitante': 'Haití', 'fecha': datetime(2026, 6, 19, 20, 0), 'grupo': 'C', 'fase': 'grupos'},
         {'local': 'Escocia', 'visitante': 'Brasil', 'fecha': datetime(2026, 6, 24, 17, 0), 'grupo': 'C', 'fase': 'grupos'},
         {'local': 'Marruecos', 'visitante': 'Haití', 'fecha': datetime(2026, 6, 24, 17, 0), 'grupo': 'C', 'fase': 'grupos'},
-        
-        # === GRUPO D ===
         {'local': 'Estados Unidos', 'visitante': 'Paraguay', 'fecha': datetime(2026, 6, 12, 20, 0), 'grupo': 'D', 'fase': 'grupos'},
         {'local': 'Australia', 'visitante': 'Turquía', 'fecha': datetime(2026, 6, 13, 23, 0), 'grupo': 'D', 'fase': 'grupos'},
         {'local': 'Turquía', 'visitante': 'Paraguay', 'fecha': datetime(2026, 6, 19, 23, 0), 'grupo': 'D', 'fase': 'grupos'},
         {'local': 'Estados Unidos', 'visitante': 'Australia', 'fecha': datetime(2026, 6, 19, 14, 0), 'grupo': 'D', 'fase': 'grupos'},
         {'local': 'Estados Unidos', 'visitante': 'Turquía', 'fecha': datetime(2026, 6, 25, 21, 0), 'grupo': 'D', 'fase': 'grupos'},
         {'local': 'Paraguay', 'visitante': 'Australia', 'fecha': datetime(2026, 6, 25, 21, 0), 'grupo': 'D', 'fase': 'grupos'},
-        
-        # === GRUPO E ===
         {'local': 'Alemania', 'visitante': 'Curazao', 'fecha': datetime(2026, 6, 14, 12, 0), 'grupo': 'E', 'fase': 'grupos'},
         {'local': 'Costa de Marfil', 'visitante': 'Ecuador', 'fecha': datetime(2026, 6, 14, 18, 0), 'grupo': 'E', 'fase': 'grupos'},
         {'local': 'Alemania', 'visitante': 'Costa de Marfil', 'fecha': datetime(2026, 6, 20, 15, 0), 'grupo': 'E', 'fase': 'grupos'},
         {'local': 'Ecuador', 'visitante': 'Curazao', 'fecha': datetime(2026, 6, 20, 19, 0), 'grupo': 'E', 'fase': 'grupos'},
         {'local': 'Ecuador', 'visitante': 'Alemania', 'fecha': datetime(2026, 6, 25, 15, 0), 'grupo': 'E', 'fase': 'grupos'},
         {'local': 'Curazao', 'visitante': 'Costa de Marfil', 'fecha': datetime(2026, 6, 25, 15, 0), 'grupo': 'E', 'fase': 'grupos'},
-        
-        # === GRUPO F ===
         {'local': 'Países Bajos', 'visitante': 'Japón', 'fecha': datetime(2026, 6, 14, 15, 0), 'grupo': 'F', 'fase': 'grupos'},
         {'local': 'Suecia', 'visitante': 'Túnez', 'fecha': datetime(2026, 6, 14, 21, 0), 'grupo': 'F', 'fase': 'grupos'},
         {'local': 'Países Bajos', 'visitante': 'Suecia', 'fecha': datetime(2026, 6, 20, 12, 0), 'grupo': 'F', 'fase': 'grupos'},
         {'local': 'Túnez', 'visitante': 'Japón', 'fecha': datetime(2026, 6, 20, 23, 0), 'grupo': 'F', 'fase': 'grupos'},
         {'local': 'Japón', 'visitante': 'Suecia', 'fecha': datetime(2026, 6, 25, 18, 0), 'grupo': 'F', 'fase': 'grupos'},
         {'local': 'Túnez', 'visitante': 'Países Bajos', 'fecha': datetime(2026, 6, 25, 18, 0), 'grupo': 'F', 'fase': 'grupos'},
-        
-        # === GRUPO G ===
         {'local': 'Bélgica', 'visitante': 'Egipto', 'fecha': datetime(2026, 6, 15, 14, 0), 'grupo': 'G', 'fase': 'grupos'},
         {'local': 'Irán', 'visitante': 'Nueva Zelanda', 'fecha': datetime(2026, 6, 15, 20, 0), 'grupo': 'G', 'fase': 'grupos'},
         {'local': 'Bélgica', 'visitante': 'Irán', 'fecha': datetime(2026, 6, 21, 14, 0), 'grupo': 'G', 'fase': 'grupos'},
         {'local': 'Nueva Zelanda', 'visitante': 'Egipto', 'fecha': datetime(2026, 6, 21, 20, 0), 'grupo': 'G', 'fase': 'grupos'},
         {'local': 'Egipto', 'visitante': 'Irán', 'fecha': datetime(2026, 6, 26, 22, 0), 'grupo': 'G', 'fase': 'grupos'},
         {'local': 'Nueva Zelanda', 'visitante': 'Bélgica', 'fecha': datetime(2026, 6, 26, 22, 0), 'grupo': 'G', 'fase': 'grupos'},
-        
-        # === GRUPO H ===
         {'local': 'España', 'visitante': 'Cabo Verde', 'fecha': datetime(2026, 6, 15, 11, 0), 'grupo': 'H', 'fase': 'grupos'},
         {'local': 'Arabia Saudita', 'visitante': 'Uruguay', 'fecha': datetime(2026, 6, 15, 17, 0), 'grupo': 'H', 'fase': 'grupos'},
         {'local': 'España', 'visitante': 'Arabia Saudita', 'fecha': datetime(2026, 6, 21, 11, 0), 'grupo': 'H', 'fase': 'grupos'},
         {'local': 'Uruguay', 'visitante': 'Cabo Verde', 'fecha': datetime(2026, 6, 21, 17, 0), 'grupo': 'H', 'fase': 'grupos'},
         {'local': 'Cabo Verde', 'visitante': 'Arabia Saudita', 'fecha': datetime(2026, 6, 26, 19, 0), 'grupo': 'H', 'fase': 'grupos'},
         {'local': 'Uruguay', 'visitante': 'España', 'fecha': datetime(2026, 6, 26, 19, 0), 'grupo': 'H', 'fase': 'grupos'},
-        
-        # === GRUPO I ===
         {'local': 'Francia', 'visitante': 'Senegal', 'fecha': datetime(2026, 6, 16, 14, 0), 'grupo': 'I', 'fase': 'grupos'},
         {'local': 'Irak', 'visitante': 'Noruega', 'fecha': datetime(2026, 6, 16, 17, 0), 'grupo': 'I', 'fase': 'grupos'},
         {'local': 'Francia', 'visitante': 'Irak', 'fecha': datetime(2026, 6, 22, 17, 0), 'grupo': 'I', 'fase': 'grupos'},
         {'local': 'Noruega', 'visitante': 'Senegal', 'fecha': datetime(2026, 6, 22, 19, 0), 'grupo': 'I', 'fase': 'grupos'},
         {'local': 'Noruega', 'visitante': 'Francia', 'fecha': datetime(2026, 6, 26, 14, 0), 'grupo': 'I', 'fase': 'grupos'},
         {'local': 'Senegal', 'visitante': 'Irak', 'fecha': datetime(2026, 6, 26, 14, 0), 'grupo': 'I', 'fase': 'grupos'},
-        
-        # === GRUPO J ===
         {'local': 'Argentina', 'visitante': 'Argelia', 'fecha': datetime(2026, 6, 16, 20, 0), 'grupo': 'J', 'fase': 'grupos'},
         {'local': 'Austria', 'visitante': 'Jordania', 'fecha': datetime(2026, 6, 16, 23, 0), 'grupo': 'J', 'fase': 'grupos'},
         {'local': 'Argentina', 'visitante': 'Austria', 'fecha': datetime(2026, 6, 22, 12, 0), 'grupo': 'J', 'fase': 'grupos'},
         {'local': 'Jordania', 'visitante': 'Argelia', 'fecha': datetime(2026, 6, 22, 22, 0), 'grupo': 'J', 'fase': 'grupos'},
         {'local': 'Argelia', 'visitante': 'Austria', 'fecha': datetime(2026, 6, 27, 21, 0), 'grupo': 'J', 'fase': 'grupos'},
         {'local': 'Jordania', 'visitante': 'Argentina', 'fecha': datetime(2026, 6, 27, 21, 0), 'grupo': 'J', 'fase': 'grupos'},
-        
-        # === GRUPO K ===
         {'local': 'Portugal', 'visitante': 'RD Congo', 'fecha': datetime(2026, 6, 17, 12, 0), 'grupo': 'K', 'fase': 'grupos'},
         {'local': 'Uzbekistán', 'visitante': 'Colombia', 'fecha': datetime(2026, 6, 17, 21, 0), 'grupo': 'K', 'fase': 'grupos'},
         {'local': 'Portugal', 'visitante': 'Uzbekistán', 'fecha': datetime(2026, 6, 23, 12, 0), 'grupo': 'K', 'fase': 'grupos'},
         {'local': 'Colombia', 'visitante': 'RD Congo', 'fecha': datetime(2026, 6, 23, 21, 0), 'grupo': 'K', 'fase': 'grupos'},
         {'local': 'Colombia', 'visitante': 'Portugal', 'fecha': datetime(2026, 6, 27, 18, 30), 'grupo': 'K', 'fase': 'grupos'},
         {'local': 'RD Congo', 'visitante': 'Uzbekistán', 'fecha': datetime(2026, 6, 27, 18, 30), 'grupo': 'K', 'fase': 'grupos'},
-        
-        # === GRUPO L ===
         {'local': 'Inglaterra', 'visitante': 'Croacia', 'fecha': datetime(2026, 6, 17, 15, 0), 'grupo': 'L', 'fase': 'grupos'},
         {'local': 'Ghana', 'visitante': 'Panamá', 'fecha': datetime(2026, 6, 17, 18, 0), 'grupo': 'L', 'fase': 'grupos'},
         {'local': 'Inglaterra', 'visitante': 'Ghana', 'fecha': datetime(2026, 6, 23, 16, 0), 'grupo': 'L', 'fase': 'grupos'},
@@ -878,15 +761,15 @@ def cargar_datos_iniciales():
     db.session.commit()
     return jsonify({'mensaje': f'Cargados {len(partidos)} partidos del Mundial 2026'})
 
+
+# ============ ADMINISTRACIÓN ============
 @api_bp.route('/admin/estado', methods=['GET'])
 @login_required
 def estado_sistema():
     if not current_user.es_admin:
         return jsonify({'error': 'No autorizado'}), 403
     
-    from apscheduler.schedulers.background import BackgroundScheduler
     import sys
-    
     scheduler_info = None
     for module in sys.modules.values():
         if hasattr(module, 'scheduler'):
@@ -907,6 +790,7 @@ def estado_sistema():
         'intervalo': '10 minutos'
     })
 
+
 @api_bp.route('/admin/verificar-scheduler', methods=['GET'])
 @login_required
 def verificar_scheduler():
@@ -922,7 +806,6 @@ def verificar_scheduler():
         'mensaje': ''
     }
     
-    # Buscar el scheduler en los módulos cargados
     for module_name, module in sys.modules.items():
         if 'app' in module_name or 'scheduler' in module_name:
             for name, obj in inspect.getmembers(module):
@@ -943,25 +826,21 @@ def verificar_scheduler():
     
     return jsonify(info)
 
-#=========================================================================
 
 def puede_pronosticar(fase):
     """Verifica si aún se puede hacer pronósticos para una fase"""
     config = ConfiguracionTiempo.query.filter_by(fase=fase).first()
     if not config:
-        return True  # Si no hay configuración, permitir
-    
+        return True
     ahora = datetime.utcnow()
     return ahora < config.fecha_limite
 
-#===========================================================================
 
 @api_bp.route('/admin/configurar-tiempo', methods=['GET'])
 @login_required
 def admin_obtener_configuracion():
     if not current_user.es_admin:
         return jsonify({'error': 'No autorizado'}), 403
-    
     configs = ConfiguracionTiempo.query.all()
     return jsonify([c.to_dict() for c in configs])
 
@@ -989,10 +868,8 @@ def admin_guardar_configuracion():
 
 @api_bp.route('/admin/verificar-tiempo', methods=['GET'])
 def verificar_tiempo():
-    """Endpoint público para ver si se puede pronosticar"""
     fase = request.args.get('fase', 'grupos')
     puede = puede_pronosticar(fase)
-    
     config = ConfiguracionTiempo.query.filter_by(fase=fase).first()
     return jsonify({
         'fase': fase,
@@ -1000,35 +877,28 @@ def verificar_tiempo():
         'fecha_limite': config.fecha_limite.isoformat() if config else None
     })
 
+
 @api_bp.route('/fecha-limite-activa', methods=['GET'])
 def fecha_limite_activa():
-    """Obtiene la fecha límite más próxima para mostrar notificación"""
-    from datetime import datetime
-    
     fases_orden = ['grupos', 'dieciseisavos', 'octavos', 'cuartos', 'semis', 'final']
     fases_nombres = {
-    'grupos': 'Fase de Grupos',
-    'dieciseisavos': 'Dieciseisavos de Final',
-    'octavos': 'Octavos de Final',
-    'cuartos': 'Cuartos de Final',
-    'semis': 'Semifinales',
-    'final': 'Final'
-}
+        'grupos': 'Fase de Grupos',
+        'dieciseisavos': 'Dieciseisavos de Final',
+        'octavos': 'Octavos de Final',
+        'cuartos': 'Cuartos de Final',
+        'semis': 'Semifinales',
+        'final': 'Final'
+    }
     
     configs = ConfiguracionTiempo.query.all()
     config_dict = {c.fase: c.fecha_limite for c in configs}
-    
     ahora = datetime.utcnow()
     
-    # Buscar la primera fase que aún no ha cerrado
     for fase in fases_orden:
         if fase in config_dict:
             fecha_limite = config_dict[fase]
             if ahora < fecha_limite:
-                # Esta fase aún está abierta
-                from datetime import timedelta
                 dias_restantes = (fecha_limite - ahora).days
-                
                 return jsonify({
                     'fase': fase,
                     'nombre_fase': fases_nombres[fase],
@@ -1037,8 +907,128 @@ def fecha_limite_activa():
                     'activo': True
                 })
     
-    # Si todas las fases ya cerraron
     return jsonify({
         'activo': False,
         'mensaje': 'Todos los plazos de pronósticos han cerrado'
     })
+
+
+# ============ ADMIN - PARTIDOS ============
+@api_bp.route('/admin/stats', methods=['GET'])
+@login_required
+def admin_stats():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    total_usuarios = Usuario.query.count()
+    total_partidos = Partido.query.count()
+    partidos_jugados = Partido.query.filter_by(jugado=True).count()
+    partidos_pendientes = total_partidos - partidos_jugados
+    
+    return jsonify({
+        'total_usuarios': total_usuarios,
+        'total_partidos': total_partidos,
+        'partidos_jugados': partidos_jugados,
+        'partidos_pendientes': partidos_pendientes
+    })
+
+
+@api_bp.route('/admin/partidos', methods=['GET'])
+@login_required
+def admin_partidos():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    partidos = Partido.query.order_by(Partido.fecha).all()
+    return jsonify([{
+        'id': p.id,
+        'equipo_local': p.equipo_local,
+        'equipo_visitante': p.equipo_visitante,
+        'fecha': p.fecha.isoformat(),
+        'grupo': p.grupo,
+        'resultado_local': p.resultado_local,
+        'resultado_visitante': p.resultado_visitante,
+        'jugado': p.jugado
+    } for p in partidos])
+
+
+@api_bp.route('/admin/usuarios', methods=['GET'])
+@login_required
+def admin_usuarios():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    usuarios = Usuario.query.all()
+    return jsonify([{
+        'id': u.id,
+        'nombre': u.nombre,
+        'email': u.email,
+        'seleccion_favorita': u.seleccion_favorita,
+        'fecha_registro': u.fecha_registro.isoformat(),
+        'es_admin': u.es_admin
+    } for u in usuarios])
+
+
+@api_bp.route('/admin/ejecutar-ahora', methods=['POST'])
+@login_required
+def admin_ejecutar_ahora():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    from resultados_service import actualizar_resultados_en_db
+    import threading
+    
+    thread = threading.Thread(target=actualizar_resultados_en_db)
+    thread.start()
+    
+    return jsonify({'mensaje': 'Actualización iniciada. Revisa los logs.'})
+
+
+@api_bp.route('/admin/simular-resultados', methods=['POST'])
+@login_required
+def admin_simular_resultados():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    import random
+    
+    partidos = Partido.query.filter_by(jugado=False).all()
+    actualizados = 0
+    
+    for partido in partidos:
+        goles_local = random.randint(0, 4)
+        goles_visitante = random.randint(0, 4)
+        
+        partido.resultado_local = goles_local
+        partido.resultado_visitante = goles_visitante
+        partido.jugado = True
+        actualizados += 1
+        
+        pronosticos = Pronostico.query.filter_by(partido_id=partido.id).all()
+        for pronostico in pronosticos:
+            pronostico.puntos = calcular_puntos(
+                pronostico.goles_local, pronostico.goles_visitante,
+                goles_local, goles_visitante,
+                partido.fase
+            )
+    
+    db.session.commit()
+    return jsonify({'mensaje': f'Se simularon {actualizados} resultados.'})
+
+
+@api_bp.route('/admin/reiniciar-partidos', methods=['POST'])
+@login_required
+def admin_reiniciar_partidos():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    Pronostico.query.delete()
+    
+    partidos = Partido.query.all()
+    for partido in partidos:
+        partido.resultado_local = None
+        partido.resultado_visitante = None
+        partido.jugado = False
+    
+    db.session.commit()
+    return jsonify({'mensaje': 'Todos los partidos y pronósticos han sido reiniciados.'})
