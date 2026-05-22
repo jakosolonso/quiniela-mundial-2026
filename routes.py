@@ -4,6 +4,7 @@ from database import db
 from models import Partido, Usuario, Pronostico, ConfiguracionTiempo
 from datetime import datetime
 import re
+from models import Partido, Usuario, Pronostico, ConfiguracionTiempo, PronosticoExtra
 
 api_bp = Blueprint('api', __name__)
 
@@ -889,31 +890,6 @@ def guardar_pronostico_extra():
     return jsonify({'mensaje': 'Pronóstico extra guardado correctamente'}), 200
 
 
-@api_bp.route('/admin/calcular-puntos-goleadora', methods=['POST'])
-@login_required
-def admin_calcular_puntos_goleadora():
-    """Calcular quién fue la selección más goleadora de fase de grupos y sumar 10 puntos"""
-    if not current_user.es_admin:
-        return jsonify({'error': 'No autorizado'}), 403
-    
-    # Obtener la selección más goleadora de fase de grupos
-    from sqlalchemy import func
-    
-    # Sumar todos los goles por selección en fase de grupos
-    goles_local = db.session.query(
-        Partido.equipo_local, func.sum(Partido.resultado_local).label('goles')
-    ).filter_by(fase='grupos', jugado=True).group_by(Partido.equipo_local).subquery()
-    
-    goles_visitante = db.session.query(
-        Partido.equipo_visitante, func.sum(Partido.resultado_visitante).label('goles')
-    ).filter_by(fase='grupos', jugado=True).group_by(Partido.equipo_visitante).subquery()
-    
-    # Combinar y obtener máximo (simplificado - puedes implementar la lógica completa)
-    # Por ahora, asumimos que el administrador ingresará manualmente la selección ganadora
-    
-    return jsonify({'mensaje': 'Función en desarrollo - implementar manualmente por ahora'})
-
-
 @api_bp.route('/admin/asignar-puntos-goleadora', methods=['POST'])
 @login_required
 def admin_asignar_puntos_goleadora():
@@ -927,12 +903,10 @@ def admin_asignar_puntos_goleadora():
     if not seleccion_ganadora:
         return jsonify({'error': 'Selección requerida'}), 400
     
-    # Buscar usuarios que acertaron
     pronosticos = PronosticoExtra.query.filter_by(seleccion_mas_goleadora=seleccion_ganadora).all()
     
     for p in pronosticos:
         p.puntos_goleadora = 10
-        # Actualizar puntos extra en usuario
         usuario = Usuario.query.get(p.usuario_id)
         usuario.puntos_extra = (usuario.puntos_extra or 0) + 10
     
