@@ -70,7 +70,6 @@
             padding: 5px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             line-height: 0;
-
         }
 
         .user-flag img {
@@ -231,18 +230,26 @@
         .tabla-posiciones {
             width: 100%;
             border-collapse: collapse;
+            font-size: 14px;
         }
 
         .tabla-posiciones th,
         .tabla-posiciones td {
-            padding: 12px;
+            padding: 12px 10px;
             text-align: left;
             border-bottom: 1px solid #e5e7eb;
         }
 
         .tabla-posiciones th {
-            background: #f3f4f6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .tabla-posiciones tr:hover {
+            background: #f3f4f6;
         }
 
         .welcome-message {
@@ -279,128 +286,88 @@
             .logo {
                 justify-content: center;
             }
+            
+            .tabla-posiciones {
+                font-size: 11px;
+            }
+            
+            .tabla-posiciones th,
+            .tabla-posiciones td {
+                padding: 8px 5px;
+            }
         }
 
-        .tabla-posiciones {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
+        /* Notificación de fecha límite */
+        .notificacion-limite {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 5px solid #f59e0b;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            animation: pulse 2s infinite;
+        }
 
-.tabla-posiciones th,
-.tabla-posiciones td {
-    padding: 12px 10px;
-    text-align: left;
-    border-bottom: 1px solid #e5e7eb;
-}
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.9; transform: scale(1.01); }
+            100% { opacity: 1; }
+        }
 
-.tabla-posiciones th {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-weight: 600;
-    position: sticky;
-    top: 0;
-}
+        .notificacion-contenido {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-.tabla-posiciones tr:hover {
-    background: #f3f4f6;
-}
+        .notificacion-contenido i {
+            font-size: 28px;
+            color: #d97706;
+        }
 
-.tabla-posiciones td:first-child,
-.tabla-posiciones th:first-child {
-    border-radius: 10px 0 0 10px;
-}
+        .notificacion-texto {
+            flex: 1;
+        }
 
-.tabla-posiciones td:last-child,
-.tabla-posiciones th:last-child {
-    border-radius: 0 10px 10px 0;
-}
+        .notificacion-texto strong {
+            display: block;
+            font-size: 14px;
+            color: #92400e;
+            margin-bottom: 5px;
+        }
 
-/* Responsive para tabla */
-@media (max-width: 768px) {
-    .tabla-posiciones {
-        font-size: 11px;
-    }
-    
-    .tabla-posiciones th,
-    .tabla-posiciones td {
-        padding: 8px 5px;
-    }
-}
+        .notificacion-texto span {
+            font-size: 13px;
+            color: #78350f;
+        }
 
-/* Notificación de fecha límite */
-.notificacion-limite {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    border-left: 5px solid #f59e0b;
-    border-radius: 12px;
-    padding: 15px 20px;
-    margin-bottom: 25px;
-    animation: pulse 2s infinite;
-}
+        .notificacion-limite.cerrado {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-left-color: #dc2626;
+        }
 
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.9; transform: scale(1.01); }
-    100% { opacity: 1; }
-}
+        .notificacion-limite.cerrado i {
+            color: #dc2626;
+        }
 
-.notificacion-contenido {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
+        .notificacion-limite.cerrado .notificacion-texto strong {
+            color: #991b1b;
+        }
 
-.notificacion-contenido i {
-    font-size: 28px;
-    color: #d97706;
-}
+        .notificacion-limite.cerrado .notificacion-texto span {
+            color: #7f1d1d;
+        }
 
-.notificacion-texto {
-    flex: 1;
-}
-
-.notificacion-texto strong {
-    display: block;
-    font-size: 14px;
-    color: #92400e;
-    margin-bottom: 5px;
-}
-
-.notificacion-texto span {
-    font-size: 13px;
-    color: #78350f;
-}
-
-/* Notificación cerrada */
-.notificacion-limite.cerrado {
-    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-    border-left-color: #dc2626;
-}
-
-.notificacion-limite.cerrado i {
-    color: #dc2626;
-}
-
-.notificacion-limite.cerrado .notificacion-texto strong {
-    color: #991b1b;
-}
-
-.notificacion-limite.cerrado .notificacion-texto span {
-    color: #7f1d1d;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .notificacion-contenido {
-        flex-direction: column;
-        text-align: center;
-        gap: 10px;
-    }
-    
-    .notificacion-contenido i {
-        font-size: 32px;
-    }
-}
+        @media (max-width: 768px) {
+            .notificacion-contenido {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .notificacion-contenido i {
+                font-size: 32px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -420,46 +387,140 @@
         </div>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="cambiarTab('pronosticos')">
+            <button class="tab-btn active" onclick="cambiarTab('pronosticos', event)">
                 <i class="fas fa-pen"></i> Mis Pronósticos
             </button>
-            <button class="tab-btn" onclick="cambiarTab('partidos')">
+            <button class="tab-btn" onclick="cambiarTab('partidos', event)">
                 <i class="fas fa-trophy"></i> Partidos
             </button>
-            <button class="tab-btn" onclick="cambiarTab('tabla')">
+            <button class="tab-btn" onclick="cambiarTab('tabla', event)">
                 <i class="fas fa-chart-line"></i> Tabla de Posiciones
             </button>
         </div>
 
         <div id="pronosticosTab" class="tab-content active">
-    <!-- NOTIFICACIÓN DE FECHA LÍMITE -->
-    <div id="notificacionLimite" class="notificacion-limite" style="display: none;">
-        <div class="notificacion-contenido">
-            <i class="fas fa-clock"></i>
-            <div class="notificacion-texto">
-                <strong>⏰ Plazo de pronósticos</strong>
-                <span id="notificacionMensaje"></span>
+            <div id="notificacionLimite" class="notificacion-limite" style="display: none;">
+                <div class="notificacion-contenido">
+                    <i class="fas fa-clock"></i>
+                    <div class="notificacion-texto">
+                        <strong>⏰ Plazo de pronósticos</strong>
+                        <span id="notificacionMensaje"></span>
+                    </div>
+                </div>
+            </div>
+            <h2>📝 Haz tus pronósticos</h2>
+            <div id="pronosticosList" class="partidos-grid">
+                <div class="welcome-message">
+                    <i class="fas fa-futbol"></i>
+                    <h3>¡Bienvenido a la Quiniela!</h3>
+                    <p>Cargando partidos...</p>
+                </div>
             </div>
         </div>
-    </div>
-    <h2>📝 Haz tus pronósticos</h2>
-    <div id="pronosticosList" class="partidos-grid">...</div>
-</div>
 
         <div id="partidosTab" class="tab-content">
             <h2>🏆 Resultados oficiales</h2>
-            <div id="resultadosList" class="partidos-grid"></div>
+            <div id="resultadosList" class="partidos-grid">
+                <div class="welcome-message">
+                    <i class="fas fa-futbol"></i>
+                    <h3>Cargando partidos...</h3>
+                </div>
+            </div>
         </div>
 
         <div id="tablaTab" class="tab-content">
             <h2>📊 Clasificación</h2>
-            <div id="tablaPosiciones"></div>
+            <div id="tablaPosiciones">
+                <div class="welcome-message">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Cargando tabla...</h3>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         let usuarioActual = null;
 
+        // ============ RENDER PARTIDO CARD ============
+        function renderPartidoCard(partido, editable) {
+            const fecha = new Date(partido.fecha);
+            const fechaStr = fecha.toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+            
+            let resultadoHtml = '';
+            if (partido.jugado) {
+                resultadoHtml = `<div style="margin-top:10px;padding:8px;background:#e5e7eb;border-radius:8px;text-align:center">
+                    Resultado: ${partido.resultado_local} - ${partido.resultado_visitante}
+                </div>`;
+            }
+            
+            let pronosticoHtml = '';
+            if (editable && !partido.jugado) {
+                pronosticoHtml = `
+                    <div class="pronostico-form">
+                        <input type="number" id="gol_local_${partido.id}" placeholder="Local" min="0">
+                        <span>vs</span>
+                        <input type="number" id="gol_visit_${partido.id}" placeholder="Visitante" min="0">
+                    </div>
+                    <button onclick="guardarPronostico(${partido.id})" class="btn-guardar">Guardar Pronóstico</button>
+                `;
+            } else if (editable && partido.jugado) {
+                pronosticoHtml = `<div style="text-align:center;color:#10b981;margin-top:10px;">✅ Partido finalizado</div>`;
+            }
+            
+            return `
+                <div class="partido-card">
+                    <div class="partido-info">
+                        <div class="fecha">${fechaStr}</div>
+                        <div class="grupo">Grupo ${partido.grupo}</div>
+                        <div class="equipos">${partido.equipo_local} vs ${partido.equipo_visitante}</div>
+                    </div>
+                    ${resultadoHtml}
+                    ${pronosticoHtml}
+                </div>
+            `;
+        }
+
+        // ============ NOTIFICACIÓN DE PLAZO ============
+        function obtenerMensajePlazo() {
+            const fases = [
+                { nombre: 'Fase de Grupos', fechaMostrar: '10 de junio de 2026', horaMostrar: '18:00', limiteUTC: new Date('2026-06-11T00:00:00Z') },
+                { nombre: 'Dieciseisavos de Final', fechaMostrar: '28 de junio de 2026', horaMostrar: '13:00', limiteUTC: new Date('2026-06-28T19:00:00Z') },
+                { nombre: 'Octavos de Final', fechaMostrar: '4 de julio de 2026', horaMostrar: '14:00', limiteUTC: new Date('2026-07-04T20:00:00Z') },
+                { nombre: 'Cuartos de Final', fechaMostrar: '9 de julio de 2026', horaMostrar: '13:00', limiteUTC: new Date('2026-07-09T19:00:00Z') },
+                { nombre: 'Semifinales', fechaMostrar: '14 de julio de 2026', horaMostrar: '12:00', limiteUTC: new Date('2026-07-14T18:00:00Z') },
+                { nombre: 'Final', fechaMostrar: '18 de julio de 2026', horaMostrar: '18:00', limiteUTC: new Date('2026-07-19T00:00:00Z') }
+            ];
+            
+            const ahora = new Date();
+            
+            for (const fase of fases) {
+                if (ahora < fase.limiteUTC) {
+                    const diffTime = fase.limiteUTC - ahora;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    if (diffDays === 0) {
+                        return `⚠️ ¡ÚLTIMO DÍA! El plazo para pronósticos de ${fase.nombre} cierra HOY a las ${fase.horaMostrar} hrs.`;
+                    } else if (diffDays === 1) {
+                        return `⏰ El plazo para pronósticos de ${fase.nombre} cierra MAÑANA a las ${fase.horaMostrar} hrs.`;
+                    } else {
+                        return `📅 Ingreso de pronósticos para ${fase.nombre} disponible hasta el ${fase.fechaMostrar} a las ${fase.horaMostrar} hrs.`;
+                    }
+                }
+            }
+            return '⚠️ Todos los plazos de pronósticos han cerrado. ¡Gracias por participar!';
+        }
+
+        function cargarNotificacionLimite() {
+            const notificacionDiv = document.getElementById('notificacionLimite');
+            const mensajeSpan = document.getElementById('notificacionMensaje');
+            if (notificacionDiv && mensajeSpan) {
+                mensajeSpan.textContent = obtenerMensajePlazo();
+                notificacionDiv.style.display = 'block';
+            }
+        }
+
+        // ============ USUARIO ============
         async function cargarUsuario() {
             try {
                 const response = await fetch('/api/usuario-actual');
@@ -468,7 +529,7 @@
                     document.getElementById('userNameDisplay').textContent = usuarioActual.nombre;
                     
                     if (usuarioActual.seleccion_favorita) {
-                        await mostrarBanderaFavorita(usuarioActual.seleccion_favorita);
+                        mostrarBanderaFavorita(usuarioActual.seleccion_favorita);
                     }
                     
                     cargarPartidos();
@@ -482,110 +543,60 @@
             }
         }
 
-        async function mostrarBanderaFavorita(codigo) {
-    const banderasUrl = {
-        'arg': 'https://flagcdn.com/ar.svg', 'bra': 'https://flagcdn.com/br.svg',
-        'fra': 'https://flagcdn.com/fr.svg', 'esp': 'https://flagcdn.com/es.svg',
-        'ger': 'https://flagcdn.com/de.svg', 'eng': 'https://flagcdn.com/gb.svg',
-        'ita': 'https://flagcdn.com/it.svg', 'ned': 'https://flagcdn.com/nl.svg',
-        'por': 'https://flagcdn.com/pt.svg', 'uru': 'https://flagcdn.com/uy.svg',
-        'col': 'https://flagcdn.com/co.svg', 'mex': 'https://flagcdn.com/mx.svg',
-        'usa': 'https://flagcdn.com/us.svg', 'jpn': 'https://flagcdn.com/jp.svg',
-        'kor': 'https://flagcdn.com/kr.svg', 'mar': 'https://flagcdn.com/ma.svg',
-        'sen': 'https://flagcdn.com/sn.svg', 'cro': 'https://flagcdn.com/hr.svg',
-        'bel': 'https://flagcdn.com/be.svg', 'sui': 'https://flagcdn.com/ch.svg'
-    };
-    const url = banderasUrl[codigo] || 'https://flagcdn.com/un.svg';
-    document.getElementById('userFlag').innerHTML = `<img src="${url}" alt="Bandera" style="width:44px; height:29px; border-radius:6px;">`;
-}
+        function mostrarBanderaFavorita(codigo) {
+            const banderasUrl = {
+                'arg': 'https://flagcdn.com/ar.svg', 'bra': 'https://flagcdn.com/br.svg',
+                'fra': 'https://flagcdn.com/fr.svg', 'esp': 'https://flagcdn.com/es.svg',
+                'ger': 'https://flagcdn.com/de.svg', 'eng': 'https://flagcdn.com/gb.svg',
+                'ita': 'https://flagcdn.com/it.svg', 'ned': 'https://flagcdn.com/nl.svg',
+                'por': 'https://flagcdn.com/pt.svg', 'uru': 'https://flagcdn.com/uy.svg',
+                'col': 'https://flagcdn.com/co.svg', 'mex': 'https://flagcdn.com/mx.svg',
+                'usa': 'https://flagcdn.com/us.svg', 'jpn': 'https://flagcdn.com/jp.svg',
+                'kor': 'https://flagcdn.com/kr.svg', 'mar': 'https://flagcdn.com/ma.svg',
+                'sen': 'https://flagcdn.com/sn.svg', 'cro': 'https://flagcdn.com/hr.svg',
+                'bel': 'https://flagcdn.com/be.svg', 'sui': 'https://flagcdn.com/ch.svg'
+            };
+            const url = banderasUrl[codigo] || 'https://flagcdn.com/un.svg';
+            document.getElementById('userFlag').innerHTML = `<img src="${url}" alt="Bandera" style="width:44px; height:29px; border-radius:6px;">`;
+        }
 
         async function cerrarSesion() {
             try {
-                const response = await fetch('/api/logout', { method: 'POST' });
-                if (response.ok) {
-                    window.location.href = '/login';
-                }
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/login';
             } catch (error) {
                 window.location.href = '/login';
             }
         }
 
+        // ============ PARTIDOS ============
         async function cargarPartidos() {
-    try {
-        const response = await fetch('/api/partidos');
-        const partidos = await response.json();
-        
-        const pronosticosDiv = document.getElementById('pronosticosList');
-        const resultadosDiv = document.getElementById('resultadosList');
-        
-        if (partidos.length === 0) {
-            pronosticosDiv.innerHTML = '<div class="welcome-message"><i class="fas fa-info-circle"></i><h3>No hay partidos cargados</h3><p>Contacta al administrador</p></div>';
-            return;
+            try {
+                const response = await fetch('/api/partidos');
+                const partidos = await response.json();
+                
+                const pronosticosDiv = document.getElementById('pronosticosList');
+                const resultadosDiv = document.getElementById('resultadosList');
+                
+                if (!partidos || partidos.length === 0) {
+                    pronosticosDiv.innerHTML = '<div class="welcome-message"><i class="fas fa-info-circle"></i><h3>No hay partidos cargados</h3><p>Contacta al administrador</p></div>';
+                    resultadosDiv.innerHTML = '<div class="welcome-message"><i class="fas fa-info-circle"></i><h3>No hay partidos cargados</h3></div>';
+                    return;
+                }
+                
+                pronosticosDiv.innerHTML = partidos.map(p => renderPartidoCard(p, true)).join('');
+                resultadosDiv.innerHTML = partidos.map(p => renderPartidoCard(p, false)).join('');
+                
+                if (usuarioActual) {
+                    await cargarMisPronosticos();
+                }
+            } catch (error) {
+                console.error('Error cargando partidos:', error);
+                document.getElementById('pronosticosList').innerHTML = '<div class="welcome-message"><i class="fas fa-exclamation-triangle"></i><h3>Error al cargar partidos</h3><p>Intenta recargar la página</p></div>';
+            }
         }
-        
-        pronosticosDiv.innerHTML = partidos.map(p => renderPartidoCard(p, true)).join('');
-        resultadosDiv.innerHTML = partidos.map(p => renderPartidoCard(p, false)).join('');
-        
-        if (usuarioActual) {
-            cargarMisPronosticos();
-        }
-    } catch (error) {
-        console.error('Error cargando partidos:', error);
-        document.getElementById('pronosticosList').innerHTML = '<div class="welcome-message"><i class="fas fa-exclamation-triangle"></i><h3>Error al cargar partidos</h3><p>Intenta recargar la página</p></div>';
-    }
-}
 
-async function cargarTablaPosiciones() {
-    try {
-        const response = await fetch('/api/tabla-posiciones-avanzada');
-        const tabla = await response.json();
-        
-        if (tabla.length === 0) {
-            document.getElementById('tablaPosiciones').innerHTML = '<div class="welcome-message"><h3>Sin participantes aún</h3></div>';
-            return;
-        }
-        
-        const banderasUrl = {
-            'arg': '🇦🇷', 'bra': '🇧🇷', 'fra': '🇫🇷', 'esp': '🇪🇸',
-            'ger': '🇩🇪', 'eng': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'ita': '🇮🇹', 'ned': '🇳🇱',
-            'por': '🇵🇹', 'uru': '🇺🇾', 'col': '🇨🇴', 'mex': '🇲🇽',
-            'usa': '🇺🇸', 'jpn': '🇯🇵', 'kor': '🇰🇷', 'mar': '🇲🇦',
-            'sen': '🇸🇳', 'cro': '🇭🇷', 'bel': '🇧🇪', 'sui': '🇨🇭'
-        };
-        
-        const html = `
-            <table class="tabla-posiciones">
-                <thead>
-                    <tr>
-                        <th>Posición</th>
-                        <th>Participante</th>
-                        <th>Puntos</th>
-                        <th>Aciertos Exactos</th>
-                        <th>Partidos Acertados</th>
-                        <th>Diferencia de Goles</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${tabla.map(item => `
-                        <tr>
-                            <td><strong>${item.posicion}</strong> ${item.posicion === 1 ? '🏆' : item.posicion === 2 ? '🥈' : item.posicion === 3 ? '🥉' : ''}</td>
-                            <td>${item.nombre} ${banderasUrl[item.seleccion_favorita] ? ' ' + banderasUrl[item.seleccion_favorita] : ''}</td>
-                            <td><strong style="font-size:18px;color:#667eea;">${item.puntos}</strong></td>
-                            <td>${item.aciertos_exactos}</td>
-                            <td>${item.partidos_acertados}</td>
-                            <td>${item.diferencia_goles > 0 ? '+' : ''}${item.diferencia_goles}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-        
-        document.getElementById('tablaPosiciones').innerHTML = html;
-    } catch (error) {
-        console.error('Error cargando tabla:', error);
-        document.getElementById('tablaPosiciones').innerHTML = '<div class="welcome-message"><i class="fas fa-exclamation-triangle"></i><h3>Error al cargar la tabla</h3><p>Intenta recargar la página</p></div>';
-    }
-}
+        // ============ PRONÓSTICOS ============
         async function guardarPronostico(partidoId) {
             if (!usuarioActual) {
                 alert('Inicia sesión primero');
@@ -614,9 +625,12 @@ async function cargarTablaPosiciones() {
                 
                 if (response.ok) {
                     alert('✅ Pronóstico guardado');
-                    cargarMisPronosticos();
+                    await cargarMisPronosticos();
+                } else {
+                    alert('Error al guardar');
                 }
             } catch (error) {
+                console.error('Error:', error);
                 alert('Error al guardar');
             }
         }
@@ -637,88 +651,87 @@ async function cargarTablaPosiciones() {
                     }
                 });
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error cargando pronósticos:', error);
             }
         }
 
+        // ============ TABLA DE POSICIONES ============
         async function cargarTablaPosiciones() {
-    try {
-        const response = await fetch('/api/tabla-posiciones-avanzada');
-        const tabla = await response.json();
-        
-        if (tabla.length === 0) {
-            document.getElementById('tablaPosiciones').innerHTML = '<div class="welcome-message"><h3>Sin participantes aún</h3></div>';
-            return;
+            try {
+                const response = await fetch('/api/tabla-posiciones-avanzada');
+                const tabla = await response.json();
+                
+                if (!tabla || tabla.length === 0) {
+                    document.getElementById('tablaPosiciones').innerHTML = '<div class="welcome-message"><h3>Sin participantes aún</h3></div>';
+                    return;
+                }
+                
+                const banderasUrl = {
+                    'arg': '🇦🇷', 'bra': '🇧🇷', 'fra': '🇫🇷', 'esp': '🇪🇸',
+                    'ger': '🇩🇪', 'eng': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'ita': '🇮🇹', 'ned': '🇳🇱',
+                    'por': '🇵🇹', 'uru': '🇺🇾', 'col': '🇨🇴', 'mex': '🇲🇽',
+                    'usa': '🇺🇸', 'jpn': '🇯🇵', 'kor': '🇰🇷', 'mar': '🇲🇦',
+                    'sen': '🇸🇳', 'cro': '🇭🇷', 'bel': '🇧🇪', 'sui': '🇨🇭'
+                };
+                
+                const html = `
+                    <table class="tabla-posiciones">
+                        <thead>
+                            <tr>
+                                <th>Posición</th>
+                                <th>Participante</th>
+                                <th>Puntos</th>
+                                <th>Aciertos Exactos</th>
+                                <th>Partidos Acertados</th>
+                                <th>Diferencia de Goles</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tabla.map(item => `
+                                <tr>
+                                    <td><strong>${item.posicion}</strong> ${item.posicion === 1 ? '🏆' : item.posicion === 2 ? '🥈' : item.posicion === 3 ? '🥉' : ''}</td>
+                                    <td>${item.nombre} ${banderasUrl[item.seleccion_favorita] ? banderasUrl[item.seleccion_favorita] : ''}</td>
+                                    <td><strong style="font-size:18px;color:#667eea;">${item.puntos}</strong></td>
+                                    <td>${item.aciertos_exactos}</td>
+                                    <td>${item.partidos_acertados}</td>
+                                    <td>${item.diferencia_goles > 0 ? '+' : ''}${item.diferencia_goles}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById('tablaPosiciones').innerHTML = html;
+            } catch (error) {
+                console.error('Error cargando tabla:', error);
+                document.getElementById('tablaPosiciones').innerHTML = '<div class="welcome-message"><i class="fas fa-exclamation-triangle"></i><h3>Error al cargar la tabla</h3><p>Intenta recargar la página</p></div>';
+            }
         }
-        
-        // Mapeo de banderas
-        const banderasUrl = {
-            'arg': '🇦🇷', 'bra': '🇧🇷', 'fra': '🇫🇷', 'esp': '🇪🇸',
-            'ger': '🇩🇪', 'eng': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'ita': '🇮🇹', 'ned': '🇳🇱',
-            'por': '🇵🇹', 'uru': '🇺🇾', 'col': '🇨🇴', 'mex': '🇲🇽',
-            'usa': '🇺🇸', 'jpn': '🇯🇵', 'kor': '🇰🇷', 'mar': '🇲🇦',
-            'sen': '🇸🇳', 'cro': '🇭🇷', 'bel': '🇧🇪', 'sui': '🇨🇭'
-        };
-        
-        const html = `
-            <table class="tabla-posiciones">
-                <thead>
-                    <tr>
-                        <th>Posición</th>
-                        <th>Participante</th>
-                        <th>Puntos</th>
-                        <th>Aciertos Exactos</th>
-                        <th>Partidos Acertados</th>
-                        <th>Diferencia de Goles</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${tabla.map(item => `
-                        <tr>
-                            <td><strong>${item.posicion}</strong> ${item.posicion === 1 ? '🏆' : item.posicion === 2 ? '🥈' : item.posicion === 3 ? '🥉' : ''}</td>
-                            <td>${item.nombre} ${banderasUrl[item.seleccion_favorita] ? ' ' + banderasUrl[item.seleccion_favorita] : ''}</td>
-                            <td><strong style="font-size:18px;color:#667eea;">${item.puntos}</strong></td>
-                            <td>${item.aciertos_exactos}</td>
-                            <td>${item.partidos_acertados}</td>
-                            <td>${item.diferencia_goles > 0 ? '+' : ''}${item.diferencia_goles}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-        
-        document.getElementById('tablaPosiciones').innerHTML = html;
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
 
-        function cambiarTab(tab) {
-    // Ocultar todos los contenidos
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    // Desactivar todos los botones
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Mostrar la pestaña seleccionada
-    document.getElementById(`${tab}Tab`).classList.add('active');
-    event.target.classList.add('active');
-    
-    // Recargar datos según la pestaña
-    if (tab === 'partidos') {
-        cargarPartidos();
-    } else if (tab === 'tabla') {
-        cargarTablaPosiciones();
-    } else if (tab === 'pronosticos' && usuarioActual) {
-        cargarMisPronosticos();
-        cargarNotificacionLimite();
-    }
-}
+        // ============ CAMBIAR PESTAÑA ============
+        function cambiarTab(tab, event) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(`${tab}Tab`).classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            if (tab === 'partidos') {
+                cargarPartidos();
+            } else if (tab === 'tabla') {
+                cargarTablaPosiciones();
+            } else if (tab === 'pronosticos') {
+                cargarNotificacionLimite();
+                if (usuarioActual) cargarMisPronosticos();
+            }
+        }
 
+        // ============ INICIALIZACIÓN ============
         async function cargarDatosIniciales() {
             try {
                 await fetch('/api/cargar-datos-iniciales', { method: 'POST' });
@@ -728,129 +741,10 @@ async function cargarTablaPosiciones() {
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-    cargarUsuario();
-    cargarDatosIniciales();
-    cargarNotificacionLimite();  // ← Ya debe estar
-});
-
-function cambiarTab(tab) {
-    // ... tu código existente ...
-    
-    if (tab === 'pronosticos') {
-        cargarNotificacionLimite();  // ← Actualiza al cambiar a la pestaña
-        if (usuarioActual) cargarMisPronosticos();
-    }
-}
-
-function obtenerMensajePlazo() {
-    // Horarios de cierre en hora local de Guatemala
-    const fases = [
-        { 
-            nombre: 'Fase de Grupos', 
-            fechaMostrar: '10 de junio de 2026', 
-            horaMostrar: '18:00',
-            limiteUTC: new Date('2026-06-11T00:00:00Z')
-        },
-        { 
-            nombre: 'Dieciseisavos de Final', 
-            fechaMostrar: '28 de junio de 2026', 
-            horaMostrar: '13:00',
-            limiteUTC: new Date('2026-06-28T19:00:00Z')
-        },
-        { 
-            nombre: 'Octavos de Final', 
-            fechaMostrar: '4 de julio de 2026', 
-            horaMostrar: '14:00',
-            limiteUTC: new Date('2026-07-04T20:00:00Z')
-        },
-        { 
-            nombre: 'Cuartos de Final', 
-            fechaMostrar: '9 de julio de 2026', 
-            horaMostrar: '13:00',
-            limiteUTC: new Date('2026-07-09T19:00:00Z')
-        },
-        { 
-            nombre: 'Semifinales', 
-            fechaMostrar: '14 de julio de 2026', 
-            horaMostrar: '12:00',
-            limiteUTC: new Date('2026-07-14T18:00:00Z')
-        },
-        { 
-            nombre: 'Final', 
-            fechaMostrar: '18 de julio de 2026', 
-            horaMostrar: '18:00',
-            limiteUTC: new Date('2026-07-19T00:00:00Z')
-        }
-    ];
-    
-    const ahora = new Date();
-    
-    for (const fase of fases) {
-        if (ahora < fase.limiteUTC) {
-            const diffTime = fase.limiteUTC - ahora;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            if (diffDays === 0) {
-                return `⚠️ ¡ÚLTIMO DÍA! El plazo para pronósticos de ${fase.nombre} cierra HOY a las ${fase.horaMostrar} hrs.`;
-            } else if (diffDays === 1) {
-                return `⏰ El plazo para pronósticos de ${fase.nombre} cierra MAÑANA a las ${fase.horaMostrar} hrs.`;
-            } else {
-                return `📅 Ingreso de pronósticos para ${fase.nombre} disponible hasta el ${fase.fechaMostrar} a las ${fase.horaMostrar} hrs.`;
-            }
-        }
-    }
-    
-    return '⚠️ Todos los plazos de pronósticos han cerrado. ¡Gracias por participar!';
-}
-
-function cargarNotificacionLimite() {
-    const notificacionDiv = document.getElementById('notificacionLimite');
-    const mensajeSpan = document.getElementById('notificacionMensaje');
-    
-    if (notificacionDiv && mensajeSpan) {
-        const mensaje = obtenerMensajePlazo();
-        mensajeSpan.textContent = mensaje;
-        notificacionDiv.style.display = 'block';
-    }
-}
-
-function renderPartidoCard(partido, editable) {
-    const fecha = new Date(partido.fecha);
-    const fechaStr = fecha.toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
-    
-    let resultadoHtml = '';
-    if (partido.jugado) {
-        resultadoHtml = `<div style="margin-top:10px;padding:8px;background:#e5e7eb;border-radius:8px;text-align:center">
-            Resultado: ${partido.resultado_local} - ${partido.resultado_visitante}
-        </div>`;
-    }
-    
-    let pronosticoHtml = '';
-    if (editable && !partido.jugado) {
-        pronosticoHtml = `
-            <div class="pronostico-form">
-                <input type="number" id="gol_local_${partido.id}" placeholder="Local" min="0">
-                <span>vs</span>
-                <input type="number" id="gol_visit_${partido.id}" placeholder="Visitante" min="0">
-            </div>
-            <button onclick="guardarPronostico(${partido.id})" class="btn-guardar">Guardar Pronóstico</button>
-        `;
-    } else if (editable && partido.jugado) {
-        pronosticoHtml = `<div style="text-align:center;color:#10b981;margin-top:10px;">✅ Partido finalizado</div>`;
-    }
-    
-    return `
-        <div class="partido-card">
-            <div class="partido-info">
-                <div class="fecha">${fechaStr}</div>
-                <div class="grupo">Grupo ${partido.grupo}</div>
-                <div class="equipos">${partido.equipo_local} vs ${partido.equipo_visitante}</div>
-            </div>
-            ${resultadoHtml}
-            ${pronosticoHtml}
-        </div>
-    `;
-}
+            cargarUsuario();
+            cargarDatosIniciales();
+            cargarNotificacionLimite();
+        });
     </script>
 </body>
 </html>
