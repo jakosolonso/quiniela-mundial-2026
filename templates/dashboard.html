@@ -493,11 +493,13 @@
 </div>
 
 <!-- Pestaña: Pronósticos Extra -->
+<!-- Pestaña: Pronósticos Extra -->
 <div id="pronosticosExtraTab" class="tab-content">
     <h2>⭐ Pronósticos Extra</h2>
     <p style="color: #666; margin-bottom: 20px;">¡Gana puntos adicionales!</p>
     
     <div id="pronosticoExtraForm" class="pronostico-extra-form">
+        <!-- Selección más goleadora -->
         <div class="extra-card">
             <h3>🏆 ¿Qué selección será la más goleadora de la FASE DE GRUPOS?</h3>
             <p class="extra-points">+10 puntos si aciertas</p>
@@ -506,6 +508,7 @@
             </select>
         </div>
         
+        <!-- Balón de Oro -->
         <div class="extra-card">
             <h3>⭐ Balón de Oro (Mejor jugador del torneo)</h3>
             <p class="extra-points">+5 puntos si aciertas</p>
@@ -515,6 +518,7 @@
             <input type="text" id="balonDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
         </div>
         
+        <!-- Bota de Oro -->
         <div class="extra-card">
             <h3>⚽ Bota de Oro (Máximo goleador del torneo)</h3>
             <p class="extra-points">+5 puntos si aciertas</p>
@@ -524,6 +528,7 @@
             <input type="text" id="botaDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
         </div>
         
+        <!-- Guante de Oro -->
         <div class="extra-card">
             <h3>🧤 Guante de Oro (Mejor portero del torneo)</h3>
             <p class="extra-points">+5 puntos si aciertas</p>
@@ -844,9 +849,10 @@
         cargarNotificacionLimite();
         if (usuarioActual) cargarMisPronosticos();
     } else if (tab === 'pronosticos_extra') {
-        cargarSeleccionesParaExtra();
-        cargarPronosticosExtra();
-    }
+    cargarSeleccionesParaExtra();
+    cargarJugadores();  // Agrega esta línea
+    cargarPronosticosExtra();
+}
 }
 
         // ============ INICIALIZACIÓN ============
@@ -939,11 +945,43 @@ async function cargarSeleccionesParaExtra() {
         const select = document.getElementById('seleccionGoleadora');
         select.innerHTML = '<option value="">Selecciona una selección</option>';
         selecciones.forEach(sel => {
-            select.innerHTML += `<option value="${sel.codigo}">${sel.bandera} ${sel.nombre}</option>`;
+            // Mostrar solo el nombre de la selección (sin la bandera en emoji)
+            select.innerHTML += `<option value="${sel.codigo}">${sel.nombre}</option>`;
         });
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error cargando selecciones:', error);
     }
+}
+
+function cargarJugadores() {
+    const jugadores = [
+        "Lionel Messi",
+        "Cristiano Ronaldo",
+        "Kylian Mbappé",
+        "Erling Haaland",
+        "Vinícius Jr.",
+        "Jude Bellingham",
+        "Harry Kane",
+        "Kevin De Bruyne",
+        "Rodri",
+        "Antoine Griezmann",
+        "Emiliano Martínez",
+        "Thibaut Courtois",
+        "Manuel Neuer",
+        "Alisson Becker",
+        "Ederson"
+    ];
+    
+    const selects = ['balonDeOro', 'botaDeOro', 'guanteDeOro'];
+    selects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (select) {
+            select.innerHTML = '<option value="">Selecciona un jugador</option>';
+            jugadores.forEach(jugador => {
+                select.innerHTML += `<option value="${jugador}">${jugador}</option>`;
+            });
+        }
+    });
 }
     </script>
 </body>
