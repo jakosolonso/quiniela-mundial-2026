@@ -855,39 +855,3 @@ def admin_estado_fases():
     from fases_service import verificar_estado_fases
     estado = verificar_estado_fases()
     return jsonify(estado)    
-
-@api_bp.route('/registro', methods=['POST'])
-def registro():
-    data = request.json
-    
-    if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', data['email']):
-        return jsonify({'error': 'Email inválido'}), 400
-    
-    existe = Usuario.query.filter_by(email=data['email']).first()
-    if existe:
-        return jsonify({'error': 'El email ya está registrado'}), 400
-    
-    if len(data['password']) < 6:
-        return jsonify({'error': 'La contraseña debe tener al menos 6 caracteres'}), 400
-    
-    # Validar código de empleado (opcional, agregar reglas si necesitas)
-    codigo_empleado = data.get('codigo_empleado', '').strip()
-    if not codigo_empleado:
-        return jsonify({'error': 'El código de empleado es obligatorio'}), 400
-    
-    usuario = Usuario(
-        nombre=data['nombre'],
-        email=data['email'],
-        codigo_empleado=codigo_empleado,
-        seleccion_favorita=data.get('seleccion_favorita')
-    )
-    usuario.set_password(data['password'])
-    
-    db.session.add(usuario)
-    db.session.commit()
-    login_user(usuario)
-    
-    return jsonify({
-        'mensaje': 'Usuario registrado exitosamente',
-        'usuario': usuario.to_dict()
-    }), 201
