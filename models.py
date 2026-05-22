@@ -80,3 +80,20 @@ class ConfiguracionTiempo(db.Model):
             'fase': self.fase,
             'fecha_limite': self.fecha_limite.isoformat()
         }
+    
+class PronosticoExtra(db.Model):
+    __tablename__ = 'pronosticos_extra'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    seleccion_mas_goleadora = db.Column(db.String(50), nullable=True)
+    balon_de_oro = db.Column(db.String(50), nullable=True)
+    bota_de_oro = db.Column(db.String(50), nullable=True)
+    guante_de_oro = db.Column(db.String(50), nullable=True)
+    puntos_goleadora = db.Column(db.Integer, default=0)
+    puntos_balon = db.Column(db.Integer, default=0)
+    fecha_pronostico = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    usuario = db.relationship('Usuario', backref='pronosticos_extra', lazy=True)
+    
+    __table_args__ = (db.UniqueConstraint('usuario_id', name='unique_usuario_extra'),)    

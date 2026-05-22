@@ -850,3 +850,94 @@ def admin_estado_fases():
     from fases_service import verificar_estado_fases
     estado = verificar_estado_fases()
     return jsonify(estado)    
+
+# ============ PRONÓSTICOS EXTRA ============
+
+@api_bp.route('/pronosticos-extra', methods=['GET'])
+@login_required
+def obtener_pronostico_extra():
+    """Obtener pronóstico extra del usuario actual"""
+    pronostico = PronosticoExtra.query.filter_by(usuario_id=current_user.id).first()
+    if pronostico:
+        return jsonify({
+            'seleccion_mas_goleadora': pronostico.seleccion_mas_goleadora,
+            'balon_de_oro': pronostico.balon_de_oro,
+            'bota_de_oro': pronostico.bota_de_oro,
+            'guante_de_oro': pronostico.guante_de_oro
+        })
+    return jsonify({}), 200
+
+
+@api_bp.route('/pronosticos-extra', methods=['POST'])
+@login_required
+def guardar_pronostico_extra():
+    """Guardar pronóstico extra del usuario"""
+    data = request.json
+    
+    pronostico = PronosticoExtra.query.filter_by(usuario_id=current_user.id).first()
+    if not pronostico:
+        pronostico = PronosticoExtra(usuario_id=current_user.id)
+        db.session.add(pronostico)
+    
+    pronostico.seleccion_mas_goleadora = data.get('seleccion_mas_goleadora')
+    pronostico.balon_de_oro = data.get('balon_de_oro')
+    pronostico.bota_de_oro = data.get('bota_de_oro')
+    pronostico.guante_de_oro = data.get('guante_de_oro')
+    pronostico.fecha_pronostico = datetime.utcnow()
+    
+    db.session.commit()
+    return jsonify({'mensaje': 'Pronóstico extra guardado correctamente'}), 200
+
+
+@api_bp.route('/admin/calcular-puntos-goleadora', methods=['POST'])
+@login_required
+def admin_calcular_puntos_goleadora():
+    """Calcular quién fue la selección más goleadora de fase de grupos y sumar 10 puntos"""
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    # Obtener la selección más goleadora de fase de grupos
+    from sqlalchemy import func
+    
+    # Sumar todos los goles por selección en fase de grupos
+    goles_local = db.session.query(
+        Partido.equipo_local, func.sum(Partido.resultado_local).label('goles')
+    ).filter_by(fase='grupos', jugado=True).group_by(Partido.equipo_local).subquery()
+    
+    goles_visitante = db.session.query(
+        Partido.equipo_visitante, func.sum(Partido.resultado_visitante).label('goles')
+    ).filter_by(fase='grupos', jugado=True).group_by(Partido.equipo_visitante).subquery()
+    
+    # Combinar y obtener máximo (simplificado - puedes implementar la lógica completa)
+    # Por ahora, asumimos que el administrador ingresará manualmente la selección ganadora
+    
+    return jsonify({'mensaje': 'Función en desarrollo - implementar manualmente por ahora'})
+
+
+@api_bp.route('/admin/asignar-puntos-goleadora', methods=['POST'])
+@login_required
+def admin_asignar_puntos_goleadora():
+    """Asignar 10 puntos a los usuarios que acertaron la selección más goleadora"""
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    data = request.json
+    seleccion_ganadora = data.get('seleccion')
+    
+    if not seleccion_ganadora:
+        return jsonify({'error': 'Selección requerida'}), 400
+    
+    # Buscar usuarios que acertaron
+    pronosticos = PronosticoExtra.query.filter_by(seleccion_mas_goleadora=seleccion_ganadora).all()
+    
+    for p in pronosticos:
+        p.puntos_goleadora = 10
+        # Actualizar puntos extra en usuario
+        usuario = Usuario.query.get(p.usuario_id)
+        usuario.puntos_extra = (usuario.puntos_extra or 0) + 10
+    
+    db.session.commit()
+    
+    return jsonify({
+        'mensaje': f'Se asignaron 10 puntos a {len(pronosticos)} usuarios que eligieron a {seleccion_ganadora}'
+    }), 200
