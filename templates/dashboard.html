@@ -472,13 +472,32 @@
     </button>
 </div>
 
-<!-- Nueva pestaña: Pronósticos Extra -->
+<!-- Pestaña: Mis Pronósticos -->
+<div id="pronosticosTab" class="tab-content active">
+    <div id="notificacionLimite" class="notificacion-limite" style="display: none;">
+        <div class="notificacion-contenido">
+            <i class="fas fa-clock"></i>
+            <div class="notificacion-texto">
+                <strong>⏰ Plazo de pronósticos</strong>
+                <span id="notificacionMensaje"></span>
+            </div>
+        </div>
+    </div>
+    <h2>📝 Haz tus pronósticos</h2>
+    <div id="pronosticosList" class="partidos-grid">
+        <div class="welcome-message">
+            <i class="fas fa-futbol"></i>
+            <h3>Cargando partidos...</h3>
+        </div>
+    </div>
+</div>
+
+<!-- Pestaña: Pronósticos Extra -->
 <div id="pronosticosExtraTab" class="tab-content">
     <h2>⭐ Pronósticos Extra</h2>
     <p style="color: #666; margin-bottom: 20px;">¡Gana puntos adicionales!</p>
     
     <div id="pronosticoExtraForm" class="pronostico-extra-form">
-        <!-- Selección más goleadora -->
         <div class="extra-card">
             <h3>🏆 ¿Qué selección será la más goleadora de la FASE DE GRUPOS?</h3>
             <p class="extra-points">+10 puntos si aciertas</p>
@@ -487,7 +506,6 @@
             </select>
         </div>
         
-        <!-- Balón de Oro -->
         <div class="extra-card">
             <h3>⭐ Balón de Oro (Mejor jugador del torneo)</h3>
             <p class="extra-points">+5 puntos si aciertas</p>
@@ -497,7 +515,6 @@
             <input type="text" id="balonDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
         </div>
         
-        <!-- Bota de Oro -->
         <div class="extra-card">
             <h3>⚽ Bota de Oro (Máximo goleador del torneo)</h3>
             <p class="extra-points">+5 puntos si aciertas</p>
@@ -507,7 +524,6 @@
             <input type="text" id="botaDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
         </div>
         
-        <!-- Guante de Oro -->
         <div class="extra-card">
             <h3>🧤 Guante de Oro (Mejor portero del torneo)</h3>
             <p class="extra-points">+5 puntos si aciertas</p>
@@ -519,6 +535,17 @@
         
         <button onclick="guardarPronosticosExtra()" class="btn-guardar-extra">Guardar Pronósticos Extra</button>
         <div id="mensajeExtra" class="mensaje-extra"></div>
+    </div>
+</div>
+
+<!-- Pestaña: Tabla de Posiciones -->
+<div id="tablaTab" class="tab-content">
+    <h2>📊 Clasificación</h2>
+    <div id="tablaPosiciones">
+        <div class="welcome-message">
+            <i class="fas fa-chart-line"></i>
+            <h3>Cargando tabla...</h3>
+        </div>
     </div>
 </div>
 
