@@ -681,30 +681,35 @@
 
         // ============ PARTIDOS ============
         async function cargarPartidos() {
-            try {
-                const response = await fetch('/api/partidos');
-                const partidos = await response.json();
-                
-                const pronosticosDiv = document.getElementById('pronosticosList');
-                const resultadosDiv = document.getElementById('resultadosList');
-                
-                if (!partidos || partidos.length === 0) {
-                    pronosticosDiv.innerHTML = '<div class="welcome-message"><i class="fas fa-info-circle"></i><h3>No hay partidos cargados</h3><p>Contacta al administrador</p></div>';
-                    resultadosDiv.innerHTML = '<div class="welcome-message"><i class="fas fa-info-circle"></i><h3>No hay partidos cargados</h3></div>';
-                    return;
-                }
-                
-                pronosticosDiv.innerHTML = partidos.map(p => renderPartidoCard(p, true)).join('');
-                resultadosDiv.innerHTML = partidos.map(p => renderPartidoCard(p, false)).join('');
-                
-                if (usuarioActual) {
-                    await cargarMisPronosticos();
-                }
-            } catch (error) {
-                console.error('Error cargando partidos:', error);
-                document.getElementById('pronosticosList').innerHTML = '<div class="welcome-message"><i class="fas fa-exclamation-triangle"></i><h3>Error al cargar partidos</h3><p>Intenta recargar la página</p></div>';
-            }
+    try {
+        const response = await fetch('/api/partidos');
+        const partidos = await response.json();
+        
+        const pronosticosDiv = document.getElementById('pronosticosList');
+        
+        if (!pronosticosDiv) {
+            console.error('No se encontró el elemento pronosticosList');
+            return;
         }
+        
+        if (!partidos || partidos.length === 0) {
+            pronosticosDiv.innerHTML = '<div class="welcome-message"><i class="fas fa-info-circle"></i><h3>No hay partidos cargados</h3><p>Contacta al administrador</p></div>';
+            return;
+        }
+        
+        pronosticosDiv.innerHTML = partidos.map(p => renderPartidoCard(p, true)).join('');
+        
+        if (usuarioActual) {
+            await cargarMisPronosticos();
+        }
+    } catch (error) {
+        console.error('Error cargando partidos:', error);
+        const pronosticosDiv = document.getElementById('pronosticosList');
+        if (pronosticosDiv) {
+            pronosticosDiv.innerHTML = '<div class="welcome-message"><i class="fas fa-exclamation-triangle"></i><h3>Error al cargar partidos</h3><p>Intenta recargar la página</p></div>';
+        }
+    }
+}
 
         // ============ PRONÓSTICOS ============
         async function guardarPronostico(partidoId) {
