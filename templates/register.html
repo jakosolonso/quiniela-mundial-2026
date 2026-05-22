@@ -306,6 +306,14 @@
                 </div>
 
                 <div class="form-group">
+    <label>Código de Empleado</label>
+    <div class="input-group">
+        <i class="fas fa-id-card"></i>
+        <input type="text" id="codigoEmpleado" placeholder="Ej: EMP-12345" required>
+    </div>
+</div>
+
+                <div class="form-group">
                     <label>Contraseña</label>
                     <div class="input-group">
                         <i class="fas fa-lock"></i>
@@ -499,6 +507,70 @@
         });
 
         cargarSelecciones();
+       
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const nombre = document.getElementById('nombre').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const codigoEmpleado = document.getElementById('codigoEmpleado').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const seleccionFavorita = document.getElementById('seleccionFavorita').value;
+    
+    if (!nombre || !email || !codigoEmpleado || !password) {
+        showAlert('Por favor completa todos los campos', 'error');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        showAlert('Las contraseñas no coinciden', 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showAlert('La contraseña debe tener al menos 6 caracteres', 'error');
+        return;
+    }
+    
+    if (!seleccionFavorita) {
+        showAlert('Por favor selecciona tu selección favorita', 'error');
+        return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showAlert('Ingresa un email válido', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/registro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                nombre, 
+                email, 
+                codigo_empleado: codigoEmpleado,
+                password, 
+                seleccion_favorita: seleccionFavorita 
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAlert('✅ Registro exitoso. Redirigiendo...', 'success');
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1500);
+        } else {
+            showAlert(data.error || 'Error al registrarse', 'error');
+        }
+    } catch (error) {
+        showAlert('Error de conexión con el servidor', 'error');
+    }
+});
     </script>
 </body>
 </html>

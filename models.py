@@ -12,6 +12,7 @@ class Usuario(db.Model, UserMixin):
     nombre = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    codigo_empleado = db.Column(db.String(50), nullable=True)  # NUEVO CAMPO
     seleccion_favorita = db.Column(db.String(50), nullable=True)
     fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
     ultimo_acceso = db.Column(db.DateTime)
@@ -31,6 +32,7 @@ class Usuario(db.Model, UserMixin):
             'id': self.id,
             'nombre': self.nombre,
             'email': self.email,
+            'codigo_empleado': self.codigo_empleado,
             'seleccion_favorita': self.seleccion_favorita,
             'fecha_registro': self.fecha_registro.isoformat(),
             'es_admin': self.es_admin

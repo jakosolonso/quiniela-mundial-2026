@@ -455,17 +455,29 @@
             <h2>📊 Clasificación</h2>
             <div id="tablaPosiciones"></div>
         </div>
+
+        <div class="user-info">
+    <div class="user-flag" id="userFlag">🏆</div>
+    <div class="user-details">
+        <span class="user-name" id="userNameDisplay"></span>
+        <span class="user-employee-code" id="userEmployeeCode" style="font-size: 12px; color: #666;"></span>
+    </div>
+    <button onclick="cerrarSesion()" class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </button>
+</div>
     </div>
 
     <script>
         let usuarioActual = null;
 
         async function cargarUsuario() {
-            try {
-                const response = await fetch('/api/usuario-actual');
-                if (response.ok) {
-                    usuarioActual = await response.json();
-                    document.getElementById('userNameDisplay').textContent = usuarioActual.nombre;
+    try {
+        const response = await fetch('/api/usuario-actual');
+        if (response.ok) {
+            usuarioActual = await response.json();
+            document.getElementById('userNameDisplay').textContent = usuarioActual.nombre;
+            document.getElementById('userEmployeeCode').textContent = usuarioActual.codigo_empleado ? `ID: ${usuarioActual.codigo_empleado}` : '';
                     
                     if (usuarioActual.seleccion_favorita) {
                         await mostrarBanderaFavorita(usuarioActual.seleccion_favorita);
