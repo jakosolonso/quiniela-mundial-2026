@@ -119,7 +119,7 @@
         </div>
 
         <!-- Pestaña: Pronósticos Extra -->
-        <div id="pronosticosExtraTab" class="tab-content">
+        <div id="pronosticos_extraTab" class="tab-content">
             <h2>⭐ Pronósticos Extra</h2>
             <p style="color: #666; margin-bottom: 20px;">¡Gana puntos adicionales!</p>
             
@@ -339,39 +339,36 @@
         }
 
         function cambiarTab(tab, event) {
-    // Ocultar todas las pestañas
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
     });
-    
-    // Desactivar todos los botones
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     
-    // Activar la pestaña seleccionada
-    const tabToShow = document.getElementById(`${tab}Tab`);
-    if (tabToShow) {
-        tabToShow.classList.add('active');
-        console.log('Pestaña activada:', tab);
+    // Manejar el ID especial para pronosticos_extra
+    let tabId = tab;
+    if (tab === 'pronosticos_extra') {
+        tabId = 'pronosticosExtraTab';
     } else {
-        console.error('No se encontró la pestaña:', `${tab}Tab`);
-        return;
+        tabId = `${tab}Tab`;
     }
     
-    // Activar el botón clickeado
+    const tabToShow = document.getElementById(tabId);
+    if (tabToShow) {
+        tabToShow.classList.add('active');
+    }
+    
     if (event && event.target) {
         event.target.classList.add('active');
     }
     
-    // Cargar contenido según la pestaña
     if (tab === 'tabla') {
         cargarTablaPosiciones();
     } else if (tab === 'pronosticos') {
         cargarNotificacionLimite();
         if (usuarioActual) cargarMisPronosticos();
     } else if (tab === 'pronosticos_extra') {
-        console.log('Cargando pronósticos extra...');
         cargarSeleccionesParaExtra();
         cargarJugadores();
         cargarPronosticosExtra();
