@@ -258,28 +258,44 @@ def generar_dieciseisavos():
 
 def generar_fase_eliminatoria(fase_anterior, fase_actual, cruces_config):
     """Genera partidos de octavos, cuartos, semis o final"""
+    
     if Partido.query.filter_by(fase=fase_actual).first():
         return {'success': False, 'message': f'La fase {fase_actual} ya fue generada'}
     
-    ganadores = {}
-    partidos_anteriores = Partido.query.filter_by(fase=fase_anterior, jugado=True).all()
+    # Obtener los partidos de la fase anterior en orden
+    partidos_anteriores = Partido.query.filter_by(fase=fase_anterior, jugado=True).order_by(Partido.id).all()
     
     if len(partidos_anteriores) == 0:
-        return {'success': False, 'message': f'No hay resultados de {fase_anterior}'}
+        return {'success': False, 'message': f'No hay resultados en {fase_anterior}'}
     
-    for p in partidos_anteriores:
-        if p.resultado_local > p.resultado_visitante:
-            ganadores[p.id] = p.equipo_local
+    # Crear lista de ganadores en el orden de los partidos
+    ganadores = []
+    for partido in partidos_anteriores:
+        if partido.resultado_local > partido.resultado_visitante:
+            ganadores.append(partido.equipo_local)
         else:
-            ganadores[p.id] = p.equipo_visitante
+            ganadores.append(partido.equipo_visitante)
     
+    # Verificar que tenemos suficientes ganadores
+    num_partidos_necesarios = len(cruces_config) * 2
+    if len(ganadores) < num_partidos_necesarios:
+        return {'success': False, 'message': f'Se necesitan {num_partidos_necesarios} ganadores, solo hay {len(ganadores)}'}
+    
+    # Crear cruces en orden (1º vs 2º, 3º vs 4º, etc.)
+    cruces = []
+    for i in range(0, len(ganadores), 2):
+        if i + 1 < len(ganadores):
+            cruces.append((ganadores[i], ganadores[i + 1]))
+    
+    # Limitar al número de cruces esperados
+    num_esperados = len(cruces_config)
+    if len(cruces) > num_esperados:
+        cruces = cruces[:num_esperados]
+    
+    # Crear los partidos
     partidos_generados = 0
-    
-    for partido_id, (origen1, origen2) in cruces_config:
-        local = ganadores.get(origen1)
-        visitante = ganadores.get(origen2)
-        
-        if local and visitante:
+    for local, visitante in cruces:
+        if local and visitante and local != visitante:
             partido = Partido(
                 equipo_local=local,
                 equipo_visitante=visitante,
@@ -292,20 +308,21 @@ def generar_fase_eliminatoria(fase_anterior, fase_actual, cruces_config):
             partidos_generados += 1
     
     db.session.commit()
-    return {'success': True, 'message': f'Se generaron {partidos_generados} partidos de {fase_actual}'}
+    
+    if partidos_generados == num_esperados:
+        return {'success': True, 'message': f'Se generaron {partidos_generados} partidos de {fase_actual}'}
+    else:
+        return {'success': False, 'message': f'Solo se generaron {partidos_generados} de {num_esperados} esperados'}
 
 
 def generar_octavos():
     return generar_fase_eliminatoria('dieciseisavos', 'octavos', OCTAVOS_CRUCES)
 
-
 def generar_cuartos():
     return generar_fase_eliminatoria('octavos', 'cuartos', CUARTOS_CRUCES)
 
-
 def generar_semis():
     return generar_fase_eliminatoria('cuartos', 'semis', SEMIS_CRUCES)
-
 
 def generar_final():
     return generar_fase_eliminatoria('semis', 'final', [FINAL_CRUCE])
