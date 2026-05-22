@@ -722,44 +722,44 @@ function cambiarTab(tab) {
     }
 }
 
-async function obtenerMensajePlazo() {
+function obtenerMensajePlazo() {
     // Horarios de cierre en hora local de Guatemala
     const fases = [
         { 
             nombre: 'Fase de Grupos', 
             fechaMostrar: '10 de junio de 2026', 
             horaMostrar: '18:00',
-            limiteUTC: new Date('2026-06-11T00:00:00Z')  // 11 junio 00:00 UTC = 10 junio 18:00 Guatemala
+            limiteUTC: new Date('2026-06-11T00:00:00Z')
         },
         { 
             nombre: 'Dieciseisavos de Final', 
             fechaMostrar: '28 de junio de 2026', 
             horaMostrar: '13:00',
-            limiteUTC: new Date('2026-06-28T19:00:00Z')  // 28 junio 19:00 UTC = 28 junio 13:00 Guatemala
+            limiteUTC: new Date('2026-06-28T19:00:00Z')
         },
         { 
             nombre: 'Octavos de Final', 
             fechaMostrar: '4 de julio de 2026', 
             horaMostrar: '14:00',
-            limiteUTC: new Date('2026-07-04T20:00:00Z')  // 4 julio 20:00 UTC = 4 julio 14:00 Guatemala
+            limiteUTC: new Date('2026-07-04T20:00:00Z')
         },
         { 
             nombre: 'Cuartos de Final', 
             fechaMostrar: '9 de julio de 2026', 
             horaMostrar: '13:00',
-            limiteUTC: new Date('2026-07-09T19:00:00Z')  // 9 julio 19:00 UTC = 9 julio 13:00 Guatemala
+            limiteUTC: new Date('2026-07-09T19:00:00Z')
         },
         { 
             nombre: 'Semifinales', 
             fechaMostrar: '14 de julio de 2026', 
             horaMostrar: '12:00',
-            limiteUTC: new Date('2026-07-14T18:00:00Z')  // 14 julio 18:00 UTC = 14 julio 12:00 Guatemala
+            limiteUTC: new Date('2026-07-14T18:00:00Z')
         },
         { 
             nombre: 'Final', 
             fechaMostrar: '18 de julio de 2026', 
             horaMostrar: '18:00',
-            limiteUTC: new Date('2026-07-19T00:00:00Z')  // 19 julio 00:00 UTC = 18 julio 18:00 Guatemala
+            limiteUTC: new Date('2026-07-19T00:00:00Z')
         }
     ];
     
@@ -767,11 +767,12 @@ async function obtenerMensajePlazo() {
     
     for (const fase of fases) {
         if (ahora < fase.limiteUTC) {
-            const diasRestantes = Math.ceil((fase.limiteUTC - ahora) / (1000 * 60 * 60 * 24));
+            const diffTime = fase.limiteUTC - ahora;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
-            if (diasRestantes === 0) {
+            if (diffDays === 0) {
                 return `⚠️ ¡ÚLTIMO DÍA! El plazo para pronósticos de ${fase.nombre} cierra HOY a las ${fase.horaMostrar} hrs.`;
-            } else if (diasRestantes === 1) {
+            } else if (diffDays === 1) {
                 return `⏰ El plazo para pronósticos de ${fase.nombre} cierra MAÑANA a las ${fase.horaMostrar} hrs.`;
             } else {
                 return `📅 Ingreso de pronósticos para ${fase.nombre} disponible hasta el ${fase.fechaMostrar} a las ${fase.horaMostrar} hrs.`;
@@ -782,12 +783,13 @@ async function obtenerMensajePlazo() {
     return '⚠️ Todos los plazos de pronósticos han cerrado. ¡Gracias por participar!';
 }
 
-async function cargarNotificacionLimite() {
+function cargarNotificacionLimite() {
     const notificacionDiv = document.getElementById('notificacionLimite');
     const mensajeSpan = document.getElementById('notificacionMensaje');
     
     if (notificacionDiv && mensajeSpan) {
-        mensajeSpan.textContent = obtenerMensajePlazo();
+        const mensaje = obtenerMensajePlazo();
+        mensajeSpan.textContent = mensaje;
         notificacionDiv.style.display = 'block';
     }
 }
