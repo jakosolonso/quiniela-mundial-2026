@@ -7,441 +7,67 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .dashboard-header {
-            background: white;
-            border-radius: 20px;
-            padding: 20px 30px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo img {
-            height: 50px;
-            object-fit: contain;
-        }
-
-        .logo h1 {
-            font-size: 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .user-flag {
-            background: white;
-            border-radius: 12px;
-            padding: 5px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            line-height: 0;
-        }
-
-        .user-flag img {
-            width: 44px;
-            height: 29px;
-            border-radius: 6px;
-            object-fit: cover;
-        }
-
-        .user-name {
-            font-weight: 700;
-            color: #333;
-            font-size: 23px;
-        }
-
-        .logout-btn {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-
-        .logout-btn:hover {
-            background: #b91c1c;
-            transform: translateY(-2px);
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            background: white;
-            border-radius: 15px;
-            padding: 10px;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px 24px;
-            background: none;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s;
-            color: #666;
-        }
-
-        .tab-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .partidos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-        }
-
-        .partido-card {
-            border: 2px solid #e5e7eb;
-            border-radius: 15px;
-            padding: 20px;
-            transition: all 0.3s;
-        }
-
-        .partido-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .partido-info {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .fecha {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .equipos {
-            font-size: 18px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .grupo {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 5px;
-            font-size: 12px;
-        }
-
-        .pronostico-form {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin: 15px 0;
-        }
-
-        .pronostico-form input {
-            width: 60px;
-            padding: 8px;
-            text-align: center;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-
-        .btn-guardar {
-            background: #10b981;
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: 600;
-        }
-
-        .btn-guardar:hover {
-            background: #059669;
-        }
-
-        .tabla-posiciones {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        .tabla-posiciones th,
-        .tabla-posiciones td {
-            padding: 12px 10px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .tabla-posiciones th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
-        }
-
-        .tabla-posiciones tr:hover {
-            background: #f3f4f6;
-        }
-
-        .welcome-message {
-            text-align: center;
-            padding: 50px;
-            background: #f3f4f6;
-            border-radius: 15px;
-        }
-
-        .welcome-message i {
-            font-size: 60px;
-            color: #667eea;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-header {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .partidos-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .tabs {
-                flex-direction: column;
-            }
-            
-            .user-info {
-                justify-content: center;
-            }
-            
-            .logo {
-                justify-content: center;
-            }
-            
-            .tabla-posiciones {
-                font-size: 11px;
-            }
-            
-            .tabla-posiciones th,
-            .tabla-posiciones td {
-                padding: 8px 5px;
-            }
-        }
-
-        /* Notificación de fecha límite */
-        .notificacion-limite {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-left: 5px solid #f59e0b;
-            border-radius: 12px;
-            padding: 15px 20px;
-            margin-bottom: 25px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.9; transform: scale(1.01); }
-            100% { opacity: 1; }
-        }
-
-        .notificacion-contenido {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .notificacion-contenido i {
-            font-size: 28px;
-            color: #d97706;
-        }
-
-        .notificacion-texto {
-            flex: 1;
-        }
-
-        .notificacion-texto strong {
-            display: block;
-            font-size: 14px;
-            color: #92400e;
-            margin-bottom: 5px;
-        }
-
-        .notificacion-texto span {
-            font-size: 13px;
-            color: #78350f;
-        }
-
-        .notificacion-limite.cerrado {
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-            border-left-color: #dc2626;
-        }
-
-        .notificacion-limite.cerrado i {
-            color: #dc2626;
-        }
-
-        .notificacion-limite.cerrado .notificacion-texto strong {
-            color: #991b1b;
-        }
-
-        .notificacion-limite.cerrado .notificacion-texto span {
-            color: #7f1d1d;
-        }
-
-        @media (max-width: 768px) {
-            .notificacion-contenido {
-                flex-direction: column;
-                text-align: center;
-                gap: 10px;
-            }
-            
-            .notificacion-contenido i {
-                font-size: 32px;
-            }
-        }
-        
-        /* Pronósticos Extra */
-.pronostico-extra-form {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-}
-
-.extra-card {
-    background: #f9fafb;
-    border-radius: 15px;
-    padding: 20px;
-    border: 1px solid #e5e7eb;
-}
-
-.extra-card h3 {
-    margin-bottom: 5px;
-    color: #333;
-}
-
-.extra-points {
-    font-size: 12px;
-    color: #10b981;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.extra-select, .extra-input {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e5e7eb;
-    border-radius: 10px;
-    font-size: 14px;
-    background: white;
-}
-
-.extra-select:focus, .extra-input:focus {
-    outline: none;
-    border-color: #667eea;
-}
-
-.btn-guardar-extra {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    padding: 14px;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.btn-guardar-extra:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-}
-
-.mensaje-extra {
-    margin-top: 15px;
-    padding: 10px;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.mensaje-exito {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.mensaje-error {
-    background: #fee2e2;
-    color: #dc2626;
-}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .dashboard-header { background: white; border-radius: 20px; padding: 20px 30px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo img { height: 50px; object-fit: contain; }
+        .logo h1 { font-size: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .user-info { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .user-flag { background: white; border-radius: 12px; padding: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); line-height: 0; }
+        .user-flag img { width: 44px; height: 29px; border-radius: 6px; object-fit: cover; }
+        .user-name { font-weight: 700; color: #333; font-size: 23px; }
+        .logout-btn { background: #dc2626; color: white; border: none; padding: 8px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 14px; }
+        .logout-btn:hover { background: #b91c1c; transform: translateY(-2px); }
+        .tabs { display: flex; gap: 10px; margin-bottom: 30px; background: white; border-radius: 15px; padding: 10px; flex-wrap: wrap; }
+        .tab-btn { flex: 1; padding: 12px 24px; background: none; border: none; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s; color: #666; }
+        .tab-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .tab-content { display: none; background: white; border-radius: 20px; padding: 30px; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h2 { margin-bottom: 20px; color: #333; }
+        .partidos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .partido-card { border: 2px solid #e5e7eb; border-radius: 15px; padding: 20px; transition: all 0.3s; }
+        .partido-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .partido-info { text-align: center; margin-bottom: 15px; }
+        .fecha { font-size: 12px; color: #666; margin-bottom: 10px; }
+        .equipos { font-size: 18px; font-weight: bold; margin: 10px 0; }
+        .grupo { display: inline-block; background: #667eea; color: white; padding: 4px 8px; border-radius: 5px; font-size: 12px; }
+        .pronostico-form { display: flex; gap: 15px; justify-content: center; margin: 15px 0; }
+        .pronostico-form input { width: 60px; padding: 8px; text-align: center; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; }
+        .btn-guardar { background: #10b981; color: white; padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600; }
+        .btn-guardar:hover { background: #059669; }
+        .tabla-posiciones { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .tabla-posiciones th, .tabla-posiciones td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .tabla-posiciones th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; position: sticky; top: 0; }
+        .tabla-posiciones tr:hover { background: #f3f4f6; }
+        .welcome-message { text-align: center; padding: 50px; background: #f3f4f6; border-radius: 15px; }
+        .welcome-message i { font-size: 60px; color: #667eea; margin-bottom: 20px; }
+        @media (max-width: 768px) { .dashboard-header { flex-direction: column; text-align: center; } .partidos-grid { grid-template-columns: 1fr; } .tabs { flex-direction: column; } .user-info { justify-content: center; } .logo { justify-content: center; } .tabla-posiciones { font-size: 11px; } .tabla-posiciones th, .tabla-posiciones td { padding: 8px 5px; } }
+        .notificacion-limite { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 5px solid #f59e0b; border-radius: 12px; padding: 15px 20px; margin-bottom: 25px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.9; transform: scale(1.01); } 100% { opacity: 1; } }
+        .notificacion-contenido { display: flex; align-items: center; gap: 15px; }
+        .notificacion-contenido i { font-size: 28px; color: #d97706; }
+        .notificacion-texto { flex: 1; }
+        .notificacion-texto strong { display: block; font-size: 14px; color: #92400e; margin-bottom: 5px; }
+        .notificacion-texto span { font-size: 13px; color: #78350f; }
+        .notificacion-limite.cerrado { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left-color: #dc2626; }
+        .notificacion-limite.cerrado i { color: #dc2626; }
+        .notificacion-limite.cerrado .notificacion-texto strong { color: #991b1b; }
+        .notificacion-limite.cerrado .notificacion-texto span { color: #7f1d1d; }
+        @media (max-width: 768px) { .notificacion-contenido { flex-direction: column; text-align: center; gap: 10px; } .notificacion-contenido i { font-size: 32px; } }
+        .pronostico-extra-form { display: flex; flex-direction: column; gap: 25px; }
+        .extra-card { background: #f9fafb; border-radius: 15px; padding: 20px; border: 1px solid #e5e7eb; }
+        .extra-card h3 { margin-bottom: 5px; color: #333; }
+        .extra-points { font-size: 12px; color: #10b981; font-weight: 600; margin-bottom: 15px; }
+        .extra-select, .extra-input { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; background: white; }
+        .extra-select:focus, .extra-input:focus { outline: none; border-color: #667eea; }
+        .btn-guardar-extra { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-guardar-extra:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .mensaje-extra { margin-top: 15px; padding: 10px; border-radius: 8px; text-align: center; }
+        .mensaje-exito { background: #d1fae5; color: #065f46; }
+        .mensaje-error { background: #fee2e2; color: #dc2626; }
     </style>
 </head>
 <body>
@@ -461,112 +87,105 @@
         </div>
 
         <div class="tabs">
-    <button class="tab-btn active" onclick="cambiarTab('pronosticos', event)">
-        <i class="fas fa-pen"></i> Mis Pronósticos
-    </button>
-    <button class="tab-btn" onclick="cambiarTab('pronosticos_extra', event)">
-        <i class="fas fa-star"></i> Pronósticos Extra
-    </button>
-    <button class="tab-btn" onclick="cambiarTab('tabla', event)">
-        <i class="fas fa-chart-line"></i> Tabla de Posiciones
-    </button>
-</div>
+            <button class="tab-btn active" onclick="cambiarTab('pronosticos', event)">
+                <i class="fas fa-pen"></i> Mis Pronósticos
+            </button>
+            <button class="tab-btn" onclick="cambiarTab('pronosticos_extra', event)">
+                <i class="fas fa-star"></i> Pronósticos Extra
+            </button>
+            <button class="tab-btn" onclick="cambiarTab('tabla', event)">
+                <i class="fas fa-chart-line"></i> Tabla de Posiciones
+            </button>
+        </div>
 
-<!-- Pestaña: Mis Pronósticos -->
-<div id="pronosticosTab" class="tab-content active">
-    <div id="notificacionLimite" class="notificacion-limite" style="display: none;">
-        <div class="notificacion-contenido">
-            <i class="fas fa-clock"></i>
-            <div class="notificacion-texto">
-                <strong>⏰ Plazo de pronósticos</strong>
-                <span id="notificacionMensaje"></span>
+        <!-- Pestaña: Mis Pronósticos -->
+        <div id="pronosticosTab" class="tab-content active">
+            <div id="notificacionLimite" class="notificacion-limite" style="display: none;">
+                <div class="notificacion-contenido">
+                    <i class="fas fa-clock"></i>
+                    <div class="notificacion-texto">
+                        <strong>⏰ Plazo de pronósticos</strong>
+                        <span id="notificacionMensaje"></span>
+                    </div>
+                </div>
+            </div>
+            <h2>📝 Haz tus pronósticos</h2>
+            <div id="pronosticosList" class="partidos-grid">
+                <div class="welcome-message">
+                    <i class="fas fa-futbol"></i>
+                    <h3>Cargando partidos...</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña: Pronósticos Extra -->
+        <div id="pronosticosExtraTab" class="tab-content">
+            <h2>⭐ Pronósticos Extra</h2>
+            <p style="color: #666; margin-bottom: 20px;">¡Gana puntos adicionales!</p>
+            
+            <div class="pronostico-extra-form">
+                <div class="extra-card">
+                    <h3>🏆 ¿Qué selección será la más goleadora de la FASE DE GRUPOS?</h3>
+                    <p class="extra-points">+10 puntos si aciertas</p>
+                    <select id="seleccionGoleadora" class="extra-select">
+                        <option value="">Selecciona una selección</option>
+                    </select>
+                </div>
+                
+                <div class="extra-card">
+                    <h3>⭐ Balón de Oro (Mejor jugador del torneo)</h3>
+                    <p class="extra-points">+5 puntos si aciertas</p>
+                    <select id="balonDeOro" class="extra-select">
+                        <option value="">Selecciona un jugador</option>
+                    </select>
+                    <input type="text" id="balonDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
+                </div>
+                
+                <div class="extra-card">
+                    <h3>⚽ Bota de Oro (Máximo goleador del torneo)</h3>
+                    <p class="extra-points">+5 puntos si aciertas</p>
+                    <select id="botaDeOro" class="extra-select">
+                        <option value="">Selecciona un jugador</option>
+                    </select>
+                    <input type="text" id="botaDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
+                </div>
+                
+                <div class="extra-card">
+                    <h3>🧤 Guante de Oro (Mejor portero del torneo)</h3>
+                    <p class="extra-points">+5 puntos si aciertas</p>
+                    <select id="guanteDeOro" class="extra-select">
+                        <option value="">Selecciona un jugador</option>
+                    </select>
+                    <input type="text" id="guanteDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
+                </div>
+                
+                <button onclick="guardarPronosticosExtra()" class="btn-guardar-extra">Guardar Pronósticos Extra</button>
+                <div id="mensajeExtra" class="mensaje-extra"></div>
+            </div>
+        </div>
+
+        <!-- Pestaña: Tabla de Posiciones -->
+        <div id="tablaTab" class="tab-content">
+            <h2>📊 Clasificación</h2>
+            <div id="tablaPosiciones">
+                <div class="welcome-message">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Cargando tabla...</h3>
+                </div>
             </div>
         </div>
     </div>
-    <h2>📝 Haz tus pronósticos</h2>
-    <div id="pronosticosList" class="partidos-grid">
-        <div class="welcome-message">
-            <i class="fas fa-futbol"></i>
-            <h3>Cargando partidos...</h3>
-        </div>
-    </div>
-</div>
-
-<!-- Pestaña: Pronósticos Extra -->
-<!-- Pestaña: Pronósticos Extra -->
-<div id="pronosticosExtraTab" class="tab-content">
-    <h2>⭐ Pronósticos Extra</h2>
-    <p style="color: #666; margin-bottom: 20px;">¡Gana puntos adicionales!</p>
-    
-    <div id="pronosticoExtraForm" class="pronostico-extra-form">
-        <!-- Selección más goleadora -->
-        <div class="extra-card">
-            <h3>🏆 ¿Qué selección será la más goleadora de la FASE DE GRUPOS?</h3>
-            <p class="extra-points">+10 puntos si aciertas</p>
-            <select id="seleccionGoleadora" class="extra-select">
-                <option value="">Selecciona una selección</option>
-            </select>
-        </div>
-        
-        <!-- Balón de Oro -->
-        <div class="extra-card">
-            <h3>⭐ Balón de Oro (Mejor jugador del torneo)</h3>
-            <p class="extra-points">+5 puntos si aciertas</p>
-            <select id="balonDeOro" class="extra-select">
-                <option value="">Selecciona un jugador</option>
-            </select>
-            <input type="text" id="balonDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
-        </div>
-        
-        <!-- Bota de Oro -->
-        <div class="extra-card">
-            <h3>⚽ Bota de Oro (Máximo goleador del torneo)</h3>
-            <p class="extra-points">+5 puntos si aciertas</p>
-            <select id="botaDeOro" class="extra-select">
-                <option value="">Selecciona un jugador</option>
-            </select>
-            <input type="text" id="botaDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
-        </div>
-        
-        <!-- Guante de Oro -->
-        <div class="extra-card">
-            <h3>🧤 Guante de Oro (Mejor portero del torneo)</h3>
-            <p class="extra-points">+5 puntos si aciertas</p>
-            <select id="guanteDeOro" class="extra-select">
-                <option value="">Selecciona un jugador</option>
-            </select>
-            <input type="text" id="guanteDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
-        </div>
-        
-        <button onclick="guardarPronosticosExtra()" class="btn-guardar-extra">Guardar Pronósticos Extra</button>
-        <div id="mensajeExtra" class="mensaje-extra"></div>
-    </div>
-</div>
-
-<!-- Pestaña: Tabla de Posiciones -->
-<div id="tablaTab" class="tab-content">
-    <h2>📊 Clasificación</h2>
-    <div id="tablaPosiciones">
-        <div class="welcome-message">
-            <i class="fas fa-chart-line"></i>
-            <h3>Cargando tabla...</h3>
-        </div>
-    </div>
-</div>
 
     <script>
         let usuarioActual = null;
 
-        // ============ RENDER PARTIDO CARD ============
         function renderPartidoCard(partido, editable) {
             const fecha = new Date(partido.fecha);
             const fechaStr = fecha.toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
             
             let resultadoHtml = '';
             if (partido.jugado) {
-                resultadoHtml = `<div style="margin-top:10px;padding:8px;background:#e5e7eb;border-radius:8px;text-align:center">
-                    Resultado: ${partido.resultado_local} - ${partido.resultado_visitante}
-                </div>`;
+                resultadoHtml = `<div style="margin-top:10px;padding:8px;background:#e5e7eb;border-radius:8px;text-align:center">Resultado: ${partido.resultado_local} - ${partido.resultado_visitante}</div>`;
             }
             
             let pronosticoHtml = '';
@@ -596,7 +215,6 @@
             `;
         }
 
-        // ============ NOTIFICACIÓN DE PLAZO ============
         function obtenerMensajePlazo() {
             const fases = [
                 { nombre: 'Fase de Grupos', fechaMostrar: '10 de junio de 2026', horaMostrar: '18:00', limiteUTC: new Date('2026-06-11T00:00:00Z') },
@@ -606,21 +224,13 @@
                 { nombre: 'Semifinales', fechaMostrar: '14 de julio de 2026', horaMostrar: '12:00', limiteUTC: new Date('2026-07-14T18:00:00Z') },
                 { nombre: 'Final', fechaMostrar: '18 de julio de 2026', horaMostrar: '18:00', limiteUTC: new Date('2026-07-19T00:00:00Z') }
             ];
-            
             const ahora = new Date();
-            
             for (const fase of fases) {
                 if (ahora < fase.limiteUTC) {
-                    const diffTime = fase.limiteUTC - ahora;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    if (diffDays === 0) {
-                        return `⚠️ ¡ÚLTIMO DÍA! El plazo para pronósticos de ${fase.nombre} cierra HOY a las ${fase.horaMostrar} hrs.`;
-                    } else if (diffDays === 1) {
-                        return `⏰ El plazo para pronósticos de ${fase.nombre} cierra MAÑANA a las ${fase.horaMostrar} hrs.`;
-                    } else {
-                        return `📅 Ingreso de pronósticos para ${fase.nombre} disponible hasta el ${fase.fechaMostrar} a las ${fase.horaMostrar} hrs.`;
-                    }
+                    const diffDays = Math.ceil((fase.limiteUTC - ahora) / (1000 * 60 * 60 * 24));
+                    if (diffDays === 0) return `⚠️ ¡ÚLTIMO DÍA! El plazo para pronósticos de ${fase.nombre} cierra HOY a las ${fase.horaMostrar} hrs.`;
+                    if (diffDays === 1) return `⏰ El plazo para pronósticos de ${fase.nombre} cierra MAÑANA a las ${fase.horaMostrar} hrs.`;
+                    return `📅 Ingreso de pronósticos para ${fase.nombre} disponible hasta el ${fase.fechaMostrar} a las ${fase.horaMostrar} hrs.`;
                 }
             }
             return '⚠️ Todos los plazos de pronósticos han cerrado. ¡Gracias por participar!';
@@ -635,40 +245,31 @@
             }
         }
 
-        // ============ USUARIO ============
         async function cargarUsuario() {
             try {
                 const response = await fetch('/api/usuario-actual');
                 if (response.ok) {
                     usuarioActual = await response.json();
                     document.getElementById('userNameDisplay').textContent = usuarioActual.nombre;
-                    
-                    if (usuarioActual.seleccion_favorita) {
-                        mostrarBanderaFavorita(usuarioActual.seleccion_favorita);
-                    }
-                    
+                    if (usuarioActual.seleccion_favorita) mostrarBanderaFavorita(usuarioActual.seleccion_favorita);
                     cargarPartidos();
                     cargarTablaPosiciones();
                 } else {
                     window.location.href = '/login';
                 }
             } catch (error) {
-                console.error('Error:', error);
                 window.location.href = '/login';
             }
         }
 
         function mostrarBanderaFavorita(codigo) {
             const banderasUrl = {
-                'arg': 'https://flagcdn.com/ar.svg', 'bra': 'https://flagcdn.com/br.svg',
-                'fra': 'https://flagcdn.com/fr.svg', 'esp': 'https://flagcdn.com/es.svg',
-                'ger': 'https://flagcdn.com/de.svg', 'eng': 'https://flagcdn.com/gb.svg',
-                'ita': 'https://flagcdn.com/it.svg', 'ned': 'https://flagcdn.com/nl.svg',
-                'por': 'https://flagcdn.com/pt.svg', 'uru': 'https://flagcdn.com/uy.svg',
-                'col': 'https://flagcdn.com/co.svg', 'mex': 'https://flagcdn.com/mx.svg',
-                'usa': 'https://flagcdn.com/us.svg', 'jpn': 'https://flagcdn.com/jp.svg',
-                'kor': 'https://flagcdn.com/kr.svg', 'mar': 'https://flagcdn.com/ma.svg',
-                'sen': 'https://flagcdn.com/sn.svg', 'cro': 'https://flagcdn.com/hr.svg',
+                'arg': 'https://flagcdn.com/ar.svg', 'bra': 'https://flagcdn.com/br.svg', 'fra': 'https://flagcdn.com/fr.svg',
+                'esp': 'https://flagcdn.com/es.svg', 'ger': 'https://flagcdn.com/de.svg', 'eng': 'https://flagcdn.com/gb.svg',
+                'ita': 'https://flagcdn.com/it.svg', 'ned': 'https://flagcdn.com/nl.svg', 'por': 'https://flagcdn.com/pt.svg',
+                'uru': 'https://flagcdn.com/uy.svg', 'col': 'https://flagcdn.com/co.svg', 'mex': 'https://flagcdn.com/mx.svg',
+                'usa': 'https://flagcdn.com/us.svg', 'jpn': 'https://flagcdn.com/jp.svg', 'kor': 'https://flagcdn.com/kr.svg',
+                'mar': 'https://flagcdn.com/ma.svg', 'sen': 'https://flagcdn.com/sn.svg', 'cro': 'https://flagcdn.com/hr.svg',
                 'bel': 'https://flagcdn.com/be.svg', 'sui': 'https://flagcdn.com/ch.svg'
             };
             const url = banderasUrl[codigo] || 'https://flagcdn.com/un.svg';
@@ -676,313 +277,130 @@
         }
 
         async function cerrarSesion() {
-            try {
-                await fetch('/api/logout', { method: 'POST' });
-                window.location.href = '/login';
-            } catch (error) {
-                window.location.href = '/login';
-            }
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
         }
 
-        // ============ PARTIDOS ============
         async function cargarPartidos() {
-    try {
-        const response = await fetch('/api/partidos');
-        const partidos = await response.json();
-        
-        const pronosticosDiv = document.getElementById('pronosticosList');
-        
-        if (!pronosticosDiv) {
-            console.error('No se encontró el elemento pronosticosList');
-            return;
-        }
-        
-        if (!partidos || partidos.length === 0) {
-            pronosticosDiv.innerHTML = '<div class="welcome-message"><i class="fas fa-info-circle"></i><h3>No hay partidos cargados</h3><p>Contacta al administrador</p></div>';
-            return;
-        }
-        
-        pronosticosDiv.innerHTML = partidos.map(p => renderPartidoCard(p, true)).join('');
-        
-        if (usuarioActual) {
-            await cargarMisPronosticos();
-        }
-    } catch (error) {
-        console.error('Error cargando partidos:', error);
-        const pronosticosDiv = document.getElementById('pronosticosList');
-        if (pronosticosDiv) {
-            pronosticosDiv.innerHTML = '<div class="welcome-message"><i class="fas fa-exclamation-triangle"></i><h3>Error al cargar partidos</h3><p>Intenta recargar la página</p></div>';
-        }
-    }
-}
-
-        // ============ PRONÓSTICOS ============
-        async function guardarPronostico(partidoId) {
-            if (!usuarioActual) {
-                alert('Inicia sesión primero');
-                return;
+            try {
+                const response = await fetch('/api/partidos');
+                const partidos = await response.json();
+                const pronosticosDiv = document.getElementById('pronosticosList');
+                if (!pronosticosDiv) return;
+                if (!partidos || partidos.length === 0) {
+                    pronosticosDiv.innerHTML = '<div class="welcome-message"><i class="fas fa-info-circle"></i><h3>No hay partidos cargados</h3></div>';
+                    return;
+                }
+                pronosticosDiv.innerHTML = partidos.map(p => renderPartidoCard(p, true)).join('');
+                if (usuarioActual) await cargarMisPronosticos();
+            } catch (error) {
+                const pronosticosDiv = document.getElementById('pronosticosList');
+                if (pronosticosDiv) pronosticosDiv.innerHTML = '<div class="welcome-message"><i class="fas fa-exclamation-triangle"></i><h3>Error al cargar partidos</h3></div>';
             }
-            
+        }
+
+        async function guardarPronostico(partidoId) {
+            if (!usuarioActual) { alert('Inicia sesión primero'); return; }
             const golesLocal = parseInt(document.getElementById(`gol_local_${partidoId}`).value);
             const golesVisitante = parseInt(document.getElementById(`gol_visit_${partidoId}`).value);
-            
-            if (isNaN(golesLocal) || isNaN(golesVisitante)) {
-                alert('Ingresa los goles para ambos equipos');
-                return;
-            }
-            
+            if (isNaN(golesLocal) || isNaN(golesVisitante)) { alert('Ingresa los goles para ambos equipos'); return; }
             try {
                 const response = await fetch('/api/pronosticos', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        usuario_id: usuarioActual.id,
-                        partido_id: partidoId,
-                        goles_local: golesLocal,
-                        goles_visitante: golesVisitante
-                    })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario_id: usuarioActual.id, partido_id: partidoId, goles_local: golesLocal, goles_visitante: golesVisitante })
                 });
-                
-                if (response.ok) {
-                    alert('✅ Pronóstico guardado');
-                    await cargarMisPronosticos();
-                } else {
-                    alert('Error al guardar');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error al guardar');
-            }
+                if (response.ok) { alert('✅ Pronóstico guardado'); await cargarMisPronosticos(); }
+                else alert('Error al guardar');
+            } catch (error) { alert('Error al guardar'); }
         }
 
         async function cargarMisPronosticos() {
             if (!usuarioActual) return;
-            
             try {
                 const response = await fetch(`/api/pronosticos/usuario/${usuarioActual.id}`);
                 const pronosticos = await response.json();
-                
                 pronosticos.forEach(p => {
                     const localInput = document.getElementById(`gol_local_${p.partido_id}`);
                     const visitInput = document.getElementById(`gol_visit_${p.partido_id}`);
-                    if (localInput && visitInput) {
-                        localInput.value = p.goles_local;
-                        visitInput.value = p.goles_visitante;
-                    }
+                    if (localInput && visitInput) { localInput.value = p.goles_local; visitInput.value = p.goles_visitante; }
                 });
-            } catch (error) {
-                console.error('Error cargando pronósticos:', error);
-            }
+            } catch (error) { console.error('Error:', error); }
         }
 
-        // ============ TABLA DE POSICIONES ============
         async function cargarTablaPosiciones() {
             try {
                 const response = await fetch('/api/tabla-posiciones-avanzada');
                 const tabla = await response.json();
-                
-                if (!tabla || tabla.length === 0) {
-                    document.getElementById('tablaPosiciones').innerHTML = '<div class="welcome-message"><h3>Sin participantes aún</h3></div>';
-                    return;
-                }
-                
-                const banderasUrl = {
-                    'arg': '🇦🇷', 'bra': '🇧🇷', 'fra': '🇫🇷', 'esp': '🇪🇸',
-                    'ger': '🇩🇪', 'eng': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'ita': '🇮🇹', 'ned': '🇳🇱',
-                    'por': '🇵🇹', 'uru': '🇺🇾', 'col': '🇨🇴', 'mex': '🇲🇽',
-                    'usa': '🇺🇸', 'jpn': '🇯🇵', 'kor': '🇰🇷', 'mar': '🇲🇦',
-                    'sen': '🇸🇳', 'cro': '🇭🇷', 'bel': '🇧🇪', 'sui': '🇨🇭'
-                };
-                
-                const html = `
-                    <table class="tabla-posiciones">
-                        <thead>
-                            <tr>
-                                <th>Posición</th>
-                                <th>Participante</th>
-                                <th>Puntos</th>
-                                <th>Aciertos Exactos</th>
-                                <th>Partidos Acertados</th>
-                                <th>Diferencia de Goles</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${tabla.map(item => `
-                                <tr>
-                                    <td><strong>${item.posicion}</strong> ${item.posicion === 1 ? '🏆' : item.posicion === 2 ? '🥈' : item.posicion === 3 ? '🥉' : ''}</td>
-                                    <td>${item.nombre} ${banderasUrl[item.seleccion_favorita] ? banderasUrl[item.seleccion_favorita] : ''}</td>
-                                    <td><strong style="font-size:18px;color:#667eea;">${item.puntos}</strong></td>
-                                    <td>${item.aciertos_exactos}</td>
-                                    <td>${item.partidos_acertados}</td>
-                                    <td>${item.diferencia_goles > 0 ? '+' : ''}${item.diferencia_goles}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
+                if (!tabla || tabla.length === 0) { document.getElementById('tablaPosiciones').innerHTML = '<div class="welcome-message"><h3>Sin participantes aún</h3></div>'; return; }
+                const banderasUrl = { 'arg': '🇦🇷', 'bra': '🇧🇷', 'fra': '🇫🇷', 'esp': '🇪🇸', 'ger': '🇩🇪', 'eng': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'ita': '🇮🇹', 'ned': '🇳🇱', 'por': '🇵🇹', 'uru': '🇺🇾', 'col': '🇨🇴', 'mex': '🇲🇽', 'usa': '🇺🇸', 'jpn': '🇯🇵', 'kor': '🇰🇷', 'mar': '🇲🇦', 'sen': '🇸🇳', 'cro': '🇭🇷', 'bel': '🇧🇪', 'sui': '🇨🇭' };
+                const html = `<table class="tabla-posiciones"><thead><tr><th>Posición</th><th>Participante</th><th>Puntos</th><th>Aciertos Exactos</th><th>Partidos Acertados</th><th>Diferencia de Goles</th></tr></thead><tbody>${tabla.map(item => `<tr><td><strong>${item.posicion}</strong> ${item.posicion === 1 ? '🏆' : item.posicion === 2 ? '🥈' : item.posicion === 3 ? '🥉' : ''}</td><td>${item.nombre} ${banderasUrl[item.seleccion_favorita] ? banderasUrl[item.seleccion_favorita] : ''}</td><td><strong style="font-size:18px;color:#667eea;">${item.puntos}</strong></td><td>${item.aciertos_exactos}</td><td>${item.partidos_acertados}</td><td>${item.diferencia_goles > 0 ? '+' : ''}${item.diferencia_goles}</td></tr>`).join('')}</tbody></table>`;
                 document.getElementById('tablaPosiciones').innerHTML = html;
-            } catch (error) {
-                console.error('Error cargando tabla:', error);
-                document.getElementById('tablaPosiciones').innerHTML = '<div class="welcome-message"><i class="fas fa-exclamation-triangle"></i><h3>Error al cargar la tabla</h3><p>Intenta recargar la página</p></div>';
-            }
+            } catch (error) { document.getElementById('tablaPosiciones').innerHTML = '<div class="welcome-message"><h3>Error al cargar la tabla</h3></div>'; }
         }
 
-        // ============ CAMBIAR PESTAÑA ============
         function cambiarTab(tab, event) {
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    document.getElementById(`${tab}Tab`).classList.add('active');
-    if (event && event.target) {
-        event.target.classList.add('active');
-    }
-    
-    if (tab === 'partidos') {
-        cargarPartidos();
-    } else if (tab === 'tabla') {
-        cargarTablaPosiciones();
-    } else if (tab === 'pronosticos') {
-        cargarNotificacionLimite();
-        if (usuarioActual) cargarMisPronosticos();
-    } else if (tab === 'pronosticos_extra') {
-    cargarSeleccionesParaExtra();
-    cargarJugadores();  // Agrega esta línea
-    cargarPronosticosExtra();
-}
-}
-
-        // ============ INICIALIZACIÓN ============
-        async function cargarDatosIniciales() {
-            try {
-                await fetch('/api/cargar-datos-iniciales', { method: 'POST' });
-            } catch (error) {
-                console.error('Error:', error);
-            }
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`${tab}Tab`).classList.add('active');
+            if (event && event.target) event.target.classList.add('active');
+            if (tab === 'tabla') cargarTablaPosiciones();
+            else if (tab === 'pronosticos') { cargarNotificacionLimite(); if (usuarioActual) cargarMisPronosticos(); }
+            else if (tab === 'pronosticos_extra') { cargarSeleccionesParaExtra(); cargarJugadores(); cargarPronosticosExtra(); }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            cargarUsuario();
-            cargarDatosIniciales();
-            cargarNotificacionLimite();
-        });
+        async function cargarDatosIniciales() { try { await fetch('/api/cargar-datos-iniciales', { method: 'POST' }); } catch (error) { console.error('Error:', error); } }
+
+        document.addEventListener('DOMContentLoaded', () => { cargarUsuario(); cargarDatosIniciales(); cargarNotificacionLimite(); });
 
         // ============ PRONÓSTICOS EXTRA ============
-async function cargarPronosticosExtra() {
-    try {
-        const response = await fetch('/api/pronosticos-extra');
-        const data = await response.json();
-        
-        if (data.seleccion_mas_goleadora) {
-            document.getElementById('seleccionGoleadora').value = data.seleccion_mas_goleadora;
+        async function cargarPronosticosExtra() {
+            try {
+                const response = await fetch('/api/pronosticos-extra');
+                const data = await response.json();
+                if (data.seleccion_mas_goleadora) document.getElementById('seleccionGoleadora').value = data.seleccion_mas_goleadora;
+                if (data.balon_de_oro) { document.getElementById('balonDeOro').value = data.balon_de_oro; document.getElementById('balonDeOroCustom').value = data.balon_de_oro; }
+                if (data.bota_de_oro) { document.getElementById('botaDeOro').value = data.bota_de_oro; document.getElementById('botaDeOroCustom').value = data.bota_de_oro; }
+                if (data.guante_de_oro) { document.getElementById('guanteDeOro').value = data.guante_de_oro; document.getElementById('guanteDeOroCustom').value = data.guante_de_oro; }
+            } catch (error) { console.error('Error:', error); }
         }
-        if (data.balon_de_oro) {
-            document.getElementById('balonDeOro').value = data.balon_de_oro;
-            document.getElementById('balonDeOroCustom').value = data.balon_de_oro;
-        }
-        if (data.bota_de_oro) {
-            document.getElementById('botaDeOro').value = data.bota_de_oro;
-            document.getElementById('botaDeOroCustom').value = data.bota_de_oro;
-        }
-        if (data.guante_de_oro) {
-            document.getElementById('guanteDeOro').value = data.guante_de_oro;
-            document.getElementById('guanteDeOroCustom').value = data.guante_de_oro;
-        }
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
 
-async function guardarPronosticosExtra() {
-    let seleccionGoleadora = document.getElementById('seleccionGoleadora').value;
-    let balonDeOro = document.getElementById('balonDeOroCustom').value || document.getElementById('balonDeOro').value;
-    let botaDeOro = document.getElementById('botaDeOroCustom').value || document.getElementById('botaDeOro').value;
-    let guanteDeOro = document.getElementById('guanteDeOroCustom').value || document.getElementById('guanteDeOro').value;
-    
-    if (!seleccionGoleadora) {
-        mostrarMensajeExtra('Selecciona la selección más goleadora', 'error');
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/pronosticos-extra', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                seleccion_mas_goleadora: seleccionGoleadora,
-                balon_de_oro: balonDeOro,
-                bota_de_oro: botaDeOro,
-                guante_de_oro: guanteDeOro
-            })
-        });
-        
-        if (response.ok) {
-            mostrarMensajeExtra('✅ Pronósticos extra guardados correctamente', 'exito');
-        } else {
-            mostrarMensajeExtra('Error al guardar', 'error');
+        async function guardarPronosticosExtra() {
+            let seleccionGoleadora = document.getElementById('seleccionGoleadora').value;
+            let balonDeOro = document.getElementById('balonDeOroCustom').value || document.getElementById('balonDeOro').value;
+            let botaDeOro = document.getElementById('botaDeOroCustom').value || document.getElementById('botaDeOro').value;
+            let guanteDeOro = document.getElementById('guanteDeOroCustom').value || document.getElementById('guanteDeOro').value;
+            if (!seleccionGoleadora) { mostrarMensajeExtra('Selecciona la selección más goleadora', 'error'); return; }
+            try {
+                const response = await fetch('/api/pronosticos-extra', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ seleccion_mas_goleadora: seleccionGoleadora, balon_de_oro: balonDeOro, bota_de_oro: botaDeOro, guante_de_oro: guanteDeOro }) });
+                if (response.ok) mostrarMensajeExtra('✅ Pronósticos extra guardados correctamente', 'exito');
+                else mostrarMensajeExtra('Error al guardar', 'error');
+            } catch (error) { mostrarMensajeExtra('Error de conexión', 'error'); }
         }
-    } catch (error) {
-        mostrarMensajeExtra('Error de conexión', 'error');
-    }
-}
 
-function mostrarMensajeExtra(mensaje, tipo) {
-    const div = document.getElementById('mensajeExtra');
-    div.innerHTML = `<div class="mensaje-${tipo}">${mensaje}</div>`;
-    setTimeout(() => {
-        div.innerHTML = '';
-    }, 3000);
-}
+        function mostrarMensajeExtra(mensaje, tipo) {
+            const div = document.getElementById('mensajeExtra');
+            div.innerHTML = `<div class="mensaje-${tipo}">${mensaje}</div>`;
+            setTimeout(() => { div.innerHTML = ''; }, 3000);
+        }
 
-// Cargar lista de selecciones para el select
-async function cargarSeleccionesParaExtra() {
-    try {
-        const response = await fetch('/api/selecciones');
-        const selecciones = await response.json();
-        const select = document.getElementById('seleccionGoleadora');
-        select.innerHTML = '<option value="">Selecciona una selección</option>';
-        selecciones.forEach(sel => {
-            // Mostrar solo el nombre de la selección (sin la bandera en emoji)
-            select.innerHTML += `<option value="${sel.codigo}">${sel.nombre}</option>`;
-        });
-    } catch (error) {
-        console.error('Error cargando selecciones:', error);
-    }
-}
+        async function cargarSeleccionesParaExtra() {
+            try {
+                const response = await fetch('/api/selecciones');
+                const selecciones = await response.json();
+                const select = document.getElementById('seleccionGoleadora');
+                select.innerHTML = '<option value="">Selecciona una selección</option>';
+                selecciones.forEach(sel => { select.innerHTML += `<option value="${sel.codigo}">${sel.nombre}</option>`; });
+            } catch (error) { console.error('Error:', error); }
+        }
 
-function cargarJugadores() {
-    const jugadores = [
-        "Lionel Messi",
-        "Cristiano Ronaldo",
-        "Kylian Mbappé",
-        "Erling Haaland",
-        "Vinícius Jr.",
-        "Jude Bellingham",
-        "Harry Kane",
-        "Kevin De Bruyne",
-        "Rodri",
-        "Antoine Griezmann",
-        "Emiliano Martínez",
-        "Thibaut Courtois",
-        "Manuel Neuer",
-        "Alisson Becker",
-        "Ederson"
-    ];
-    
-    const selects = ['balonDeOro', 'botaDeOro', 'guanteDeOro'];
-    selects.forEach(selectId => {
-        const select = document.getElementById(selectId);
-        if (select) {
-            select.innerHTML = '<option value="">Selecciona un jugador</option>';
-            jugadores.forEach(jugador => {
-                select.innerHTML += `<option value="${jugador}">${jugador}</option>`;
+        function cargarJugadores() {
+            const jugadores = ["Lionel Messi", "Cristiano Ronaldo", "Kylian Mbappé", "Erling Haaland", "Vinícius Jr.", "Jude Bellingham", "Harry Kane", "Kevin De Bruyne", "Rodri", "Antoine Griezmann", "Emiliano Martínez", "Thibaut Courtois", "Manuel Neuer", "Alisson Becker", "Ederson"];
+            const selects = ['balonDeOro', 'botaDeOro', 'guanteDeOro'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) { select.innerHTML = '<option value="">Selecciona un jugador</option>'; jugadores.forEach(jugador => { select.innerHTML += `<option value="${jugador}">${jugador}</option>`; }); }
             });
         }
-    });
-}
     </script>
 </body>
 </html>
