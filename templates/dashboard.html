@@ -455,29 +455,17 @@
             <h2>📊 Clasificación</h2>
             <div id="tablaPosiciones"></div>
         </div>
-
-        <div class="user-info">
-    <div class="user-flag" id="userFlag">🏆</div>
-    <div class="user-details">
-        <span class="user-name" id="userNameDisplay"></span>
-        <span class="user-employee-code" id="userEmployeeCode" style="font-size: 12px; color: #666;"></span>
-    </div>
-    <button onclick="cerrarSesion()" class="logout-btn">
-        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-    </button>
-</div>
     </div>
 
     <script>
         let usuarioActual = null;
 
         async function cargarUsuario() {
-    try {
-        const response = await fetch('/api/usuario-actual');
-        if (response.ok) {
-            usuarioActual = await response.json();
-            document.getElementById('userNameDisplay').textContent = usuarioActual.nombre;
-            document.getElementById('userEmployeeCode').textContent = usuarioActual.codigo_empleado ? `ID: ${usuarioActual.codigo_empleado}` : '';
+            try {
+                const response = await fetch('/api/usuario-actual');
+                if (response.ok) {
+                    usuarioActual = await response.json();
+                    document.getElementById('userNameDisplay').textContent = usuarioActual.nombre;
                     
                     if (usuarioActual.seleccion_favorita) {
                         await mostrarBanderaFavorita(usuarioActual.seleccion_favorita);
@@ -722,50 +710,87 @@
         document.addEventListener('DOMContentLoaded', () => {
     cargarUsuario();
     cargarDatosIniciales();
-    cargarNotificacionLimite();  // ← AGREGAR ESTA LÍNEA
+    cargarNotificacionLimite();  // ← Ya debe estar
 });
 
-async function cargarNotificacionLimite() {
-    try {
-        const response = await fetch('/api/fecha-limite-activa');
-        const data = await response.json();
-        
-        const notificacionDiv = document.getElementById('notificacionLimite');
-        const mensajeSpan = document.getElementById('notificacionMensaje');
-        
-        if (data.activo) {
-            // Formatear la fecha
-            const fechaLimite = new Date(data.fecha_limite);
-            const opciones = { 
-                day: 'numeric', 
-                month: 'long', 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            };
-            const fechaFormateada = fechaLimite.toLocaleDateString('es-ES', opciones);
-            
-            let mensaje = '';
-            if (data.dias_restantes === 0) {
-                mensaje = `⚠️ ¡ÚLTIMO DÍA! El plazo para pronósticos de ${data.nombre_fase} cierra HOY a las ${fechaLimite.getHours()}:${String(fechaLimite.getMinutes()).padStart(2,'0')} hrs.`;
-            } else if (data.dias_restantes === 1) {
-                mensaje = `⏰ El plazo para pronósticos de ${data.nombre_fase} cierra MAÑANA a las ${fechaLimite.getHours()}:${String(fechaLimite.getMinutes()).padStart(2,'0')} hrs.`;
-            } else {
-                mensaje = `📅 Ingreso de pronósticos para ${data.nombre_fase} disponible hasta el ${fechaFormateada}.`;
-            }
-            
-            mensajeSpan.textContent = mensaje;
-            notificacionDiv.style.display = 'block';
-            notificacionDiv.classList.remove('cerrado');
-        } else {
-            // Todas las fases cerraron
-            mensajeSpan.textContent = data.mensaje || '⚠️ Los plazos de pronósticos han cerrado. ¡Gracias por participar!';
-            notificacionDiv.style.display = 'block';
-            notificacionDiv.classList.add('cerrado');
-        }
-    } catch (error) {
-        console.error('Error cargando notificación:', error);
+function cambiarTab(tab) {
+    // ... tu código existente ...
+    
+    if (tab === 'pronosticos') {
+        cargarNotificacionLimite();  // ← Actualiza al cambiar a la pestaña
+        if (usuarioActual) cargarMisPronosticos();
     }
-}        
+}
+
+async function obtenerMensajePlazo() {
+    // Horarios de cierre en hora local de Guatemala
+    const fases = [
+        { 
+            nombre: 'Fase de Grupos', 
+            fechaMostrar: '10 de junio de 2026', 
+            horaMostrar: '18:00',
+            limiteUTC: new Date('2026-06-11T00:00:00Z')  // 11 junio 00:00 UTC = 10 junio 18:00 Guatemala
+        },
+        { 
+            nombre: 'Dieciseisavos de Final', 
+            fechaMostrar: '28 de junio de 2026', 
+            horaMostrar: '13:00',
+            limiteUTC: new Date('2026-06-28T19:00:00Z')  // 28 junio 19:00 UTC = 28 junio 13:00 Guatemala
+        },
+        { 
+            nombre: 'Octavos de Final', 
+            fechaMostrar: '4 de julio de 2026', 
+            horaMostrar: '14:00',
+            limiteUTC: new Date('2026-07-04T20:00:00Z')  // 4 julio 20:00 UTC = 4 julio 14:00 Guatemala
+        },
+        { 
+            nombre: 'Cuartos de Final', 
+            fechaMostrar: '9 de julio de 2026', 
+            horaMostrar: '13:00',
+            limiteUTC: new Date('2026-07-09T19:00:00Z')  // 9 julio 19:00 UTC = 9 julio 13:00 Guatemala
+        },
+        { 
+            nombre: 'Semifinales', 
+            fechaMostrar: '14 de julio de 2026', 
+            horaMostrar: '12:00',
+            limiteUTC: new Date('2026-07-14T18:00:00Z')  // 14 julio 18:00 UTC = 14 julio 12:00 Guatemala
+        },
+        { 
+            nombre: 'Final', 
+            fechaMostrar: '18 de julio de 2026', 
+            horaMostrar: '18:00',
+            limiteUTC: new Date('2026-07-19T00:00:00Z')  // 19 julio 00:00 UTC = 18 julio 18:00 Guatemala
+        }
+    ];
+    
+    const ahora = new Date();
+    
+    for (const fase of fases) {
+        if (ahora < fase.limiteUTC) {
+            const diasRestantes = Math.ceil((fase.limiteUTC - ahora) / (1000 * 60 * 60 * 24));
+            
+            if (diasRestantes === 0) {
+                return `⚠️ ¡ÚLTIMO DÍA! El plazo para pronósticos de ${fase.nombre} cierra HOY a las ${fase.horaMostrar} hrs.`;
+            } else if (diasRestantes === 1) {
+                return `⏰ El plazo para pronósticos de ${fase.nombre} cierra MAÑANA a las ${fase.horaMostrar} hrs.`;
+            } else {
+                return `📅 Ingreso de pronósticos para ${fase.nombre} disponible hasta el ${fase.fechaMostrar} a las ${fase.horaMostrar} hrs.`;
+            }
+        }
+    }
+    
+    return '⚠️ Todos los plazos de pronósticos han cerrado. ¡Gracias por participar!';
+}
+
+async function cargarNotificacionLimite() {
+    const notificacionDiv = document.getElementById('notificacionLimite');
+    const mensajeSpan = document.getElementById('notificacionMensaje');
+    
+    if (notificacionDiv && mensajeSpan) {
+        mensajeSpan.textContent = obtenerMensajePlazo();
+        notificacionDiv.style.display = 'block';
+    }
+}
     </script>
 </body>
 </html>

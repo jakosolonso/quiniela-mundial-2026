@@ -94,14 +94,9 @@ def registro():
     if len(data['password']) < 6:
         return jsonify({'error': 'La contraseña debe tener al menos 6 caracteres'}), 400
     
-    codigo_empleado = data.get('codigo_empleado', '').strip()
-    if not codigo_empleado:
-        return jsonify({'error': 'El código de empleado es obligatorio'}), 400
-    
     usuario = Usuario(
         nombre=data['nombre'],
         email=data['email'],
-        codigo_empleado=codigo_empleado,
         seleccion_favorita=data.get('seleccion_favorita')
     )
     usuario.set_password(data['password'])
