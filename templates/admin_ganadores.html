@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Ganadores - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 40px 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        h1 { margin-bottom: 20px; color: #333; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; }
+        button { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600; }
+        button:hover { background: #059669; }
+        .btn-volver { background: #667eea; margin-top: 20px; }
+        .mensaje { margin-top: 20px; padding: 12px; border-radius: 10px; display: none; }
+        .mensaje-exito { background: #d1fae5; color: #065f46; display: block; }
+        .mensaje-error { background: #fee2e2; color: #dc2626; display: block; }
+        .info { background: #f3f4f6; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🏆 Ingresar Ganadores del Torneo</h1>
+            <div class="info">
+                ⚠️ Después de ingresar los ganadores, se asignarán automáticamente los puntos a los usuarios que acertaron.
+            </div>
+            
+            <div class="form-group">
+                <label>🏆 Selección Más Goleadora (Fase de Grupos) - +10 puntos</label>
+                <select id="seleccionGoleadora">
+                    <option value="">Selecciona una selección</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>⭐ Balón de Oro (Mejor jugador) - +5 puntos</label>
+                <input type="text" id="balonDeOro" placeholder="Ej: Lionel Messi">
+            </div>
+            
+            <div class="form-group">
+                <label>⚽ Bota de Oro (Máximo goleador) - +5 puntos</label>
+                <input type="text" id="botaDeOro" placeholder="Ej: Kylian Mbappé">
+            </div>
+            
+            <div class="form-group">
+                <label>🧤 Guante de Oro (Mejor portero) - +5 puntos</label>
+                <input type="text" id="guanteDeOro" placeholder="Ej: Emiliano Martínez">
+            </div>
+            
+            <button onclick="guardarGanadores()">Guardar Ganadores y Asignar Puntos</button>
+            <button onclick="volver()" class="btn-volver">← Volver al Panel Admin</button>
+            <div id="mensaje" class="mensaje"></div>
+        </div>
+    </div>
+    
+    <script>
+        async function cargarSelecciones() {
+            try {
+                const response = await fetch('/api/selecciones');
+                const selecciones = await response.json();
+                const select = document.getElementById('seleccionGoleadora');
+                selecciones.forEach(sel => {
+                    select.innerHTML += `<option value="${sel.codigo}">${sel.nombre}</option>`;
+                });
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        async function guardarGanadores() {
+            const data = {
+                seleccion_goleadora: document.getElementById('seleccionGoleadora').value,
+                balon_de_oro: document.getElementById('balonDeOro').value,
+                bota_de_oro: document.getElementById('botaDeOro').value,
+                guante_de_oro: document.getElementById('guanteDeOro').value
+            };
+            
+            if (!data.seleccion_goleadora) {
+                mostrarMensaje('Selecciona la selección más goleadora', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/ganadores', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                mostrarMensaje(result.mensaje, 'exito');
+            } catch (error) {
+                mostrarMensaje('Error al guardar', 'error');
+            }
+        }
+        
+        function mostrarMensaje(msg, tipo) {
+            const div = document.getElementById('mensaje');
+            div.textContent = msg;
+            div.className = `mensaje mensaje-${tipo}`;
+            setTimeout(() => {
+                div.className = 'mensaje';
+            }, 5000);
+        }
+        
+        function volver() { window.location.href = '/admin'; }
+        
+        cargarSelecciones();
+    </script>
+</body>
+</html>

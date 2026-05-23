@@ -915,3 +915,72 @@ def admin_asignar_puntos_goleadora():
     return jsonify({
         'mensaje': f'Se asignaron 10 puntos a {len(pronosticos)} usuarios que eligieron a {seleccion_ganadora}'
     }), 200
+
+@api_bp.route('/admin/ganadores', methods=['GET'])
+@login_required
+def admin_obtener_ganadores():
+    """Obtener los ganadores actuales de cada categoría"""
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    # Obtener configuración de ganadores (puedes guardarlos en una tabla o variables)
+    from models import ConfiguracionGanadores
+    ganadores = ConfiguracionGanadores.query.first()
+    if ganadores:
+        return jsonify({
+            'seleccion_goleadora': ganadores.seleccion_goleadora,
+            'balon_de_oro': ganadores.balon_de_oro,
+            'bota_de_oro': ganadores.bota_de_oro,
+            'guante_de_oro': ganadores.guante_de_oro
+        })
+    return jsonify({}), 200
+
+
+@api_bp.route('/admin/ganadores', methods=['POST'])
+@login_required
+def admin_guardar_ganadores():
+    """Guardar los ganadores y asignar puntos a los usuarios que acertaron"""
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    data = request.json
+    from models import ConfiguracionGanadores
+    
+    ganadores = ConfiguracionGanadores.query.first()
+    if not ganadores:
+        ganadores = ConfiguracionGanadores()
+        db.session.add(ganadores)
+    
+    # Guardar ganadores
+    ganadores.seleccion_goleadora = data.get('seleccion_goleadora')
+    ganadores.balon_de_oro = data.get('balon_de_oro')
+    ganadores.bota_de_oro = data.get('bota_de_oro')
+    ganadores.guante_de_oro = data.get('guante_de_oro')
+    db.session.commit()
+    
+    # Asignar puntos
+    puntos_asignados = 0
+    
+    # Asignar puntos por selección más goleadora (10 pts)
+    if data.get('seleccion_goleadora'):
+        pronosticos = PronosticoExtra.query.filter_by(seleccion_mas_goleadora=data.get('seleccion_goleadora')).all()
+        for p in pronosticos:
+            if p.puntos_goleadora == 0:
+                p.puntos_goleadora = 10
+                usuario = Usuario.query.get(p.usuario_id)
+                usuario.puntos_extra = (usuario.puntos_extra or 0) + 10
+                puntos_asignados += 1
+    
+    # Asignar puntos por Balón de Oro (5 pts)
+    if data.get('balon_de_oro'):
+        pronosticos = PronosticoExtra.query.filter_by(balon_de_oro=data.get('balon_de_oro')).all()
+        for p in pronosticos:
+            if p.puntos_balon == 0:
+                p.puntos_balon = 5
+                usuario = Usuario.query.get(p.usuario_id)
+                usuario.puntos_extra = (usuario.puntos_extra or 0) + 5
+                puntos_asignados += 1
+    
+    db.session.commit()
+    
+    return jsonify({'mensaje': f'Ganadores guardados. {puntos_asignados} puntos asignados.'}), 200

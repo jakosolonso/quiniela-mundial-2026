@@ -123,3 +123,10 @@ def admin_tiempo():
     if not current_user.es_admin:
         return redirect(url_for('dashboard'))
     return render_template('admin_tiempo.html')
+
+@app.route('/admin/ganadores')
+@login_required
+def admin_ganadores():
+    if not current_user.es_admin:
+        return redirect(url_for('dashboard'))
+    return render_template('admin_ganadores.html')

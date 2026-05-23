@@ -97,3 +97,13 @@ class PronosticoExtra(db.Model):
     usuario = db.relationship('Usuario', backref='pronosticos_extra', lazy=True)
     
     __table_args__ = (db.UniqueConstraint('usuario_id', name='unique_usuario_extra'),)   
+
+class ConfiguracionGanadores(db.Model):
+    __tablename__ = 'configuracion_ganadores'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    seleccion_goleadora = db.Column(db.String(50), nullable=True)
+    balon_de_oro = db.Column(db.String(100), nullable=True)
+    bota_de_oro = db.Column(db.String(100), nullable=True)
+    guante_de_oro = db.Column(db.String(100), nullable=True)
+    fecha_actualizacion = db.Column(db.DateTime, default=datetime.utcnow)    
