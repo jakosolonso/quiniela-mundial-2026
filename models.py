@@ -107,3 +107,10 @@ class ConfiguracionGanadores(db.Model):
     bota_de_oro = db.Column(db.String(100), nullable=True)
     guante_de_oro = db.Column(db.String(100), nullable=True)
     fecha_actualizacion = db.Column(db.DateTime, default=datetime.utcnow)    
+
+class ConfiguracionCierre(db.Model):
+    __tablename__ = 'configuracion_cierre'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    pronosticos_extra_cerrado = db.Column(db.Boolean, default=False)
+    fecha_actualizacion = db.Column(db.DateTime, default=datetime.utcnow)    

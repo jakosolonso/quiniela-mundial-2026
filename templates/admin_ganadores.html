@@ -11,41 +11,113 @@
         .container { max-width: 600px; margin: 0 auto; }
         .card { background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
         h1 { margin-bottom: 20px; color: #333; }
+        h2 { font-size: 18px; margin-bottom: 15px; color: #555; }
         .form-group { margin-bottom: 25px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
         select { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; }
-        button { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%; }
+        button { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%; margin-top: 10px; }
         button:hover { background: #059669; }
-        .btn-volver { background: #667eea; margin-top: 15px; }
+        .btn-peligro { background: #dc2626; }
+        .btn-peligro:hover { background: #b91c1c; }
+        .btn-secundario { background: #667eea; }
+        .btn-secundario:hover { background: #5a67d8; }
         .mensaje { margin-top: 20px; padding: 12px; border-radius: 10px; display: none; }
         .mensaje-exito { background: #d1fae5; color: #065f46; display: block; }
         .mensaje-error { background: #fee2e2; color: #dc2626; display: block; }
         .info { background: #f3f4f6; padding: 15px; border-radius: 10px; margin-bottom: 25px; font-size: 14px; }
-        .puntos { color: #10b981; font-weight: bold; }
+        .estado-cerrado { background: #fee2e2; color: #dc2626; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+        .estado-abierto { background: #d1fae5; color: #065f46; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+        hr { margin: 20px 0; border: none; border-top: 1px solid #e5e7eb; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
-            <h1>🏆 Ingresar Ganador</h1>
-            <div class="info">
-                ⚠️ Después de seleccionar la selección más goleadora de la <strong>FASE DE GRUPOS</strong>, se asignarán <span class="puntos">+10 puntos</span> automáticamente a los usuarios que acertaron.
-            </div>
+            <h1>🏆 Panel de Gestión</h1>
             
+            <!-- Estado actual -->
+            <div id="estadoPronosticos" class="estado-abierto"></div>
+            
+            <!-- Sección: Cerrar/Abrir pronósticos extra -->
+            <h2>🔒 Control de Pronósticos Extra</h2>
+            <div class="info">
+                ⚠️ Cuando cierres los pronósticos extra, los usuarios NO podrán modificar sus selecciones de Balón de Oro, Bota de Oro, Guante de Oro y Selección Más Goleadora.
+            </div>
+            <button id="btnCerrar" onclick="cerrarPronosticosExtra()" class="btn-peligro">🔒 Cerrar Pronósticos Extra</button>
+            <button id="btnAbrir" onclick="abrirPronosticosExtra()" class="btn-secundario" style="display:none;">🔓 Abrir Pronósticos Extra</button>
+            
+            <hr>
+            
+            <!-- Sección: Selección más goleadora -->
+            <h2>🏆 Selección Más Goleadora (Fase de Grupos)</h2>
             <div class="form-group">
-                <label>🏆 Selección Más Goleadora (Fase de Grupos) - +10 puntos</label>
+                <label>Selección Más Goleadora - +10 puntos</label>
                 <select id="seleccionGoleadora">
                     <option value="">Selecciona una selección</option>
                 </select>
             </div>
+            <button onclick="guardarGanador()">Asignar Puntos</button>
             
-            <button onclick="guardarGanador()">Guardar y Asignar Puntos</button>
-            <button onclick="volver()" class="btn-volver">← Volver al Panel Admin</button>
+            <button onclick="volver()" class="btn-secundario">← Volver al Panel Admin</button>
             <div id="mensaje" class="mensaje"></div>
         </div>
     </div>
     
     <script>
+        async function cargarEstado() {
+            try {
+                const response = await fetch('/api/admin/estado-pronosticos-extra');
+                const data = await response.json();
+                const estadoDiv = document.getElementById('estadoPronosticos');
+                const btnCerrar = document.getElementById('btnCerrar');
+                const btnAbrir = document.getElementById('btnAbrir');
+                
+                if (data.cerrado) {
+                    estadoDiv.innerHTML = '🔒 Pronósticos Extra: CERRADOS. Los usuarios NO pueden modificar sus selecciones.';
+                    estadoDiv.className = 'estado-cerrado';
+                    btnCerrar.style.display = 'none';
+                    btnAbrir.style.display = 'block';
+                } else {
+                    estadoDiv.innerHTML = '🔓 Pronósticos Extra: ABIERTOS. Los usuarios pueden modificar sus selecciones.';
+                    estadoDiv.className = 'estado-abierto';
+                    btnCerrar.style.display = 'block';
+                    btnAbrir.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        async function cerrarPronosticosExtra() {
+            if (!confirm('⚠️ ¿Estás seguro? Los usuarios ya NO podrán modificar sus pronósticos extra (Balón, Bota, Guante de Oro y Selección goleadora).')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/cerrar-pronosticos-extra', { method: 'POST' });
+                const result = await response.json();
+                mostrarMensaje(result.mensaje, 'exito');
+                cargarEstado();
+            } catch (error) {
+                mostrarMensaje('Error al cerrar', 'error');
+            }
+        }
+        
+        async function abrirPronosticosExtra() {
+            if (!confirm('⚠️ ¿Estás seguro? Los usuarios podrán modificar sus pronósticos extra nuevamente.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/abrir-pronosticos-extra', { method: 'POST' });
+                const result = await response.json();
+                mostrarMensaje(result.mensaje, 'exito');
+                cargarEstado();
+            } catch (error) {
+                mostrarMensaje('Error al abrir', 'error');
+            }
+        }
+        
         async function cargarSelecciones() {
             try {
                 const response = await fetch('/api/selecciones');
@@ -96,6 +168,7 @@
         function volver() { window.location.href = '/admin'; }
         
         cargarSelecciones();
+        cargarEstado();
     </script>
 </body>
 </html>

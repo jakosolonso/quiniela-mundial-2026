@@ -872,7 +872,14 @@ def obtener_pronostico_extra():
 @api_bp.route('/pronosticos-extra', methods=['POST'])
 @login_required
 def guardar_pronostico_extra():
-    """Guardar pronóstico extra del usuario (sin puntos para jugadores)"""
+    """Guardar pronóstico extra del usuario (solo si no está cerrado)"""
+    
+    # Verificar si los pronósticos extra están cerrados
+    from models import ConfiguracionCierre
+    config = ConfiguracionCierre.query.first()
+    if config and config.pronosticos_extra_cerrado:
+        return jsonify({'error': 'Los pronósticos extra están cerrados. Ya no se pueden modificar.'}), 403
+    
     data = request.json
     
     pronostico = PronosticoExtra.query.filter_by(usuario_id=current_user.id).first()
@@ -884,7 +891,6 @@ def guardar_pronostico_extra():
     pronostico.balon_de_oro = data.get('balon_de_oro')
     pronostico.bota_de_oro = data.get('bota_de_oro')
     pronostico.guante_de_oro = data.get('guante_de_oro')
-    # NOTA: NO se asignan puntos para balon, bota, guante
     
     db.session.commit()
     return jsonify({'mensaje': 'Pronóstico extra guardado correctamente'}), 200
@@ -965,3 +971,46 @@ def admin_guardar_ganadores():
     return jsonify({
         'mensaje': f'Se asignaron 10 puntos a {puntos_asignados} usuarios que eligieron a {seleccion_goleadora}'
     }), 200
+
+@api_bp.route('/admin/cerrar-pronosticos-extra', methods=['POST'])
+@login_required
+def admin_cerrar_pronosticos_extra():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    # Cerrar todos los pronósticos extra (evita nuevos o modificaciones)
+    from models import ConfiguracionCierre
+    config = ConfiguracionCierre.query.first()
+    if not config:
+        config = ConfiguracionCierre()
+        db.session.add(config)
+    
+    config.pronosticos_extra_cerrado = True
+    db.session.commit()
+    
+    return jsonify({'mensaje': 'Pronósticos extra cerrados. Los usuarios ya no podrán modificar sus selecciones.'}), 200
+
+
+@api_bp.route('/admin/abrir-pronosticos-extra', methods=['POST'])
+@login_required
+def admin_abrir_pronosticos_extra():
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    from models import ConfiguracionCierre
+    config = ConfiguracionCierre.query.first()
+    if config:
+        config.pronosticos_extra_cerrado = False
+        db.session.commit()
+    
+    return jsonify({'mensaje': 'Pronósticos extra abiertos. Los usuarios pueden modificar sus selecciones.'}), 200
+
+
+@api_bp.route('/admin/estado-pronosticos-extra', methods=['GET'])
+@login_required
+def admin_estado_pronosticos_extra():
+    from models import ConfiguracionCierre
+    config = ConfiguracionCierre.query.first()
+    cerrado = config.pronosticos_extra_cerrado if config else False
+    
+    return jsonify({'cerrado': cerrado}), 200
