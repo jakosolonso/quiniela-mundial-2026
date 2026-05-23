@@ -8,27 +8,28 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 40px 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
+        .container { max-width: 600px; margin: 0 auto; }
         .card { background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
         h1 { margin-bottom: 20px; color: #333; }
-        .form-group { margin-bottom: 20px; }
+        .form-group { margin-bottom: 25px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
-        input, select { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; }
-        button { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600; }
+        select { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; }
+        button { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%; }
         button:hover { background: #059669; }
-        .btn-volver { background: #667eea; margin-top: 20px; }
+        .btn-volver { background: #667eea; margin-top: 15px; }
         .mensaje { margin-top: 20px; padding: 12px; border-radius: 10px; display: none; }
         .mensaje-exito { background: #d1fae5; color: #065f46; display: block; }
         .mensaje-error { background: #fee2e2; color: #dc2626; display: block; }
-        .info { background: #f3f4f6; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; }
+        .info { background: #f3f4f6; padding: 15px; border-radius: 10px; margin-bottom: 25px; font-size: 14px; }
+        .puntos { color: #10b981; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
-            <h1>🏆 Ingresar Ganadores del Torneo</h1>
+            <h1>🏆 Ingresar Ganador</h1>
             <div class="info">
-                ⚠️ Después de ingresar los ganadores, se asignarán automáticamente los puntos a los usuarios que acertaron.
+                ⚠️ Después de seleccionar la selección más goleadora de la <strong>FASE DE GRUPOS</strong>, se asignarán <span class="puntos">+10 puntos</span> automáticamente a los usuarios que acertaron.
             </div>
             
             <div class="form-group">
@@ -38,22 +39,7 @@
                 </select>
             </div>
             
-            <div class="form-group">
-                <label>⭐ Balón de Oro (Mejor jugador) - +5 puntos</label>
-                <input type="text" id="balonDeOro" placeholder="Ej: Lionel Messi">
-            </div>
-            
-            <div class="form-group">
-                <label>⚽ Bota de Oro (Máximo goleador) - +5 puntos</label>
-                <input type="text" id="botaDeOro" placeholder="Ej: Kylian Mbappé">
-            </div>
-            
-            <div class="form-group">
-                <label>🧤 Guante de Oro (Mejor portero) - +5 puntos</label>
-                <input type="text" id="guanteDeOro" placeholder="Ej: Emiliano Martínez">
-            </div>
-            
-            <button onclick="guardarGanadores()">Guardar Ganadores y Asignar Puntos</button>
+            <button onclick="guardarGanador()">Guardar y Asignar Puntos</button>
             <button onclick="volver()" class="btn-volver">← Volver al Panel Admin</button>
             <div id="mensaje" class="mensaje"></div>
         </div>
@@ -73,16 +59,15 @@
             }
         }
         
-        async function guardarGanadores() {
-            const data = {
-                seleccion_goleadora: document.getElementById('seleccionGoleadora').value,
-                balon_de_oro: document.getElementById('balonDeOro').value,
-                bota_de_oro: document.getElementById('botaDeOro').value,
-                guante_de_oro: document.getElementById('guanteDeOro').value
-            };
+        async function guardarGanador() {
+            const seleccion = document.getElementById('seleccionGoleadora').value;
             
-            if (!data.seleccion_goleadora) {
-                mostrarMensaje('Selecciona la selección más goleadora', 'error');
+            if (!seleccion) {
+                mostrarMensaje('Selecciona una selección', 'error');
+                return;
+            }
+            
+            if (!confirm(`⚠️ ¿Estás seguro? Se asignarán +10 puntos a todos los usuarios que eligieron esta selección como la más goleadora.`)) {
                 return;
             }
             
@@ -90,7 +75,7 @@
                 const response = await fetch('/api/admin/ganadores', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify({ seleccion_goleadora: seleccion })
                 });
                 const result = await response.json();
                 mostrarMensaje(result.mensaje, 'exito');

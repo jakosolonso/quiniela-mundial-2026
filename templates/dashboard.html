@@ -119,50 +119,54 @@
         </div>
 
         <!-- Pestaña: Pronósticos Extra -->
-        <div id="pronosticos_extraTab" class="tab-content">
-            <h2>⭐ Pronósticos Extra</h2>
-            <p style="color: #666; margin-bottom: 20px;">¡Gana puntos adicionales!</p>
-            
-            <div class="pronostico-extra-form">
-                <div class="extra-card">
-                    <h3>🏆 ¿Qué selección será la más goleadora de la FASE DE GRUPOS?</h3>
-                    <p class="extra-points">+10 puntos si aciertas</p>
-                    <select id="seleccionGoleadora" class="extra-select">
-                        <option value="">Selecciona una selección</option>
-                    </select>
-                </div>
-                
-                <div class="extra-card">
-                    <h3>⭐ Balón de Oro (Mejor jugador del torneo)</h3>
-                    <p class="extra-points">+5 puntos si aciertas</p>
-                    <select id="balonDeOro" class="extra-select">
-                        <option value="">Selecciona un jugador</option>
-                    </select>
-                    <input type="text" id="balonDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
-                </div>
-                
-                <div class="extra-card">
-                    <h3>⚽ Bota de Oro (Máximo goleador del torneo)</h3>
-                    <p class="extra-points">+5 puntos si aciertas</p>
-                    <select id="botaDeOro" class="extra-select">
-                        <option value="">Selecciona un jugador</option>
-                    </select>
-                    <input type="text" id="botaDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
-                </div>
-                
-                <div class="extra-card">
-                    <h3>🧤 Guante de Oro (Mejor portero del torneo)</h3>
-                    <p class="extra-points">+5 puntos si aciertas</p>
-                    <select id="guanteDeOro" class="extra-select">
-                        <option value="">Selecciona un jugador</option>
-                    </select>
-                    <input type="text" id="guanteDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
-                </div>
-                
-                <button onclick="guardarPronosticosExtra()" class="btn-guardar-extra">Guardar Pronósticos Extra</button>
-                <div id="mensajeExtra" class="mensaje-extra"></div>
-            </div>
+        <div id="pronosticosExtraTab" class="tab-content">
+    <h2>⭐ Pronósticos Extra</h2>
+    <p style="color: #666; margin-bottom: 20px;">¡Gana puntos adicionales!</p>
+    
+    <div class="pronostico-extra-form">
+        <!-- Selección más goleadora (SOLO ESTO SUMA PUNTOS) -->
+        <div class="extra-card" style="border-left: 5px solid #10b981;">
+            <h3>🏆 ¿Qué selección será la más goleadora de la FASE DE GRUPOS?</h3>
+            <p class="extra-points">🏆 +10 puntos si aciertas</p>
+            <select id="seleccionGoleadora" class="extra-select">
+                <option value="">Selecciona una selección</option>
+            </select>
         </div>
+        
+        <!-- Balón de Oro (NO SUMA PUNTOS) -->
+        <div class="extra-card">
+            <h3>⭐ Balón de Oro (Mejor jugador del torneo)</h3>
+            <p class="extra-points" style="color: #666;">📝 Solo por diversión - No suma puntos</p>
+            <select id="balonDeOro" class="extra-select">
+                <option value="">Selecciona un jugador</option>
+            </select>
+            <input type="text" id="balonDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
+        </div>
+        
+        <!-- Bota de Oro (NO SUMA PUNTOS) -->
+        <div class="extra-card">
+            <h3>⚽ Bota de Oro (Máximo goleador del torneo)</h3>
+            <p class="extra-points" style="color: #666;">📝 Solo por diversión - No suma puntos</p>
+            <select id="botaDeOro" class="extra-select">
+                <option value="">Selecciona un jugador</option>
+            </select>
+            <input type="text" id="botaDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
+        </div>
+        
+        <!-- Guante de Oro (NO SUMA PUNTOS) -->
+        <div class="extra-card">
+            <h3>🧤 Guante de Oro (Mejor portero del torneo)</h3>
+            <p class="extra-points" style="color: #666;">📝 Solo por diversión - No suma puntos</p>
+            <select id="guanteDeOro" class="extra-select">
+                <option value="">Selecciona un jugador</option>
+            </select>
+            <input type="text" id="guanteDeOroCustom" placeholder="O escribe el nombre del jugador" class="extra-input" style="margin-top: 10px;">
+        </div>
+        
+        <button onclick="guardarPronosticosExtra()" class="btn-guardar-extra">Guardar Pronósticos Extra</button>
+        <div id="mensajeExtra" class="mensaje-extra"></div>
+    </div>
+</div>
 
         <!-- Pestaña: Tabla de Posiciones -->
         <div id="tablaTab" class="tab-content">
@@ -392,23 +396,82 @@
         }
 
         async function guardarPronosticosExtra() {
-            let seleccionGoleadora = document.getElementById('seleccionGoleadora').value;
-            let balonDeOro = document.getElementById('balonDeOroCustom').value || document.getElementById('balonDeOro').value;
-            let botaDeOro = document.getElementById('botaDeOroCustom').value || document.getElementById('botaDeOro').value;
-            let guanteDeOro = document.getElementById('guanteDeOroCustom').value || document.getElementById('guanteDeOro').value;
-            if (!seleccionGoleadora) { mostrarMensajeExtra('Selecciona la selección más goleadora', 'error'); return; }
-            try {
-                const response = await fetch('/api/pronosticos-extra', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ seleccion_mas_goleadora: seleccionGoleadora, balon_de_oro: balonDeOro, bota_de_oro: botaDeOro, guante_de_oro: guanteDeOro }) });
-                if (response.ok) mostrarMensajeExtra('✅ Pronósticos extra guardados correctamente', 'exito');
-                else mostrarMensajeExtra('Error al guardar', 'error');
-            } catch (error) { mostrarMensajeExtra('Error de conexión', 'error'); }
+    let seleccionGoleadora = document.getElementById('seleccionGoleadora').value;
+    let balonDeOro = document.getElementById('balonDeOroCustom').value || document.getElementById('balonDeOro').value;
+    let botaDeOro = document.getElementById('botaDeOroCustom').value || document.getElementById('botaDeOro').value;
+    let guanteDeOro = document.getElementById('guanteDeOroCustom').value || document.getElementById('guanteDeOro').value;
+    
+    if (!seleccionGoleadora) {
+        mostrarMensajeExtra('Selecciona la selección más goleadora', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/pronosticos-extra', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                seleccion_mas_goleadora: seleccionGoleadora,
+                balon_de_oro: balonDeOro || '',
+                bota_de_oro: botaDeOro || '',
+                guante_de_oro: guanteDeOro || ''
+            })
+        });
+        
+        if (response.ok) {
+            mostrarMensajeExtra('✅ Pronósticos extra guardados correctamente', 'exito');
+        } else {
+            mostrarMensajeExtra('Error al guardar', 'error');
         }
+    } catch (error) {
+        mostrarMensajeExtra('Error de conexión', 'error');
+    }
+}
 
-        function mostrarMensajeExtra(mensaje, tipo) {
-            const div = document.getElementById('mensajeExtra');
-            div.innerHTML = `<div class="mensaje-${tipo}">${mensaje}</div>`;
-            setTimeout(() => { div.innerHTML = ''; }, 3000);
+async function cargarPronosticosExtra() {
+    try {
+        const response = await fetch('/api/pronosticos-extra');
+        const data = await response.json();
+        
+        if (data.seleccion_mas_goleadora) {
+            document.getElementById('seleccionGoleadora').value = data.seleccion_mas_goleadora;
         }
+        if (data.balon_de_oro) {
+            document.getElementById('balonDeOro').value = data.balon_de_oro;
+            document.getElementById('balonDeOroCustom').value = data.balon_de_oro;
+        }
+        if (data.bota_de_oro) {
+            document.getElementById('botaDeOro').value = data.bota_de_oro;
+            document.getElementById('botaDeOroCustom').value = data.bota_de_oro;
+        }
+        if (data.guante_de_oro) {
+            document.getElementById('guanteDeOro').value = data.guante_de_oro;
+            document.getElementById('guanteDeOroCustom').value = data.guante_de_oro;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+function cargarJugadores() {
+    const jugadores = [
+        "Lionel Messi", "Cristiano Ronaldo", "Kylian Mbappé", "Erling Haaland", 
+        "Vinícius Jr.", "Jude Bellingham", "Harry Kane", "Kevin De Bruyne", 
+        "Rodri", "Antoine Griezmann", "Emiliano Martínez", "Thibaut Courtois", 
+        "Manuel Neuer", "Alisson Becker", "Ederson", "Mbappé", "Haaland"
+    ];
+    
+    const selects = ['balonDeOro', 'botaDeOro', 'guanteDeOro'];
+    selects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (select) {
+            select.innerHTML = '<option value="">Selecciona un jugador</option>';
+            jugadores.forEach(jugador => {
+                select.innerHTML += `<option value="${jugador}">${jugador}</option>`;
+            });
+        }
+    });
+}
 
         async function cargarSeleccionesParaExtra() {
     try {
