@@ -113,4 +113,20 @@ class ConfiguracionCierre(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     pronosticos_extra_cerrado = db.Column(db.Boolean, default=False)
-    fecha_actualizacion = db.Column(db.DateTime, default=datetime.utcnow)    
+    fecha_actualizacion = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Partido(db.Model):
+    __tablename__ = 'partidos'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    equipo_local = db.Column(db.String(50), nullable=False)
+    equipo_visitante = db.Column(db.String(50), nullable=False)
+    fecha = db.Column(db.DateTime, nullable=False)
+    grupo = db.Column(db.String(10), nullable=False)
+    fase = db.Column(db.String(20), default='grupos')
+    resultado_local = db.Column(db.Integer, nullable=True)
+    resultado_visitante = db.Column(db.Integer, nullable=True)
+    equipo_ganador = db.Column(db.String(50), nullable=True)  # NUEVO CAMPO
+    jugado = db.Column(db.Boolean, default=False)
+    
+    pronosticos = db.relationship('Pronostico', backref='partido', lazy=True)        
