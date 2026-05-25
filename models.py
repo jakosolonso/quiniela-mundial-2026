@@ -38,23 +38,6 @@ class Usuario(db.Model, UserMixin):
             'es_admin': self.es_admin
         }
 
-
-class Partido(db.Model):
-    __tablename__ = 'partidos'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    equipo_local = db.Column(db.String(50), nullable=False)
-    equipo_visitante = db.Column(db.String(50), nullable=False)
-    fecha = db.Column(db.DateTime, nullable=False)
-    grupo = db.Column(db.String(10), nullable=False)  # ← Cambiado de String(1) a String(10)
-    fase = db.Column(db.String(20), default='grupos')
-    resultado_local = db.Column(db.Integer, nullable=True)
-    resultado_visitante = db.Column(db.Integer, nullable=True)
-    jugado = db.Column(db.Boolean, default=False)
-    
-    pronosticos = db.relationship('Pronostico', backref='partido', lazy=True)
-
-
 class Pronostico(db.Model):
     __tablename__ = 'pronosticos'
     
