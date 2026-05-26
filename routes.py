@@ -563,8 +563,29 @@ def puede_pronosticar(fase):
 def admin_obtener_configuracion():
     if not current_user.es_admin:
         return jsonify({'error': 'No autorizado'}), 403
+    
     configs = ConfiguracionTiempo.query.all()
-    return jsonify([c.to_dict() for c in configs])
+    result = []
+    for c in configs:
+        result.append({
+            'fase': c.fase,
+            'fecha_limite': c.fecha_limite.isoformat() if c.fecha_limite else None,
+            'cerrado': c.cerrado if hasattr(c, 'cerrado') and c.cerrado else False
+        })
+    
+    # Si no hay configuración para alguna fase, devolver valores por defecto
+    fases_existentes = [r['fase'] for r in result]
+    todas_fases = ['grupos', 'dieciseisavos', 'octavos', 'cuartos', 'semis', 'final']
+    
+    for fase in todas_fases:
+        if fase not in fases_existentes:
+            result.append({
+                'fase': fase,
+                'fecha_limite': None,
+                'cerrado': False
+            })
+    
+    return jsonify(result)
 
 
 @api_bp.route('/admin/configurar-tiempo', methods=['POST'])
