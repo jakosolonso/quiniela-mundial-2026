@@ -1031,13 +1031,59 @@ def admin_cerrar_fase(fase):
     if not current_user.es_admin:
         return jsonify({'error': 'No autorizado'}), 403
     
-    config = ConfiguracionTiempo.query.filter_by(fase=fase).first()
-    if config:
+    try:
+        # Buscar o crear la configuración
+        config = ConfiguracionTiempo.query.filter_by(fase=fase).first()
+        
+        if not config:
+            config = ConfiguracionTiempo(fase=fase, fecha_limite=None)
+            db.session.add(config)
+        
+        # Cambiar estado
         config.cerrado = True
+        
+        # Guardar
         db.session.commit()
-        return jsonify({'mensaje': f'Fase {fase} cerrada. Los usuarios ya no pueden hacer pronósticos.'}), 200
-    else:
-        return jsonify({'error': 'Fase no encontrada'}), 404
+        
+        # Verificar que se guardó
+        db.session.refresh(config)
+        
+        return jsonify({
+            'mensaje': f'Fase {fase} cerrada correctamente.',
+            'cerrado': config.cerrado
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@api_bp.route('/admin/abrir-fase/<fase>', methods=['POST'])
+@login_required
+def admin_abrir_fase(fase):
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    try:
+        config = ConfiguracionTiempo.query.filter_by(fase=fase).first()
+        
+        if not config:
+            config = ConfiguracionTiempo(fase=fase, fecha_limite=None)
+            db.session.add(config)
+        
+        config.cerrado = False
+        db.session.commit()
+        db.session.refresh(config)
+        
+        return jsonify({
+            'mensaje': f'Fase {fase} abierta correctamente.',
+            'cerrado': config.cerrado
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 
 @api_bp.route('/admin/abrir-fase/<fase>', methods=['POST'])
