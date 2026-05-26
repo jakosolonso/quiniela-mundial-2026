@@ -101,19 +101,46 @@
         }
         
         async function cerrarFase(fase) {
-            if (!confirm(`⚠️ ¿Estás seguro de CERRAR los pronósticos para ${nombresFases[fase]}?\n\nLos usuarios NO podrán hacer ni modificar pronósticos de esta fase.`)) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/api/admin/cerrar-fase/${fase}`, { method: 'POST' });
-                const data = await response.json();
-                mostrarMensaje(data.mensaje || data.error, response.ok ? 'exito' : 'error');
-                if (response.ok) cargarConfiguraciones();
-            } catch (error) {
-                mostrarMensaje('Error de conexión', 'error');
-            }
+    if (!confirm(`⚠️ ¿Estás seguro de CERRAR los pronósticos para ${nombresFases[fase]}?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/admin/cerrar-fase/${fase}`, { method: 'POST' });
+        const data = await response.json();
+        
+        if (response.ok) {
+            mostrarMensaje(data.mensaje, 'exito');
+            // Recargar la página para ver los cambios
+            location.reload();
+        } else {
+            mostrarMensaje(data.error || 'Error al cerrar', 'error');
         }
+    } catch (error) {
+        mostrarMensaje('Error de conexión', 'error');
+    }
+}
+
+async function abrirFase(fase) {
+    if (!confirm(`⚠️ ¿Estás seguro de ABRIR los pronósticos para ${nombresFases[fase]}?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/admin/abrir-fase/${fase}`, { method: 'POST' });
+        const data = await response.json();
+        
+        if (response.ok) {
+            mostrarMensaje(data.mensaje, 'exito');
+            // Recargar la página para ver los cambios
+            location.reload();
+        } else {
+            mostrarMensaje(data.error || 'Error al abrir', 'error');
+        }
+    } catch (error) {
+        mostrarMensaje('Error de conexión', 'error');
+    }
+}
         
         async function abrirFase(fase) {
             if (!confirm(`⚠️ ¿Estás seguro de ABRIR los pronósticos para ${nombresFases[fase]}?\n\nLos usuarios podrán hacer y modificar pronósticos de esta fase.`)) {
