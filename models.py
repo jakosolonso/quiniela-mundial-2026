@@ -55,8 +55,9 @@ class ConfiguracionTiempo(db.Model):
     __tablename__ = 'configuracion_tiempo'
     
     id = db.Column(db.Integer, primary_key=True)
-    fase = db.Column(db.String(20), nullable=False, unique=True)  # grupos, octavos, cuartos, semis, final
-    fecha_limite = db.Column(db.DateTime, nullable=False)
+    fase = db.Column(db.String(20), nullable=False, unique=True)
+    fecha_limite = db.Column(db.DateTime, nullable=True)
+    cerrado = db.Column(db.Boolean, default=False)
     
     def to_dict(self):
         return {

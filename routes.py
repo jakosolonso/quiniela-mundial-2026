@@ -567,23 +567,16 @@ def admin_obtener_configuracion():
     configs = ConfiguracionTiempo.query.all()
     result = []
     for c in configs:
+        # Asegurar que cerrado se lea correctamente
+        cerrado_valor = False
+        if hasattr(c, 'cerrado') and c.cerrado is not None:
+            cerrado_valor = c.cerrado
+        
         result.append({
             'fase': c.fase,
             'fecha_limite': c.fecha_limite.isoformat() if c.fecha_limite else None,
-            'cerrado': c.cerrado if hasattr(c, 'cerrado') and c.cerrado else False
+            'cerrado': cerrado_valor
         })
-    
-    # Si no hay configuración para alguna fase, devolver valores por defecto
-    fases_existentes = [r['fase'] for r in result]
-    todas_fases = ['grupos', 'dieciseisavos', 'octavos', 'cuartos', 'semis', 'final']
-    
-    for fase in todas_fases:
-        if fase not in fases_existentes:
-            result.append({
-                'fase': fase,
-                'fecha_limite': None,
-                'cerrado': False
-            })
     
     return jsonify(result)
 
