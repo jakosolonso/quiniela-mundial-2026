@@ -544,8 +544,18 @@ def puede_pronosticar(fase):
     config = ConfiguracionTiempo.query.filter_by(fase=fase).first()
     if not config:
         return True
-    ahora = datetime.utcnow()
-    return ahora < config.fecha_limite
+    
+    # Si el admin cerró manualmente, no se puede pronosticar
+    if config.cerrado:
+        return False
+    
+    # Si hay fecha límite y ya pasó, no se puede
+    if config.fecha_limite:
+        ahora = datetime.utcnow()
+        if ahora >= config.fecha_limite:
+            return False
+    
+    return True
 
 
 @api_bp.route('/admin/configurar-tiempo', methods=['GET'])
@@ -1014,3 +1024,32 @@ def admin_estado_pronosticos_extra():
     cerrado = config.pronosticos_extra_cerrado if config else False
     
     return jsonify({'cerrado': cerrado}), 200
+
+@api_bp.route('/admin/cerrar-fase/<fase>', methods=['POST'])
+@login_required
+def admin_cerrar_fase(fase):
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    config = ConfiguracionTiempo.query.filter_by(fase=fase).first()
+    if config:
+        config.cerrado = True
+        db.session.commit()
+        return jsonify({'mensaje': f'Fase {fase} cerrada. Los usuarios ya no pueden hacer pronósticos.'}), 200
+    else:
+        return jsonify({'error': 'Fase no encontrada'}), 404
+
+
+@api_bp.route('/admin/abrir-fase/<fase>', methods=['POST'])
+@login_required
+def admin_abrir_fase(fase):
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    config = ConfiguracionTiempo.query.filter_by(fase=fase).first()
+    if config:
+        config.cerrado = False
+        db.session.commit()
+        return jsonify({'mensaje': f'Fase {fase} abierta. Los usuarios pueden hacer pronósticos.'}), 200
+    else:
+        return jsonify({'error': 'Fase no encontrada'}), 404
