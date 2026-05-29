@@ -6,10 +6,10 @@ import os
 import re
 import random
 
-# SportScore API (gratis, sin API key)
+# SportScore API (gratis sin API key 'tomar en cuenta')
 SPORTSCORE_API = "https://api.sportscore.io/v1"
 
-# Modo prueba - Cambiar a False cuando empiece el Mundial
+# ⚠️⚠️⚠️⚠️ *Modo prueba* Cambiar a FALSE cuando empiece el Mundial ⚠️⚠️⚠️⚠️
 MODO_PRUEBA = True
 
 
@@ -49,13 +49,13 @@ def obtener_resultados_de_api():
             goles_local = random.randint(0, 3)
             goles_visitante = random.randint(0, 3)
             
-            # Determinar ganador
+            # Determina ganador
             if goles_local > goles_visitante:
                 equipo_ganador = partido.equipo_local
             elif goles_visitante > goles_local:
                 equipo_ganador = partido.equipo_visitante
             else:
-                # Empate: simular penales (aleatorio)
+                # Empate: simular penales (aleatorios)
                 equipo_ganador = random.choice([partido.equipo_local, partido.equipo_visitante])
             
             resultados_simulados.append({
@@ -72,7 +72,7 @@ def obtener_resultados_de_api():
         
         return resultados_simulados
     
-    # === CÓDIGO REAL (Mundial 2026) ===
+    #  CÓDIGO REAL (Mundial 2026) 
     try:
         url = f"{SPORTSCORE_API}/soccer/live"
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}

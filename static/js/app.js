@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarTablaPosiciones();
 });
 
-// ============ FUNCIONES DE USUARIO ============
+// FUNCIONES DE USUARIO 
 async function crearUsuario() {
     const nombre = document.getElementById('userName').value.trim();
     const email = document.getElementById('userEmail').value.trim();
@@ -75,7 +75,7 @@ async function mostrarBanderaFavorita(codigo) {
     }
 }
 
-// ============ CARGAR PARTIDOS ============
+//  CARGA DE PARTIDOS 
 async function cargarPartidos() {
     try {
         const response = await fetch('/api/partidos');
@@ -136,7 +136,7 @@ function renderPartidoCard(partido, editable) {
     `;
 }
 
-// ============ GUARDAR PRONÓSTICOS ============
+//  GUARDAR PRONÓSTICOS 
 async function guardarPronostico(partidoId) {
     if (!usuarioActual) {
         alert('Primero regístrate o selecciona un usuario');
@@ -196,7 +196,7 @@ async function cargarMisPronosticos() {
     }
 }
 
-// ============ TABLA DE POSICIONES ============
+//  TABLA DE POSICIONES 
 async function cargarTablaPosiciones() {
     try {
         const response = await fetch('/api/tabla-posiciones');
@@ -225,7 +225,7 @@ async function cargarTablaPosiciones() {
     }
 }
 
-// ============ DATOS INICIALES ============
+//  DATOS PRINCIPALES 
 async function cargarDatosIniciales() {
     try {
         await fetch('/api/cargar-datos-iniciales', {method: 'POST'});
@@ -248,7 +248,7 @@ function togglePassword(inputId, icon) {
     }
 }
 
-// ============ CAMBIAR PESTAÑAS ============
+//  CAMBIO DE PESTAÑAS 
 function cambiarTab(tab) {
     // Ocultar todas las pestañas
     document.querySelectorAll('.tab-content').forEach(content => {

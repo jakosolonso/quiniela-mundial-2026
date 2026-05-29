@@ -10,10 +10,10 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from resultados_service import actualizar_resultados_en_db
 import atexit
 
-# ============ TAREAS PROGRAMADAS ============
+#  TAREAS PROGRAMADAS 
 scheduler = BackgroundScheduler()
 
-# Programar la tarea (cada 10 minutos para evitar límites de API)
+# Programa la tarea (cada 10 minutos para evitar límites de API)
 scheduler.add_job(
     func=actualizar_resultados_en_db,
     trigger="interval",
@@ -31,11 +31,12 @@ atexit.register(lambda: scheduler.shutdown())
 
 # Asegurar que Flask sirva archivos estáticos
 app = Flask(__name__, static_folder='static', static_url_path='/static')
-# ============ CONFIGURACIÓN SUPABASE ============
+
+#  CONFIGURACION PARA SUPABASE 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if not DATABASE_URL:
-    # ⚠️ REEMPLAZA 'TU_CONTRASEÑA' con tu contraseña real de Supabase
+    # REEMPLAZA 'TU_CONTRASEÑA' con tu contraseña real de Supabase
     DATABASE_URL = "postgresql://postgres.zuvokcpvywofmdnlcojw:F1n9k1l2%2364@aws-1-sa-east-1.pooler.supabase.com:5432/postgres"
 
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'tu-clave-secreta-cambia-esto')

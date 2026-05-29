@@ -3,7 +3,7 @@ from database import db
 from models import Partido, Pronostico
 import re
 
-# ============ CONFIGURACIÓN ============
+#  CONFIGURACIÓN 
 
 GRUPOS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 
@@ -52,7 +52,7 @@ FECHAS_FASES = {
 }
 
 
-# ============ FUNCIONES AUXILIARES ============
+#  FUNCIONES AUX
 
 def calcular_tabla_grupo(partidos):
     """Calcula la tabla de posiciones de un grupo"""
@@ -198,7 +198,7 @@ def generar_dieciseisavos():
     equipos_usados = set()
     
     # Regla: 1° vs (2° o 3°)
-    # Aseguramos que ningún equipo se repita
+    # Se asegura que ningún equipo se repita
     
     # Primera mitad: 1° vs 2° (8 partidos)
     for i in range(min(8, len(primeros), len(segundos))):
@@ -208,7 +208,7 @@ def generar_dieciseisavos():
             equipos_usados.add(segundos[i]['equipo'])
     
     # Segunda mitad: 1° vs 3° (8 partidos)
-    # Usar los siguientes primeros y los terceros
+    # Usa los siguientes primeros y los terceros
     for i in range(min(8, len(primeros) - 8, len(terceros))):
         idx_primeros = 8 + i
         if idx_primeros < len(primeros) and i < len(terceros):
@@ -217,7 +217,7 @@ def generar_dieciseisavos():
                 equipos_usados.add(primeros[idx_primeros]['equipo'])
                 equipos_usados.add(terceros[i]['equipo'])
     
-    # Si aún faltan cruces, usar equipos restantes
+    # Si aun faltan cruces, usar equipos restantes
     equipos_restantes = [e for e in lista_equipos if e['equipo'] not in equipos_usados]
     
     while len(cruces) < 16 and len(equipos_restantes) >= 2:
@@ -225,11 +225,11 @@ def generar_dieciseisavos():
         visitante = equipos_restantes.pop(0)
         cruces.append((local['equipo'], visitante['equipo']))
     
-    # Verificar que tenemos exactamente 16 cruces
+    # Verifica que tenemos exactamente 16 cruces
     if len(cruces) != 16:
         return {'success': False, 'message': f'Solo se pudieron generar {len(cruces)} cruces de 16'}
     
-    # Verificar que no haya equipos duplicados
+    # Verifica que no haya equipos duplicados
     equipos_en_cruces = set()
     for local, visitante in cruces:
         equipos_en_cruces.add(local)
@@ -262,13 +262,13 @@ def generar_fase_eliminatoria(fase_anterior, fase_actual, cruces_config):
     if Partido.query.filter_by(fase=fase_actual).first():
         return {'success': False, 'message': f'La fase {fase_actual} ya fue generada'}
     
-    # Obtener los partidos de la fase anterior en orden
+    # Obtiene los partidos de la fase anterior en orden
     partidos_anteriores = Partido.query.filter_by(fase=fase_anterior, jugado=True).order_by(Partido.id).all()
     
     if len(partidos_anteriores) == 0:
         return {'success': False, 'message': f'No hay resultados en {fase_anterior}'}
     
-    # Crear lista de ganadores en el orden de los partidos
+    # Crea lista de ganadores en el orden de los partidos
     ganadores = []
     for partido in partidos_anteriores:
         if partido.resultado_local > partido.resultado_visitante:
@@ -276,23 +276,23 @@ def generar_fase_eliminatoria(fase_anterior, fase_actual, cruces_config):
         else:
             ganadores.append(partido.equipo_visitante)
     
-    # Verificar que tenemos suficientes ganadores
+    # Verifica que tenemos suficientes ganadores
     num_partidos_necesarios = len(cruces_config) * 2
     if len(ganadores) < num_partidos_necesarios:
         return {'success': False, 'message': f'Se necesitan {num_partidos_necesarios} ganadores, solo hay {len(ganadores)}'}
     
-    # Crear cruces en orden (1º vs 2º, 3º vs 4º, etc.)
+    # Crear cruces en orden (1º vs 2º, 3º vs 4º, etc...)
     cruces = []
     for i in range(0, len(ganadores), 2):
         if i + 1 < len(ganadores):
             cruces.append((ganadores[i], ganadores[i + 1]))
     
-    # Limitar al número de cruces esperados
+    # Limita al número de cruces esperados
     num_esperados = len(cruces_config)
     if len(cruces) > num_esperados:
         cruces = cruces[:num_esperados]
     
-    # Crear los partidos
+    # Crea los partidos
     partidos_generados = 0
     for local, visitante in cruces:
         if local and visitante and local != visitante:

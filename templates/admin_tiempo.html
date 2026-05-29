@@ -31,7 +31,7 @@
         <div class="card">
             <h1>⏰ Control de Cierre de Pronósticos</h1>
             <div class="info">
-                <i>📌 Desde aquí puedes ABRIR o CERRAR manualmente cada fase. Cuando una fase está CERRADA, los usuarios NO podrán hacer ni modificar pronósticos de esa fase.</i>
+                <i>📌 Desde este panel se puede ABRIR o CERRAR manualmente cada fase. Cuando una fase está CERRADA, los usuarios NO podrán hacer ni modificar pronósticos de esa fase.</i>
             </div>
             
             <table class="tabla-fases">
@@ -132,7 +132,7 @@ async function abrirFase(fase) {
         
         if (response.ok) {
             mostrarMensaje(data.mensaje, 'exito');
-            await cargarConfiguraciones();  // Recargar los datos sin recargar la página
+            await cargarConfiguraciones();  // Recargar los datos sin recargar la página, ingenioso ¿no?
         } else {
             mostrarMensaje(data.error || 'Error al abrir', 'error');
         }

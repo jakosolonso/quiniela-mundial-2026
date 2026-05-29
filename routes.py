@@ -8,11 +8,11 @@ from models import Partido, Usuario, Pronostico, ConfiguracionTiempo, Pronostico
 
 api_bp = Blueprint('api', __name__)
 
-# ============ CONFIGURACIÓN DE FASES ELIMINATORIAS ============
+# CONFIGURACIÓN DE FASES ELIMINATORIAS
 
 GRUPOS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 
-# Mapeo de grupos por fase (para los cruces de dieciseisavos según fixture FIFA)
+# Mapeo de grupos por fase (para los cruces de dieciseisavos según fixture de la FIFA)
 DIECISEISAVOS_CRUCES = [
     (73, ('2° Grupo A', '2° Grupo B')),
     (74, ('1° Grupo E', '3° Grupo A/B/C/D/F')),
@@ -58,7 +58,7 @@ SEMIS_CRUCES = [
 FINAL_CRUCE = (104, (101, 102))
 
 
-# ============ FUNCIÓN DE PUNTUACIÓN AVANZADA ============
+#  FUNCIÓN DE PUNTUACIÓN AVANZADA 
 def calcular_puntos(goles_local_p, goles_visitante_p, goles_local_r, goles_visitante_r, fase):
     puntos = 0
     
@@ -78,9 +78,9 @@ def calcular_puntos(goles_local_p, goles_visitante_p, goles_local_r, goles_visit
     
     return puntos
 
-#############
+####################################################################
 
-# ============ AUTENTICACIÓN ============
+#  AUTENTICACION 
 @api_bp.route('/registro', methods=['POST'])
 def registro():
     data = request.json
@@ -152,7 +152,7 @@ def usuario_actual():
     }), 200
 
 
-# ============ SELECCIONES ============
+#  SELECCIONES 
 @api_bp.route('/selecciones', methods=['GET'])
 def obtener_selecciones():
     selecciones = [
@@ -205,7 +205,7 @@ def obtener_selecciones():
     return jsonify(selecciones)
 
 
-# ============ PARTIDOS ============
+#  PARTIDOS 
 @api_bp.route('/partidos', methods=['GET'])
 def obtener_partidos():
     partidos = Partido.query.order_by(Partido.fecha).all()
@@ -246,7 +246,7 @@ def actualizar_resultado(partido_id):
     return jsonify({'mensaje': 'Resultado actualizado y puntos calculados'})
 
 
-# ============ USUARIOS ============
+#  USUARIOS 
 @api_bp.route('/usuarios', methods=['GET'])
 @login_required
 def obtener_usuarios():
@@ -256,7 +256,7 @@ def obtener_usuarios():
     return jsonify([u.to_dict() for u in usuarios])
 
 
-# ============ PRONÓSTICOS ============
+#  PRONOSTICOS 
 @api_bp.route('/pronosticos', methods=['POST'])
 @login_required
 def crear_pronostico():
@@ -316,7 +316,7 @@ def obtener_pronosticos_usuario(usuario_id):
     } for p in pronosticos])
 
 
-# ============ TABLA DE POSICIONES ============
+#  TABLA DE POSICIONES 
 @api_bp.route('/tabla-posiciones-avanzada', methods=['GET'])
 def tabla_posiciones_avanzada():
     usuarios = Usuario.query.all()
@@ -379,7 +379,7 @@ def tabla_posiciones():
     return jsonify(tabla)
 
 
-# ============ CARGAR DATOS INICIALES ============
+#  CARGAR DATOS INICIALES 
 @api_bp.route('/cargar-datos-iniciales', methods=['POST'])
 def cargar_datos_iniciales():
     if Partido.query.first():
@@ -474,7 +474,7 @@ def cargar_datos_iniciales():
     return jsonify({'mensaje': f'Cargados {len(partidos)} partidos del Mundial 2026'})
 
 
-# ============ ADMINISTRACIÓN ============
+#  ADMINISTRACION 
 @api_bp.route('/admin/estado', methods=['GET'])
 @login_required
 def estado_sistema():
@@ -549,7 +549,7 @@ def puede_pronosticar(fase):
     if config.cerrado:
         return False
     
-    # Si hay fecha límite y ya pasó, no se puede
+    # Si hay fecha límite y ya paso, no se puede
     if config.fecha_limite:
         ahora = datetime.utcnow()
         if ahora >= config.fecha_limite:
@@ -649,7 +649,7 @@ def fecha_limite_activa():
     })
 
 
-# ============ ADMIN - PARTIDOS ============
+#  ADMIN - PARTIDOS 
 @api_bp.route('/admin/stats', methods=['GET'])
 @login_required
 def admin_stats():
@@ -771,9 +771,7 @@ def admin_reiniciar_partidos():
     db.session.commit()
     return jsonify({'mensaje': 'Todos los partidos y pronósticos han sido reiniciados.'})
 
-# ============ GENERACIÓN MANUAL DE FASES ELIMINATORIAS ============
-
-# ============ GENERACIÓN MANUAL DE FASES ELIMINATORIAS ============
+#  GENERACION MANUAL DE FASES ELIMINATORIAS 
 
 @api_bp.route('/admin/generar-dieciseisavos', methods=['POST'])
 @login_required
@@ -876,7 +874,7 @@ def admin_estado_fases():
     estado = verificar_estado_fases()
     return jsonify(estado)    
 
-# ============ PRONÓSTICOS EXTRA ============
+#  PRONOSTICOS EXTRA 
 
 @api_bp.route('/pronosticos-extra', methods=['GET'])
 @login_required
@@ -1059,7 +1057,7 @@ def admin_cerrar_fase(fase):
         # Guardar
         db.session.commit()
         
-        # Verificar que se guardó
+        # Verificar que se guardo
         db.session.refresh(config)
         
         return jsonify({

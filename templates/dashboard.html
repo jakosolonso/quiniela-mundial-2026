@@ -38,7 +38,8 @@
         .pronostico-form input { width: 60px; padding: 8px; text-align: center; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; }
         .btn-guardar { background: #10b981; color: white; padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600; }
         .btn-guardar:hover { background: #059669; }
-        /* Contenedor de la tabla para scroll horizontal en móviles */
+
+        /* scroll barra problema de pagina en moviles */
 .tabla-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -117,7 +118,7 @@
         .mensaje-exito { background: #d1fae5; color: #065f46; }
         .mensaje-error { background: #fee2e2; color: #dc2626; }
 
-        /* Estilos para el reglamento */
+        /* para el reglamento */
 .reglamento-container {
     max-width: 100%;
 }
@@ -383,7 +384,7 @@
     <script>
         let usuarioActual = null;
 
-        // ============ RENDER PARTIDO CARD ============
+        // RENDER PARTIDO  
         function renderPartidoCard(partido, editable) {
             const fecha = new Date(partido.fecha);
             const fechaStr = fecha.toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
@@ -420,7 +421,7 @@
             `;
         }
 
-        // ============ NOTIFICACIÓN DE PLAZO ============
+        // NOTIFICACIÓNES PLAZOS PRONOSTICOS
         function obtenerMensajePlazo() {
             const fases = [
                 { nombre: 'Fase de Grupos', fechaMostrar: '10 de junio de 2026', horaMostrar: '18:00', limiteUTC: new Date('2026-06-11T00:00:00Z') },
@@ -451,7 +452,7 @@
             }
         }
 
-        // ============ USUARIO ============
+        // USUARIO 
         async function cargarUsuario() {
             try {
                 const response = await fetch('/api/usuario-actual');
@@ -488,7 +489,7 @@
             window.location.href = '/login';
         }
 
-        // ============ PARTIDOS ============
+        // PARTIDOS 
         async function cargarPartidos() {
             try {
                 const response = await fetch('/api/partidos');
@@ -535,7 +536,7 @@
             } catch (error) { console.error('Error:', error); }
         }
 
-        // ============ TABLA DE POSICIONES ============
+        // TABLA DE POSICIONES
         async function cargarTablaPosiciones() {
     try {
         const response = await fetch('/api/tabla-posiciones-avanzada');
@@ -588,7 +589,7 @@
     }
 }
 
-        // ============ CAMBIAR PESTAÑA ============
+        // CAMBIAR PESTAÑA
         async function cambiarTab(tab, event) {
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -620,7 +621,7 @@
     // reglamento no necesita cargar datos
 }
 
-        // ============ INICIALIZACIÓN ============
+        //  INICIALIZACIÓN 
         async function cargarDatosIniciales() { 
             try { 
                 await fetch('/api/cargar-datos-iniciales', { method: 'POST' }); 
@@ -635,7 +636,7 @@
             cargarNotificacionLimite(); 
         });
 
-        // ============ PRONÓSTICOS EXTRA ============
+        //  PRONÓSTICOS EXTRA 
         async function cargarSeleccionesParaExtra() {
             try {
                 const response = await fetch('/api/selecciones');
