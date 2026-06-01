@@ -12,12 +12,13 @@ class Usuario(db.Model, UserMixin):
     nombre = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    codigo_empleado = db.Column(db.String(50), nullable=True)  # NUEVO CAMPO
+    codigo_empleado = db.Column(db.String(50), nullable=False)  # ← Cambiado a nullable=False
     seleccion_favorita = db.Column(db.String(50), nullable=True)
     fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
     ultimo_acceso = db.Column(db.DateTime)
     es_activo = db.Column(db.Boolean, default=True)
     es_admin = db.Column(db.Boolean, default=False)
+    puntos_extra = db.Column(db.Integer, default=0)
     
     pronosticos = db.relationship('Pronostico', backref='usuario', lazy=True)
     

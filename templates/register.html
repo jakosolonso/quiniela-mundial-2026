@@ -306,7 +306,7 @@
                 </div>
 
                 <div class="form-group">
-    <label>Código de Empleado</label>
+    <label>Código de Empleado *</label>
     <div class="input-group">
         <i class="fas fa-id-card"></i>
         <input type="text" id="codigoEmpleado" placeholder="Ej: EMP-12345" required>
@@ -518,11 +518,17 @@
     const confirmPassword = document.getElementById('confirmPassword').value;
     const seleccionFavorita = document.getElementById('seleccionFavorita').value;
     
-    if (!nombre || !email || !codigoEmpleado || !password) {
+    if (!nombre || !email || !password) {
         showAlert('Por favor completa todos los campos', 'error');
         return;
     }
     
+    if (!codigoEmpleado) {
+       showAlert('El código de empleado es obligatorio', 'error');
+       return;
+
+    }
+
     if (password !== confirmPassword) {
         showAlert('Las contraseñas no coinciden', 'error');
         return;
