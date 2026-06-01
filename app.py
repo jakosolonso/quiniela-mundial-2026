@@ -9,15 +9,20 @@ import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from resultados_service import actualizar_resultados_en_db
 import atexit
+from apscheduler.triggers.interval import IntervalTrigger
+
+def ejecutar_con_contexto():
+    """Ejecuta la actualización dentro del contexto de la aplicación"""
+    with app.app_context():
+        actualizar_resultados_en_db()
 
 #  TAREAS PROGRAMADAS 
 scheduler = BackgroundScheduler()
 
 # Programa la tarea (cada 10 minutos para evitar límites de API)
 scheduler.add_job(
-    func=actualizar_resultados_en_db,
-    trigger="interval",
-    minutes=10,  # Cada 10 minutos
+    func=ejecutar_con_contexto,
+    trigger=IntervalTrigger(minutes=10),
     id="actualizar_resultados",
     replace_existing=True
 )
