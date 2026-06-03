@@ -6,33 +6,6 @@ from routes import api_bp
 from models import Usuario, bcrypt
 from datetime import datetime
 import os
-from apscheduler.schedulers.background import BackgroundScheduler
-from resultados_service import actualizar_resultados_en_db
-import atexit
-from apscheduler.triggers.interval import IntervalTrigger
-
-def ejecutar_con_contexto():
-    """Ejecuta la actualización dentro del contexto de la aplicación"""
-    with app.app_context():
-        actualizar_resultados_en_db()
-
-#  TAREAS PROGRAMADAS 
-scheduler = BackgroundScheduler()
-
-# Programa la tarea (cada 10 minutos para evitar límites de API)
-scheduler.add_job(
-    func=ejecutar_con_contexto,
-    trigger=IntervalTrigger(minutes=10),
-    id="actualizar_resultados",
-    replace_existing=True
-)
-
-# Iniciar el scheduler
-scheduler.start()
-print("🔄 Scheduler iniciado - Resultados se actualizarán cada 10 minutos")
-
-# Detener scheduler al cerrar
-atexit.register(lambda: scheduler.shutdown())
 
 # Asegurar que Flask sirva archivos estáticos
 app = Flask(__name__, static_folder='static', static_url_path='/static')
@@ -41,8 +14,10 @@ app = Flask(__name__, static_folder='static', static_url_path='/static')
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if not DATABASE_URL:
-    # REEMPLAZA 'TU_CONTRASEÑA' con tu contraseña real de Supabase
-    DATABASE_URL = "postgresql://postgres.zuvokcpvywofmdnlcojw:F1n9k1l2%2364@aws-1-sa-east-1.pooler.supabase.com:5432/postgres"
+    raise RuntimeError(
+        "DATABASE_URL no está configurada. "
+        "Agrégala como variable de entorno en Railway."
+    )
 
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'tu-clave-secreta-cambia-esto')
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
@@ -94,28 +69,6 @@ def register_page():
 def dashboard():
     return render_template('dashboard.html')
 
-# Crear tablas al iniciar
-with app.app_context():
-    db.create_all()
-    print("✅ Base de datos conectada a Supabase")
-    
-    # Crear usuario admin si no existe
-    admin = Usuario.query.filter_by(email='admin@quiniela.com').first()
-    if not admin:
-        admin = Usuario(
-            nombre='Administrador',
-            email='admin@quiniela.com',
-            es_admin=True
-        )
-        admin.set_password('admin123')
-        db.session.add(admin)
-        db.session.commit()
-        print("✅ Usuario administrador creado")
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=False, host='0.0.0.0', port=port)
-
 @app.route('/admin')
 @login_required
 def admin_panel():
@@ -136,3 +89,25 @@ def admin_ganadores():
     if not current_user.es_admin:
         return redirect(url_for('dashboard'))
     return render_template('admin_ganadores.html')
+
+# Crear tablas al iniciar
+with app.app_context():
+    db.create_all()
+    print("✅ Base de datos conectada a Supabase")
+
+    # Crear usuario admin si no existe
+    admin = Usuario.query.filter_by(email='admin@quiniela.com').first()
+    if not admin:
+        admin = Usuario(
+            nombre='Administrador',
+            email='admin@quiniela.com',
+            es_admin=True
+        )
+        admin.set_password('admin123')
+        db.session.add(admin)
+        db.session.commit()
+        print("✅ Usuario administrador creado")
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)

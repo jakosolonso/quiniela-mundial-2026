@@ -715,13 +715,21 @@ def admin_usuarios():
 def admin_ejecutar_ahora():
     if not current_user.es_admin:
         return jsonify({'error': 'No autorizado'}), 403
-    
+
     from resultados_service import actualizar_resultados_en_db
     import threading
-    
-    thread = threading.Thread(target=actualizar_resultados_en_db)
+    from flask import current_app
+
+    app = current_app._get_current_object()
+
+    def ejecutar_con_contexto():
+        with app.app_context():
+            actualizar_resultados_en_db()
+
+    thread = threading.Thread(target=ejecutar_con_contexto)
+    thread.daemon = True
     thread.start()
-    
+
     return jsonify({'mensaje': 'Actualización iniciada. Revisa los logs.'})
 
 
@@ -1091,3 +1099,8 @@ def admin_abrir_fase(fase):
     db.session.commit()
     
     return jsonify({'mensaje': f'Fase {fase} abierta correctamente.'}), 200
+
+@api_bp.route('/health', methods=['GET'])
+def health_check():
+    """Endpoint exclusivo para mantener la app despierta"""
+    return jsonify({"status": "alive"}), 200

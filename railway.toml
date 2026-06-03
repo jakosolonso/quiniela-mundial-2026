@@ -1,0 +1,9 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "gunicorn app:app --workers 1 --worker-class sync --timeout 60 --bind 0.0.0.0:$PORT --log-level info --access-logfile - --error-logfile -"
+healthcheckPath = "/api/partidos"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
