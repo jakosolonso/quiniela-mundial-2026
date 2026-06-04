@@ -139,15 +139,16 @@ def login():
 
 
 @api_bp.route('/logout', methods=['POST'])
-@login_required
 def logout():
     logout_user()
     return jsonify({'mensaje': 'Sesión cerrada'}), 200
 
 
 @api_bp.route('/usuario-actual', methods=['GET'])
-@login_required
 def usuario_actual():
+    if not current_user.is_authenticated:
+        return jsonify({'error': 'No autenticado'}), 401
+
     return jsonify({
         'id': current_user.id,
         'nombre': current_user.nombre,
