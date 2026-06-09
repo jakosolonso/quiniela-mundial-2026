@@ -90,6 +90,13 @@ def admin_ganadores():
         return redirect(url_for('dashboard'))
     return render_template('admin_ganadores.html')
 
+@app.route('/admin/resultados')
+@login_required
+def admin_resultados():
+    if not current_user.es_admin:
+        return redirect(url_for('dashboard'))
+    return render_template('admin_resultados.html')
+
 # Crear tablas al iniciar
 with app.app_context():
     db.create_all()

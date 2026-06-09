@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiniela Mundial 2026 - Resultados</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        /* Header — mismo estilo que dashboard.html */
+        .dashboard-header {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo img { height: 50px; object-fit: contain; }
+        .logo h1 {
+            font-size: 22px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+        .btn-volver {
+            background: #f3f4f6;
+            color: #374151;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-volver:hover { background: #e5e7eb; }
+
+        .logout-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .logout-btn:hover { background: #b91c1c; transform: translateY(-2px); }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .stat-chip {
+            background: white;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stat-chip .num { font-size: 22px; font-weight: 800; }
+        .stat-chip.total    .num { color: #667eea; }
+        .stat-chip.jugados  .num { color: #10b981; }
+        .stat-chip.pendientes .num { color: #f59e0b; }
+
+        /* Filtros */
+        .filtros-bar {
+            background: white;
+            border-radius: 15px;
+            padding: 14px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+        }
+        .filtros-bar label { font-weight: 700; font-size: 13px; color: #374151; }
+        .btn-filtro {
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #374151;
+            transition: all 0.2s;
+        }
+        .btn-filtro:hover { border-color: #667eea; color: #667eea; }
+        .btn-filtro.activo {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Grid */
+        .partidos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        /* Card */
+        .partido-card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            border: 2px solid #e5e7eb;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+            transition: all 0.25s;
+            position: relative;
+        }
+        .partido-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.12); }
+        .partido-card.jugado { border-color: #a7f3d0; }
+
+        /* Estado badge */
+        .estado-badge {
+            position: absolute;
+            top: 14px; right: 14px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+        .estado-badge.pendiente { background: #fef3c7; color: #92400e; }
+        .estado-badge.jugado    { background: #d1fae5; color: #065f46; }
+
+        /* Meta */
+        .partido-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .grupo-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+        .fecha-texto { font-size: 12px; color: #6b7280; }
+
+        /* Equipos */
+        .equipos-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            gap: 8px;
+        }
+        .equipo-nombre {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            flex: 1;
+            text-align: center;
+        }
+        .vs-sep { font-size: 12px; font-weight: 800; color: #9ca3af; }
+
+        /* Resultado actual */
+        .resultado-actual {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .resultado-actual .marcador {
+            font-size: 30px;
+            font-weight: 800;
+            color: #10b981;
+            letter-spacing: 3px;
+        }
+        .resultado-actual .marcador span { color: #9ca3af; margin: 0 6px; }
+        .resultado-actual .label-actual {
+            font-size: 11px;
+            color: #9ca3af;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* Formulario */
+        .form-resultado {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .form-resultado input[type="number"] {
+            width: 64px;
+            padding: 10px 4px;
+            text-align: center;
+            border: 2px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: 800;
+            color: #111827;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-resultado input::-webkit-inner-spin-button,
+        .form-resultado input::-webkit-outer-spin-button { -webkit-appearance: none; }
+        .form-resultado input:focus { border-color: #667eea; }
+        .form-resultado .guion { font-size: 24px; font-weight: 800; color: #9ca3af; }
+
+        /* Botón guardar */
+        .btn-guardar {
+            width: 100%;
+            padding: 11px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s;
+        }
+        .btn-guardar:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+        .btn-guardar:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-guardar.corregir {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        /* Mensajes inline */
+        .msg {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+        }
+        .msg.exito { background: #d1fae5; color: #065f46; display: block; }
+        .msg.error { background: #fee2e2; color: #dc2626; display: block; }
+
+        /* Estados de carga y error */
+        .loading-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: white;
+        }
+        .loading-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-state p { font-size: 16px; opacity: 0.9; }
+
+        .error-state {
+            background: white;
+            border-radius: 16px;
+            padding: 60px 30px;
+            text-align: center;
+        }
+        .error-state i { font-size: 48px; color: #dc2626; margin-bottom: 16px; display: block; }
+        .error-state p { color: #374151; font-size: 16px; }
+
+        .sin-partidos {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+        .sin-partidos i { font-size: 40px; margin-bottom: 12px; display: block; }
+
+        @media (max-width: 768px) {
+            .dashboard-header { flex-direction: column; text-align: center; }
+            .logo { justify-content: center; }
+            .header-actions { justify-content: center; }
+            .partidos-grid { grid-template-columns: 1fr; }
+            .stats-bar { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="logo">
+            <img src="/static/images/logo.PNG" alt="Logo" onerror="this.style.display='none'">
+            <h1><i class="fas fa-futbol"></i> Resultados Oficiales</h1>
+        </div>
+        <div class="header-actions">
+            <a href="/admin" class="btn-volver">
+                <i class="fas fa-arrow-left"></i> Panel Admin
+            </a>
+            <button class="logout-btn" onclick="cerrarSesion()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loadingState" class="loading-state">
+        <i class="fas fa-circle-notch"></i>
+        <p>Cargando partidos...</p>
+    </div>
+
+    <!-- Error -->
+    <div id="errorState" class="error-state" style="display:none">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p id="errorMsg">Error al cargar los partidos.</p>
+    </div>
+
+    <!-- Contenido -->
+    <div id="contenidoPrincipal" style="display:none">
+
+        <div class="stats-bar">
+            <div class="stat-chip total">
+                <i class="fas fa-calendar-alt" style="color:#667eea"></i>
+                <span class="num" id="statTotal">0</span>
+                <span>totales</span>
+            </div>
+            <div class="stat-chip jugados">
+                <i class="fas fa-check-circle" style="color:#10b981"></i>
+                <span class="num" id="statJugados">0</span>
+                <span>con resultado</span>
+            </div>
+            <div class="stat-chip pendientes">
+                <i class="fas fa-clock" style="color:#f59e0b"></i>
+                <span class="num" id="statPendientes">0</span>
+                <span>pendientes</span>
+            </div>
+        </div>
+
+        <div class="filtros-bar">
+            <label><i class="fas fa-filter"></i>&nbsp; Grupo:</label>
+            <div id="filtroGrupos" style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn-filtro activo" onclick="filtrarGrupo('TODOS', this)">
+                    Todos
+                </button>
+            </div>
+        </div>
+
+        <div class="partidos-grid" id="partidosGrid"></div>
+
+    </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────────
+// Estado
+// ─────────────────────────────────────────────────
+let todosLosPartidos = [];
+
+// ─────────────────────────────────────────────────
+// Inicialización
+// ─────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', cargarPartidos);
+
+// ─────────────────────────────────────────────────
+// GET /api/admin/partidos
+// Respuesta: array de { id, equipo_local, equipo_visitante,
+//            fecha, grupo, resultado_local,
+//            resultado_visitante, jugado }
+// ─────────────────────────────────────────────────
+async function cargarPartidos() {
+    try {
+        const res = await fetch('/api/admin/partidos');
+
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        todosLosPartidos = await res.json();
+
+        construirFiltros();
+        actualizarStats();
+        renderizarPartidos(todosLosPartidos);
+
+        document.getElementById('loadingState').style.display     = 'none';
+        document.getElementById('contenidoPrincipal').style.display = 'block';
+
+    } catch (err) {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('errorState').style.display   = 'block';
+        document.getElementById('errorMsg').textContent =
+            `No se pudieron cargar los partidos. (${err.message})`;
+    }
+}
+
+// ─────────────────────────────────────────────────
+// Filtros: un botón por grupo único
+// ─────────────────────────────────────────────────
+function construirFiltros() {
+    const grupos = [...new Set(
+        todosLosPartidos.map(p => p.grupo).filter(Boolean)
+    )].sort();
+
+    const cont = document.getElementById('filtroGrupos');
+
+    grupos.forEach(g => {
+        const btn = document.createElement('button');
+        btn.className     = 'btn-filtro';
+        btn.textContent   = g === 'ELIM' ? 'Eliminatorias' : `Grupo ${g}`;
+        btn.onclick       = () => filtrarGrupo(g, btn);
+        cont.appendChild(btn);
+    });
+}
+
+function filtrarGrupo(grupo, btnEl) {
+    document.querySelectorAll('#filtroGrupos .btn-filtro')
+        .forEach(b => b.classList.remove('activo'));
+    btnEl.classList.add('activo');
+
+    const lista = grupo === 'TODOS'
+        ? todosLosPartidos
+        : todosLosPartidos.filter(p => p.grupo === grupo);
+
+    renderizarPartidos(lista);
+}
+
+// ─────────────────────────────────────────────────
+// Stats
+// ─────────────────────────────────────────────────
+function actualizarStats() {
+    const total      = todosLosPartidos.length;
+    const jugados    = todosLosPartidos.filter(p => p.jugado).length;
+    const pendientes = total - jugados;
+    document.getElementById('statTotal').textContent      = total;
+    document.getElementById('statJugados').textContent    = jugados;
+    document.getElementById('statPendientes').textContent = pendientes;
+}
+
+// ─────────────────────────────────────────────────
+// Render
+// ─────────────────────────────────────────────────
+function renderizarPartidos(lista) {
+    const grid = document.getElementById('partidosGrid');
+
+    if (lista.length === 0) {
+        grid.innerHTML = `
+            <div class="sin-partidos">
+                <i class="fas fa-search"></i>
+                No hay partidos en este grupo.
+            </div>`;
+        return;
+    }
+
+    grid.innerHTML = lista.map(p => cardHTML(p)).join('');
+}
+
+function cardHTML(p) {
+    const esJugado   = Boolean(p.jugado);
+    const grupoLabel = p.grupo === 'ELIM' ? 'Elim.' : `Grupo ${p.grupo}`;
+
+    const resultadoActualHTML = esJugado ? `
+        <div class="resultado-actual">
+            <div class="marcador">
+                ${p.resultado_local}<span>-</span>${p.resultado_visitante}
+            </div>
+            <div class="label-actual">resultado actual</div>
+        </div>` : '';
+
+    const valL = esJugado ? p.resultado_local     : '';
+    const valV = esJugado ? p.resultado_visitante  : '';
+
+    const btnLabel = esJugado
+        ? '<i class="fas fa-sync-alt"></i> Corregir resultado'
+        : '<i class="fas fa-save"></i> Guardar resultado';
+
+    return `
+    <div class="partido-card ${esJugado ? 'jugado' : ''}" id="card-${p.id}">
+
+        <span class="estado-badge ${esJugado ? 'jugado' : 'pendiente'}">
+            ${esJugado ? 'Jugado' : 'Pendiente'}
+        </span>
+
+        <div class="partido-meta">
+            <span class="grupo-badge">${grupoLabel}</span>
+            <span class="fecha-texto">
+                <i class="fas fa-calendar-alt"></i> ${formatearFecha(p.fecha)}
+            </span>
+        </div>
+
+        <div class="equipos-row">
+            <span class="equipo-nombre">${esc(p.equipo_local)}</span>
+            <span class="vs-sep">VS</span>
+            <span class="equipo-nombre">${esc(p.equipo_visitante)}</span>
+        </div>
+
+        ${resultadoActualHTML}
+
+        <div class="form-resultado">
+            <input type="number" id="local-${p.id}"
+                   min="0" max="99" placeholder="0" value="${valL}"
+                   aria-label="Goles ${esc(p.equipo_local)}">
+            <span class="guion">-</span>
+            <input type="number" id="visitante-${p.id}"
+                   min="0" max="99" placeholder="0" value="${valV}"
+                   aria-label="Goles ${esc(p.equipo_visitante)}">
+        </div>
+
+        <button class="btn-guardar ${esJugado ? 'corregir' : ''}"
+                id="btn-${p.id}"
+                onclick="guardarResultado(${p.id})">
+            ${btnLabel}
+        </button>
+
+        <div class="msg" id="msg-${p.id}"></div>
+
+    </div>`;
+}
+
+// ─────────────────────────────────────────────────
+// PUT /api/partidos/<id>/resultado
+// Body: { goles_local: int, goles_visitante: int }
+// ─────────────────────────────────────────────────
+async function guardarResultado(partidoId) {
+    const inputL  = document.getElementById(`local-${partidoId}`);
+    const inputV  = document.getElementById(`visitante-${partidoId}`);
+    const btn     = document.getElementById(`btn-${partidoId}`);
+    const msgEl   = document.getElementById(`msg-${partidoId}`);
+
+    // Limpiar mensaje previo
+    ocultarMensaje(msgEl);
+
+    // Validación
+    const rawL = inputL.value.trim();
+    const rawV = inputV.value.trim();
+
+    if (rawL === '' || rawV === '') {
+        mostrarMensaje(msgEl, 'error', 'Ingresa los goles de ambos equipos.');
+        return;
+    }
+
+    const gl = parseInt(rawL, 10);
+    const gv = parseInt(rawV, 10);
+
+    if (isNaN(gl) || isNaN(gv) || gl < 0 || gv < 0) {
+        mostrarMensaje(msgEl, 'error', 'Los goles deben ser números ≥ 0.');
+        return;
+    }
+    if (gl > 99 || gv > 99) {
+        mostrarMensaje(msgEl, 'error', 'Valor máximo: 99.');
+        return;
+    }
+
+    // Estado de envío
+    const labelOriginal = btn.innerHTML;
+    btn.disabled  = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Guardando...';
+
+    try {
+        const res = await fetch(`/api/partidos/${partidoId}/resultado`, {
+            method:  'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ goles_local: gl, goles_visitante: gv }),
+        });
+
+        if (res.status === 401) { window.location.href = '/login'; return; }
+
+        const data = await res.json();
+
+        if (res.ok) {
+            // Actualizar el array local
+            const idx = todosLosPartidos.findIndex(p => p.id === partidoId);
+            if (idx !== -1) {
+                todosLosPartidos[idx].jugado              = true;
+                todosLosPartidos[idx].resultado_local     = gl;
+                todosLosPartidos[idx].resultado_visitante = gv;
+            }
+
+            actualizarStats();
+
+            // Re-renderizar esta card con el nuevo estado
+            const partido  = todosLosPartidos[idx];
+            const cardEl   = document.getElementById(`card-${partidoId}`);
+            cardEl.outerHTML = cardHTML(partido);
+
+            // Mostrar éxito en la card recién reemplazada
+            const nuevoMsg = document.getElementById(`msg-${partidoId}`);
+            if (nuevoMsg) {
+                mostrarMensaje(nuevoMsg, 'exito',
+                    `✔ Guardado: ${gl} - ${gv}. Puntos recalculados.`, 5000);
+            }
+
+        } else {
+            const textoError = data.error || data.mensaje || `Error del servidor (${res.status})`;
+            mostrarMensaje(msgEl, 'error', textoError);
+            btn.disabled  = false;
+            btn.innerHTML = labelOriginal;
+        }
+
+    } catch (err) {
+        mostrarMensaje(msgEl, 'error', `Error de red: ${err.message}`);
+        btn.disabled  = false;
+        btn.innerHTML = labelOriginal;
+    }
+}
+
+// ─────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────
+function mostrarMensaje(el, tipo, texto, duracionMs = 0) {
+    el.className  = `msg ${tipo}`;
+    el.textContent = texto;
+    if (duracionMs > 0) {
+        setTimeout(() => ocultarMensaje(el), duracionMs);
+    }
+}
+
+function ocultarMensaje(el) {
+    el.className  = 'msg';
+    el.textContent = '';
+}
+
+function formatearFecha(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return d.toLocaleString('es-GT', {
+        weekday: 'short', day: 'numeric', month: 'short',
+        hour: '2-digit', minute: '2-digit',
+    });
+}
+
+function esc(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function cerrarSesion() {
+    try { await fetch('/api/logout', { method: 'POST' }); } catch (_) {}
+    window.location.href = '/login';
+}
+</script>
+</body>
+</html>

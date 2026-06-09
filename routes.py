@@ -64,24 +64,44 @@ SEMIS_CRUCES = [
 FINAL_CRUCE = (104, (101, 102))
 
 
-#  FUNCIÓN DE PUNTUACIÓN AVANZADA 
-def calcular_puntos(goles_local_p, goles_visitante_p, goles_local_r, goles_visitante_r, fase):
-    puntos = 0
-    
+def calcular_puntos(goles_local_p, goles_visitante_p,
+                    goles_local_r, goles_visitante_r, fase):
+
+    # Marcador exacto
     if goles_local_p == goles_local_r and goles_visitante_p == goles_visitante_r:
         puntos = 5
-    elif (goles_local_p - goles_visitante_p) == (goles_local_r - goles_visitante_r):
-        puntos = 3
-    
-    if puntos != 5:
-        diferencia_p = goles_local_p - goles_visitante_p
-        diferencia_r = goles_local_r - goles_visitante_r
-        if diferencia_p == diferencia_r:
-            puntos += 1
-    
+
+    else:
+        puntos = 0
+
+        # Resultado (local gana, empate o visitante gana)
+        resultado_p = (
+            1 if goles_local_p > goles_visitante_p
+            else -1 if goles_local_p < goles_visitante_p
+            else 0
+        )
+
+        resultado_r = (
+            1 if goles_local_r > goles_visitante_r
+            else -1 if goles_local_r < goles_visitante_r
+            else 0
+        )
+
+        # Ganador o empate acertado
+        if resultado_p == resultado_r:
+            puntos = 3
+
+            # Diferencia de goles exacta
+            diferencia_p = goles_local_p - goles_visitante_p
+            diferencia_r = goles_local_r - goles_visitante_r
+
+            if diferencia_p == diferencia_r:
+                puntos += 1
+
+    # Semifinales y final valen doble
     if fase in ['semis', 'final']:
-        puntos = puntos * 2
-    
+        puntos *= 2
+
     return puntos
 
 ####################################################################

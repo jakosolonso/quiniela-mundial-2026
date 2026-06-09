@@ -306,8 +306,7 @@
             • <strong>Ganador o empate acertado</strong> (sin acertar el marcador exacto): <span class="punto-destacado">3 puntos</span><br>
             • <strong>Diferencia de goles exacta</strong>: <span class="punto-destacado">+1 punto adicional</span></p>
             
-            <p><strong>Artículo 4 - Puntuación en fases eliminatorias</strong><br>
-            • Semifinales y Final: la puntuación se multiplica por 2 (doble puntuación).<br>
+            <p><strong>Artículo 4 - Puntuación en fases eliminatorias</strong>
             • Solo se toma en cuenta el marcador después de 90 o 120 minutos. Los penales NO cuentan para la puntuación.</p>
             
             <p><strong>Artículo 5 - Puntos extra</strong><br>
@@ -570,7 +569,7 @@
                 <tbody>
                     ${tabla.map(item => `
                         <tr>
-                            <td><strong>${item.posicion}</strong> ${item.posicion === 1 ? '🏆' : item.posicion === 2 ? '🥈' : item.posicion === 3 ? '🥉' : ''}</td>
+                            <td><strong>${item.posicion}</strong> ${item.posicion === 1 ? '🏆' : item.posicion === 2 ? '🥈' : item.posicion === 3 ? '🥉' : item.posicion === 4 ? '🎁' : item.posicion === 5 ? '🎁' : ''}</td>
                             <td>${item.nombre} ${banderasUrl[item.seleccion_favorita] ? banderasUrl[item.seleccion_favorita] : ''}</td>
                             <td><strong style="font-size:18px;color:#667eea;">${item.puntos}</strong></td>
                             <td>${item.aciertos_exactos}</td>
