@@ -600,15 +600,14 @@ def puede_pronosticar(fase):
     if not config:
         return True
     
+    # SOLO CIERRE MANUAL - La automatización por fecha ha sido ELIMINADA
     # Si el admin cerró manualmente, no se puede pronosticar
     if config.cerrado:
         return False
     
-    # Si hay fecha límite y ya paso, no se puede
-    if config.fecha_limite:
-        ahora = datetime.utcnow()
-        if ahora >= config.fecha_limite:
-            return False
+    # La fecha límite ya NO afecta el cierre. Solo es referencia visual.
+    # Los usuarios pueden pronosticar aunque la fecha límite haya pasado,
+    # siempre que el admin NO haya cerrado manualmente la fase.
     
     return True
 
