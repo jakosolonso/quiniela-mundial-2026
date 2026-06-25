@@ -98,10 +98,6 @@ def calcular_puntos(goles_local_p, goles_visitante_p,
             if diferencia_p == diferencia_r:
                 puntos += 1
 
-    # Semifinales y final valen doble
-    if fase in ['semis', 'final']:
-        puntos *= 2
-
     return puntos
 
 ####################################################################
