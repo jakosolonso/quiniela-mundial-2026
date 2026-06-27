@@ -396,14 +396,18 @@
 let todosLosPartidos = [];
 let filtroActivo = 'TODOS';
 
-const FASE_LABELS = {
-    dieciseisavos: 'Dieciseisavos',
-    octavos:       'Octavos',
-    cuartos:       'Cuartos',
-    semifinal:     'Semifinal',
-    tercer_puesto: '3er puesto',
-    final:         'Final',
-};
+const ELIMINATORIAS = [
+    'dieciseisavos',
+    'octavos',
+    'cuartos',
+    'semifinal',
+    '3er Puesto',
+    'final'
+];
+
+partidos = partidos.filter(p =>
+    ELIMINATORIAS.includes(p.fase)
+);
 
 // ─────────────────────────────────────────────────
 // Inicialización
