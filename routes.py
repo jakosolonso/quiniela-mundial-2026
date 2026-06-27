@@ -1231,7 +1231,7 @@ def admin_crear_partido():
         equipo_local=equipo_local,
         equipo_visitante=equipo_visit,
         fecha=fecha_hora,
-        grupo=None,          # eliminatorias no tienen grupo
+        grupo='ELIM',          # eliminatorias no tienen grupo
         fase=fase,
         resultado_local=None,
         resultado_visitante=None,
