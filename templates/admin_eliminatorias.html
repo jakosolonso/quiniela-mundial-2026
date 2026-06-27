@@ -401,9 +401,18 @@ const ELIMINATORIAS = [
     'octavos',
     'cuartos',
     'semifinal',
-    '3er Puesto',
+    'tercer_puesto',
     'final'
 ];
+
+const FASE_LABELS = {
+    dieciseisavos: "Dieciseisavos",
+    octavos: "Octavos",
+    cuartos: "Cuartos",
+    semifinal: "Semifinal",
+    tercer_puesto: "Tercer Puesto",
+    final: "Final"
+};
 
 partidos = partidos.filter(p =>
     ELIMINATORIAS.includes(p.fase)
