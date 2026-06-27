@@ -914,6 +914,14 @@ def admin_borrar_fase(fase):
     resultado = borrar_fase(fase)
     return jsonify(resultado)
 
+FASES_ELIMINATORIAS = [
+    'dieciseisavos',
+    'octavos',
+    'cuartos',
+    'semifinal',
+    'tercer_puesto',
+    'final',
+]
 
 @api_bp.route('/admin/reiniciar-eliminatorias', methods=['POST'])
 @login_required
@@ -1162,3 +1170,123 @@ def admin_abrir_fase(fase):
 def health_check():
     """Endpoint exclusivo para mantener la app despierta"""
     return jsonify({"status": "alive"}), 200
+
+@api_bp.route('/admin/crear-partido', methods=['POST'])
+@login_required
+def admin_crear_partido():
+    """
+    Crea un partido nuevo de eliminatorias.
+    Body JSON: {
+        fase, fecha, hora, equipo_local, equipo_visitante
+    }
+    Valida duplicados: mismo equipo_local + equipo_visitante + fase + fecha.
+    Crea automáticamente ConfiguracionTiempo para la fase si no existe.
+    """
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No se recibieron datos'}), 400
+
+    # ── Validación de campos requeridos ──────────────────────────────
+    fase          = (data.get('fase') or '').strip()
+    equipo_local  = (data.get('equipo_local') or '').strip()
+    equipo_visit  = (data.get('equipo_visitante') or '').strip()
+    fecha_str     = (data.get('fecha') or '').strip()  # YYYY-MM-DD
+    hora_str      = (data.get('hora') or '').strip()   # HH:MM
+
+    if not all([fase, equipo_local, equipo_visit, fecha_str, hora_str]):
+        return jsonify({'error': 'Todos los campos son obligatorios'}), 400
+
+    if fase not in FASES_ELIMINATORIAS:
+        return jsonify({'error': f'Fase inválida. Valores permitidos: {FASES_ELIMINATORIAS}'}), 400
+
+    if equipo_local.lower() == equipo_visit.lower():
+        return jsonify({'error': 'El equipo local y visitante no pueden ser el mismo'}), 400
+
+    # ── Parsear fecha y hora ─────────────────────────────────────────
+    try:
+        fecha_hora = datetime.strptime(f'{fecha_str} {hora_str}', '%Y-%m-%d %H:%M')
+    except ValueError:
+        return jsonify({'error': 'Formato de fecha inválido. Use YYYY-MM-DD y HH:MM'}), 400
+
+    # ── Validación de duplicados ──────────────────────────────────────
+    # Mismo equipo_local + equipo_visitante + fase + misma fecha (mismo día + hora)
+    existente = Partido.query.filter_by(
+        equipo_local=equipo_local,
+        equipo_visitante=equipo_visit,
+        fase=fase,
+        fecha=fecha_hora,
+    ).first()
+
+    if existente:
+        return jsonify({
+            'error': 'Ya existe un partido con los mismos equipos, fase y fecha/hora',
+            'partido_id': existente.id
+        }), 409  # 409 Conflict
+
+    # ── Crear el partido ─────────────────────────────────────────────
+    nuevo = Partido(
+        equipo_local=equipo_local,
+        equipo_visitante=equipo_visit,
+        fecha=fecha_hora,
+        grupo=None,          # eliminatorias no tienen grupo
+        fase=fase,
+        resultado_local=None,
+        resultado_visitante=None,
+        equipo_ganador=None,
+        jugado=False,
+    )
+    db.session.add(nuevo)
+
+    # ── Crear ConfiguracionTiempo para la fase si no existe ──────────
+    config_existente = ConfiguracionTiempo.query.filter_by(fase=fase).first()
+    if not config_existente:
+        nueva_config = ConfiguracionTiempo(
+            fase=fase,
+            fecha_limite=None,   # admin deberá configurarla manualmente
+            cerrado=False,
+        )
+        db.session.add(nueva_config)
+
+    db.session.commit()
+
+    return jsonify({
+        'mensaje': 'Partido creado correctamente',
+        'partido': {
+            'id':               nuevo.id,
+            'equipo_local':     nuevo.equipo_local,
+            'equipo_visitante': nuevo.equipo_visitante,
+            'fecha':            nuevo.fecha.isoformat(),
+            'fase':             nuevo.fase,
+            'jugado':           nuevo.jugado,
+        }
+    }), 201
+
+
+@api_bp.route('/admin/eliminar-partido/<int:partido_id>', methods=['DELETE'])
+@login_required
+def admin_eliminar_partido(partido_id):
+    """
+    Elimina un partido de eliminatorias.
+    Solo permite eliminar partidos NO jugados y que no tengan pronósticos.
+    """
+    if not current_user.es_admin:
+        return jsonify({'error': 'No autorizado'}), 403
+
+    partido = Partido.query.get_or_404(partido_id)
+
+    if partido.jugado:
+        return jsonify({'error': 'No se puede eliminar un partido ya jugado'}), 400
+
+    pronosticos_count = Pronostico.query.filter_by(partido_id=partido_id).count()
+    if pronosticos_count > 0:
+        return jsonify({
+            'error': f'No se puede eliminar: tiene {pronosticos_count} pronóstico(s) registrado(s)'
+        }), 400
+
+    db.session.delete(partido)
+    db.session.commit()
+
+    return jsonify({'mensaje': 'Partido eliminado correctamente'}), 200

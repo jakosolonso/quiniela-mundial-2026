@@ -97,6 +97,13 @@ def admin_resultados():
         return redirect(url_for('dashboard'))
     return render_template('admin_resultados.html')
 
+@app.route('/admin/eliminatorias')
+@login_required
+def admin_eliminatorias():
+    if not current_user.es_admin:
+        return redirect(url_for('dashboard'))
+    return render_template('admin_eliminatorias.html')
+
 # Crear tablas al iniciar
 with app.app_context():
     db.create_all()

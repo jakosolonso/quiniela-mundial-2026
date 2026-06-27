@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiniela Mundial 2026 - Eliminatorias</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+        /* ── Header ── */
+        .dashboard-header {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo img { height: 50px; object-fit: contain; }
+        .logo h1 {
+            font-size: 22px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .header-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+        .btn-volver {
+            background: #f3f4f6;
+            color: #374151;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-volver:hover { background: #e5e7eb; }
+
+        .logout-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .logout-btn:hover { background: #b91c1c; transform: translateY(-2px); }
+
+        /* ── Dos columnas ── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* ── Formulario ── */
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 20px;
+        }
+        .form-card h2 {
+            font-size: 18px;
+            color: #111827;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-card h2 i { color: #667eea; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 11px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            color: #111827;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus { border-color: #667eea; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn-crear {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s;
+            margin-top: 6px;
+        }
+        .btn-crear:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+        .btn-crear:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .msg-form {
+            margin-top: 14px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            display: none;
+        }
+        .msg-form.exito { background: #d1fae5; color: #065f46; display: block; }
+        .msg-form.error { background: #fee2e2; color: #dc2626; display: block; }
+
+        /* ── Lista de partidos ── */
+        .lista-card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .lista-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .lista-header h2 {
+            font-size: 18px;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .lista-header h2 i { color: #667eea; }
+
+        /* Filtros por fase */
+        .filtros { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-filtro {
+            padding: 5px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #374151;
+            transition: all 0.2s;
+        }
+        .btn-filtro:hover { border-color: #667eea; color: #667eea; }
+        .btn-filtro.activo {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Tabla */
+        .tabla-wrapper { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 600px;
+        }
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+            vertical-align: middle;
+        }
+        tr:hover td { background: #f9fafb; }
+        tr:last-child td { border-bottom: none; }
+
+        .fase-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .fase-dieciseisavos { background: #dbeafe; color: #1d4ed8; }
+        .fase-octavos       { background: #e0e7ff; color: #3730a3; }
+        .fase-cuartos       { background: #ede9fe; color: #5b21b6; }
+        .fase-semifinal     { background: #fce7f3; color: #9d174d; }
+        .fase-tercer_puesto { background: #fef3c7; color: #92400e; }
+        .fase-final         { background: #d1fae5; color: #065f46; }
+
+        .estado-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+        }
+        .estado-pendiente { background: #fef3c7; color: #92400e; }
+        .estado-jugado    { background: #d1fae5; color: #065f46; }
+
+        .btn-eliminar {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-eliminar:hover { background: #fca5a5; }
+        .btn-eliminar:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Estados de carga */
+        .loading-row td {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .form-card { position: static; }
+        }
+        @media (max-width: 600px) {
+            .dashboard-header { flex-direction: column; text-align: center; }
+            .logo { justify-content: center; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="logo">
+            <img src="/static/images/logo.PNG" alt="Logo" onerror="this.style.display='none'">
+            <h1><i class="fas fa-trophy"></i> Administrar Eliminatorias</h1>
+        </div>
+        <div class="header-actions">
+            <a href="/admin" class="btn-volver">
+                <i class="fas fa-arrow-left"></i> Panel Admin
+            </a>
+            <button class="logout-btn" onclick="cerrarSesion()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+
+    <div class="main-grid">
+
+        <!-- ── Formulario de creación ── -->
+        <div class="form-card">
+            <h2><i class="fas fa-plus-circle"></i> Crear partido nuevo</h2>
+
+            <div class="form-group">
+                <label>Fase</label>
+                <select id="fase">
+                    <option value="">— Seleccionar fase —</option>
+                    <option value="dieciseisavos">Dieciseisavos de final</option>
+                    <option value="octavos">Octavos de final</option>
+                    <option value="cuartos">Cuartos de final</option>
+                    <option value="semifinal">Semifinal</option>
+                    <option value="tercer_puesto">Tercer puesto</option>
+                    <option value="final">Final</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" id="fecha">
+                </div>
+                <div class="form-group">
+                    <label>Hora (local)</label>
+                    <input type="time" id="hora" value="15:00">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Equipo local</label>
+                <input type="text" id="equipo_local" placeholder="Ej: Argentina"
+                       autocomplete="off" maxlength="50">
+            </div>
+
+            <div class="form-group">
+                <label>Equipo visitante</label>
+                <input type="text" id="equipo_visitante" placeholder="Ej: Francia"
+                       autocomplete="off" maxlength="50">
+            </div>
+
+            <button class="btn-crear" id="btnCrear" onclick="crearPartido()">
+                <i class="fas fa-save"></i> Guardar partido
+            </button>
+
+            <div class="msg-form" id="msgForm"></div>
+        </div>
+
+        <!-- ── Lista de partidos ── -->
+        <div class="lista-card">
+            <div class="lista-header">
+                <h2><i class="fas fa-list"></i> Partidos de eliminatorias</h2>
+                <div class="filtros" id="filtros">
+                    <button class="btn-filtro activo" onclick="filtrar('TODOS', this)">Todos</button>
+                </div>
+            </div>
+
+            <div class="tabla-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fase</th>
+                            <th>Local</th>
+                            <th>Visitante</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaBody">
+                        <tr class="loading-row">
+                            <td colspan="6">
+                                <i class="fas fa-circle-notch fa-spin"></i> Cargando...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────
+// Estado
+// ─────────────────────────────────────────────────
+let todosLosPartidos = [];
+let filtroActivo = 'TODOS';
+
+const FASE_LABELS = {
+    dieciseisavos: 'Dieciseisavos',
+    octavos:       'Octavos',
+    cuartos:       'Cuartos',
+    semifinal:     'Semifinal',
+    tercer_puesto: '3er puesto',
+    final:         'Final',
+};
+
+// ─────────────────────────────────────────────────
+// Inicialización
+// ─────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    cargarPartidos();
+
+    // Pre-rellenar fecha de hoy
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm   = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dd   = String(hoy.getDate()).padStart(2, '0');
+    document.getElementById('fecha').value = `${yyyy}-${mm}-${dd}`;
+});
+
+// ─────────────────────────────────────────────────
+// Cargar partidos desde /api/admin/partidos
+// Solo muestra los de fase eliminatoria
+// ─────────────────────────────────────────────────
+async function cargarPartidos() {
+    try {
+        const res = await fetch('/api/admin/partidos');
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const todos = await res.json();
+
+        // Filtrar: solo fases de eliminación (grupo == null o fase != 'grupos')
+        todosLosPartidos = todos.filter(p =>
+            p.fase !== 'grupos' && !['grupos'].includes(p.fase)
+        );
+
+        construirFiltros();
+        renderizarTabla(todosLosPartidos);
+
+    } catch (err) {
+        document.getElementById('tablaBody').innerHTML = `
+            <tr class="loading-row"><td colspan="6">
+                <i class="fas fa-exclamation-triangle" style="color:#dc2626"></i>
+                Error al cargar: ${esc(err.message)}
+            </td></tr>`;
+    }
+}
+
+// ─────────────────────────────────────────────────
+// Filtros
+// ─────────────────────────────────────────────────
+function construirFiltros() {
+    const fases = [...new Set(todosLosPartidos.map(p => p.fase))].sort();
+    const cont  = document.getElementById('filtros');
+
+    // Limpiar botones previos (salvo "Todos")
+    [...cont.querySelectorAll('.btn-filtro:not(:first-child)')].forEach(b => b.remove());
+
+    fases.forEach(f => {
+        const btn = document.createElement('button');
+        btn.className   = 'btn-filtro';
+        btn.textContent = FASE_LABELS[f] || f;
+        btn.onclick     = () => filtrar(f, btn);
+        cont.appendChild(btn);
+    });
+}
+
+function filtrar(fase, btnEl) {
+    filtroActivo = fase;
+    document.querySelectorAll('#filtros .btn-filtro').forEach(b => b.classList.remove('activo'));
+    btnEl.classList.add('activo');
+
+    const lista = fase === 'TODOS'
+        ? todosLosPartidos
+        : todosLosPartidos.filter(p => p.fase === fase);
+    renderizarTabla(lista);
+}
+
+// ─────────────────────────────────────────────────
+// Renderizar tabla
+// ─────────────────────────────────────────────────
+function renderizarTabla(partidos) {
+    const tbody = document.getElementById('tablaBody');
+
+    if (partidos.length === 0) {
+        tbody.innerHTML = `
+            <tr class="loading-row"><td colspan="6">
+                No hay partidos en esta fase todavía.
+            </td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = partidos.map(p => {
+        const esJugado   = Boolean(p.jugado);
+        const faseLabel  = FASE_LABELS[p.fase] || p.fase;
+        const faseClass  = `fase-${p.fase}`;
+        const estadoText = esJugado ? 'Jugado' : 'Pendiente';
+        const estadoClass = esJugado ? 'estado-jugado' : 'estado-pendiente';
+
+        // Resultado si ya fue jugado
+        let resultado = '';
+        if (esJugado) {
+            resultado = `<br><small style="color:#10b981;font-weight:700">
+                ${p.resultado_local} - ${p.resultado_visitante}
+            </small>`;
+        }
+
+        // Botón eliminar: solo si no jugado
+        const btnElim = !esJugado
+            ? `<button class="btn-eliminar" onclick="eliminarPartido(${p.id}, this)"
+                  title="Eliminar partido">
+                   <i class="fas fa-trash-alt"></i>
+               </button>`
+            : `<button class="btn-eliminar" disabled title="No se puede eliminar">
+                   <i class="fas fa-lock"></i>
+               </button>`;
+
+        return `
+        <tr id="fila-${p.id}">
+            <td><span class="fase-badge ${faseClass}">${faseLabel}</span></td>
+            <td>${esc(p.equipo_local)}</td>
+            <td>${esc(p.equipo_visitante)}</td>
+            <td style="white-space:nowrap">${formatearFecha(p.fecha)}</td>
+            <td>
+                <span class="estado-badge ${estadoClass}">${estadoText}</span>
+                ${resultado}
+            </td>
+            <td>${btnElim}</td>
+        </tr>`;
+    }).join('');
+}
+
+// ─────────────────────────────────────────────────
+// POST /api/admin/crear-partido
+// ─────────────────────────────────────────────────
+async function crearPartido() {
+    const btn    = document.getElementById('btnCrear');
+    const msgEl  = document.getElementById('msgForm');
+
+    // Ocultar mensaje anterior
+    msgEl.className = 'msg-form';
+    msgEl.textContent = '';
+
+    const fase    = document.getElementById('fase').value.trim();
+    const fecha   = document.getElementById('fecha').value.trim();
+    const hora    = document.getElementById('hora').value.trim();
+    const local   = document.getElementById('equipo_local').value.trim();
+    const visita  = document.getElementById('equipo_visitante').value.trim();
+
+    if (!fase || !fecha || !hora || !local || !visita) {
+        mostrarMsg(msgEl, 'error', 'Completa todos los campos.');
+        return;
+    }
+    if (local.toLowerCase() === visita.toLowerCase()) {
+        mostrarMsg(msgEl, 'error', 'El equipo local y visitante no pueden ser el mismo.');
+        return;
+    }
+
+    btn.disabled  = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Guardando...';
+
+    try {
+        const res = await fetch('/api/admin/crear-partido', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ fase, fecha, hora, equipo_local: local, equipo_visitante: visita }),
+        });
+
+        if (res.status === 401) { window.location.href = '/login'; return; }
+
+        const data = await res.json();
+
+        if (res.ok) {
+            mostrarMsg(msgEl, 'exito', `✔ Partido creado (ID ${data.partido.id}).`);
+
+            // Limpiar inputs de equipos
+            document.getElementById('equipo_local').value    = '';
+            document.getElementById('equipo_visitante').value = '';
+
+            // Recargar lista
+            await cargarPartidos();
+
+        } else {
+            mostrarMsg(msgEl, 'error', data.error || `Error ${res.status}`);
+        }
+
+    } catch (err) {
+        mostrarMsg(msgEl, 'error', `Error de red: ${err.message}`);
+    } finally {
+        btn.disabled  = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Guardar partido';
+    }
+}
+
+// ─────────────────────────────────────────────────
+// DELETE /api/admin/eliminar-partido/<id>
+// ─────────────────────────────────────────────────
+async function eliminarPartido(id, btnEl) {
+    if (!confirm('¿Eliminar este partido? Esta acción no se puede deshacer.')) return;
+
+    const original     = btnEl.innerHTML;
+    btnEl.disabled     = true;
+    btnEl.innerHTML    = '<i class="fas fa-circle-notch fa-spin"></i>';
+
+    try {
+        const res = await fetch(`/api/admin/eliminar-partido/${id}`, { method: 'DELETE' });
+
+        if (res.status === 401) { window.location.href = '/login'; return; }
+
+        const data = await res.json();
+
+        if (res.ok) {
+            // Eliminar fila de la tabla
+            const fila = document.getElementById(`fila-${id}`);
+            if (fila) fila.remove();
+
+            // Actualizar estado local
+            todosLosPartidos = todosLosPartidos.filter(p => p.id !== id);
+
+            // Si la tabla quedó vacía, mostrar mensaje
+            const tbody = document.getElementById('tablaBody');
+            if (tbody.children.length === 0) {
+                renderizarTabla([]);
+            }
+
+            construirFiltros();
+        } else {
+            alert(data.error || 'No se pudo eliminar el partido.');
+            btnEl.disabled  = false;
+            btnEl.innerHTML = original;
+        }
+
+    } catch (err) {
+        alert(`Error de red: ${err.message}`);
+        btnEl.disabled  = false;
+        btnEl.innerHTML = original;
+    }
+}
+
+// ─────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────
+function mostrarMsg(el, tipo, texto) {
+    el.className  = `msg-form ${tipo}`;
+    el.textContent = texto;
+    if (tipo === 'exito') {
+        setTimeout(() => { el.className = 'msg-form'; el.textContent = ''; }, 5000);
+    }
+}
+
+function formatearFecha(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return d.toLocaleString('es-GT', {
+        weekday: 'short', day: 'numeric', month: 'short',
+        hour: '2-digit', minute: '2-digit',
+    });
+}
+
+function esc(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function cerrarSesion() {
+    try { await fetch('/api/logout', { method: 'POST' }); } catch (_) {}
+    window.location.href = '/login';
+}
+</script>
+</body>
+</html>
