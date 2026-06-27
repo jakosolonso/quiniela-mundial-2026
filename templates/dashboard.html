@@ -387,6 +387,9 @@
         function renderPartidoCard(partido, editable) {
             const fecha = new Date(partido.fecha);
             const fechaStr = fecha.toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+            const nombreGrupo = partido.grupo === "ELIM"
+    ? (FASE_LABELS[partido.fase] || "Eliminatorias")
+    : `Grupo ${partido.grupo}`;
             
             let resultadoHtml = '';
             if (partido.jugado) {
@@ -411,7 +414,7 @@
                 <div class="partido-card">
                     <div class="partido-info">
                         <div class="fecha">${fechaStr}</div>
-                        <div class="grupo">Grupo ${partido.grupo}</div>
+                        <div class="grupo">${nombreGrupo}</div>
                         <div class="equipos">${partido.equipo_local} vs ${partido.equipo_visitante}</div>
                     </div>
                     ${resultadoHtml}
