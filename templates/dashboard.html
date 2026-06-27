@@ -387,14 +387,51 @@
         function renderPartidoCard(partido, editable) {
             const fecha = new Date(partido.fecha);
             const fechaStr = fecha.toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
-            const nombreGrupo = partido.grupo === "ELIM"
-    ? (FASE_LABELS[partido.fase] || "Eliminatorias")
-    : `Grupo ${partido.grupo}`;
             
             let resultadoHtml = '';
             if (partido.jugado) {
                 resultadoHtml = `<div style="margin-top:10px;padding:8px;background:#e5e7eb;border-radius:8px;text-align:center">Resultado: ${partido.resultado_local} - ${partido.resultado_visitante}</div>`;
             }
+
+            let nombreGrupo;
+
+if (partido.grupo === "ELIM") {
+
+    switch (partido.fase) {
+
+        case "dieciseisavos":
+            nombreGrupo = "Dieciseisavos";
+            break;
+
+        case "octavos":
+            nombreGrupo = "Octavos";
+            break;
+
+        case "cuartos":
+            nombreGrupo = "Cuartos";
+            break;
+
+        case "semifinal":
+            nombreGrupo = "Semifinal";
+            break;
+
+        case "tercer_puesto":
+            nombreGrupo = "Tercer Puesto";
+            break;
+
+        case "final":
+            nombreGrupo = "Final";
+            break;
+
+        default:
+            nombreGrupo = "Eliminatorias";
+    }
+
+} else {
+
+    nombreGrupo = `Grupo ${partido.grupo}`;
+
+}
             
             let pronosticoHtml = '';
             if (editable && !partido.jugado) {
